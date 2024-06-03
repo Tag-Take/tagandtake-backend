@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
-class StoresConfig(AppConfig):
+class MembersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.stores"
+    name = "apps.members"
 
     def ready(self):
-        import apps.stores.signals
+        import apps.members.signals
