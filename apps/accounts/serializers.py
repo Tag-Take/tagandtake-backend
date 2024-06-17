@@ -1,9 +1,10 @@
+from django.contrib.auth import authenticate, get_user_model
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import serializers
-from django.contrib.auth import  get_user_model
+
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.serializers import (
-    TokenObtainPairSerializer
-)
+
 
 User = get_user_model()
 
@@ -14,8 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             "username",
             "email",
-            "is_store",
-            "is_member",
+            "role",
             "is_active",
             "date_joined",
         )
@@ -43,7 +43,7 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
-            is_store=True,
+            role="store",
         )
         return user
 
@@ -69,13 +69,31 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
-            is_member=True,
+            role="member",
         )
         return user
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        return token
+    def validate(self, attrs):
+        credentials = {
+            self.username_field: attrs.get(self.username_field),
+            "password": attrs.get("password"),
+        }
+
+        user = authenticate(**credentials)
+
+        if user is None:
+            raise serializers.ValidationError(_("Invalid credentials"))
+
+        if not user.is_active:
+            raise serializers.ValidationError(
+                _("User account is not activated. Please check your email.")
+            )
+
+        data = super().validate(attrs)
+
+        # Include user details in the response
+        data["user"] = {"id": user.id, "username": user.username, "role": user.role}
+
+        return data

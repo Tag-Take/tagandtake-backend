@@ -4,7 +4,6 @@ Development
 
 from .base import *
 import os
-import dj_database_url
 
 # Enables debugging mode in development for error tracking.
 DEBUG = True
@@ -20,6 +19,17 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     "static",
 ]
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "tagandtake_core"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "123456"),
+        "HOST": os.environ.get("DB_HOST", "db"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
+    }
+}
 
 # Configures email backend to print email to the console during development.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

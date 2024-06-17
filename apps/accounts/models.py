@@ -6,6 +6,8 @@ from django.contrib.auth.models import (
     Permission,
 )
 from django.db import models
+import uuid
+
 
 
 class UserManager(BaseUserManager):
@@ -14,8 +16,7 @@ class UserManager(BaseUserManager):
         username,
         email,
         password=None,
-        is_store=False,
-        is_member=False,
+        role="member",  # Default role is 'member'
         **extra_fields
     ):
         if not email:
@@ -24,15 +25,9 @@ class UserManager(BaseUserManager):
             raise ValueError("The Username field must be set")
 
         email = self.normalize_email(email)
-        user = self.model(
-            username=username,
-            email=email,
-            is_store=is_store,
-            is_member=is_member,
-            **extra_fields
-        )
+        user = self.model(username=username, email=email, role=role, **extra_fields)
         user.set_password(password)
-        user.is_active = False  # User must confirm email
+        user.is_active = True # User must confirm email
         user.save(using=self._db)
         return user
 
@@ -41,17 +36,22 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
 
         return self.create_user(
-            username, email, password, is_store=False, is_member=False, **extra_fields
+            username, email, password, role="member", **extra_fields
         )
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = (
+        ("member", "Member"),
+        ("store", "Store"),
+    )
+
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=50, unique=True)
     password = models.CharField(max_length=128)
-    is_store = models.BooleanField(default=False)
-    is_member = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)  # Email verification status
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="member")
+    is_active = models.BooleanField(default=False)  
+    activation_token = models.UUIDField(default=uuid.uuid4, unique=True) 
     date_joined = models.DateTimeField(auto_now_add=True)
     groups = models.ManyToManyField(Group, related_name="custom_user_set")
     user_permissions = models.ManyToManyField(
