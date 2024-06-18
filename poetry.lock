@@ -50,6 +50,26 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-allauth"
+version = "0.63.3"
+description = "Integrated set of Django applications addressing authentication, registration, account management as well as 3rd party (social) account authentication."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django_allauth-0.63.3.tar.gz", hash = "sha256:2374164c468a309e6badf70bc3405136df6036f24a20a13387f2a063066bdaa9"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+
+[package.extras]
+mfa = ["qrcode (>=7.0.0)"]
+openid = ["python3-openid (>=3.0.8)"]
+saml = ["python3-saml (>=1.15.0,<2.0.0)"]
+socialaccount = ["pyjwt[crypto] (>=1.7)", "requests (>=2.0.0)", "requests-oauthlib (>=0.3.0)"]
+steam = ["python3-openid (>=3.0.8)"]
+
+[[package]]
 name = "django-cors-headers"
 version = "4.3.1"
 description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
@@ -267,4 +287,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "084f225da91db6c1a1388009ee78ab4f80265f9f7aded754472c7e196de3fb5a"
+content-hash = "ffd0015b5d51293684d6cec55839c4406caed39a4a9eb7e102f11ffb5c72b00c"

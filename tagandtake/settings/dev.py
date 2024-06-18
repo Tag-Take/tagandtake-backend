@@ -34,6 +34,8 @@ DATABASES = {
 # Configures email backend to print email to the console during development.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+FRONTEND_URL = "http://localhost:3000"
+
 # Basic logging configuration that logs errors to the console.
 LOGGING = {
     "version": 1,
@@ -53,6 +55,13 @@ LOGGING = {
     },
 }
 
+# Site ID
+SITE_ID = 1
+
+# Use console email backend for development
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "no-reply@tagandtake.com"
 
 # Session and CSRF cookies are not marked as secure during development as HTTPS is not typically enabled.
 SESSION_COOKIE_SECURE = False

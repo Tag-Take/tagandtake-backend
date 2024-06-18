@@ -18,6 +18,8 @@ from apps.accounts.serializers import (
     StoreSignUpSerializer,
     MemberSignUpSerializer,
     CustomTokenObtainPairSerializer,
+    PasswordResetSerializer,
+    PasswordResetConfirmSerializer,
 )
 
 User = get_user_model()
@@ -217,7 +219,6 @@ class CustomTokenRefreshView(TokenRefreshView):
                     secure=True,
                     samesite="Lax",
                 )
-                # Wrap the success response in a consistent format
                 response.data = {
                     "status": "success",
                     "message": "Access token refreshed successfully",
@@ -226,7 +227,6 @@ class CustomTokenRefreshView(TokenRefreshView):
                 }
             return response
         except TokenError as e:
-            # Handle any token-related exceptions
             return Response(
                 {
                     "status": "error",
@@ -237,7 +237,6 @@ class CustomTokenRefreshView(TokenRefreshView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         except Exception as e:
-            # Generic exception handling
             return Response(
                 {
                     "status": "error",
@@ -247,3 +246,57 @@ class CustomTokenRefreshView(TokenRefreshView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class PasswordResetView(generics.GenericAPIView):
+    serializer_class = PasswordResetSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Password reset link sent",
+                    "data": None,
+                    "errors": {},
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "status": "error",
+                "message": "Invalid email",
+                "data": None,
+                "errors": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    serializer_class = PasswordResetConfirmSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Password has been reset",
+                    "data": None,
+                    "errors": {},
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "status": "error",
+                "message": "Invalid token or user ID",
+                "data": None,
+                "errors": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )

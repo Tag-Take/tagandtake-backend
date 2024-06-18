@@ -27,6 +27,18 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # URL to use when referring to static files located in STATIC_ROOT.
 STATIC_URL = "/static/"
 
+FRONTEND_URL = "https://tagandtake.com"
+
+SITE_ID = 1
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.your_email_service.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "info@tagandtake.com"
+EMAIL_HOST_PASSWORD = "password"
+DEFAULT_FROM_EMAIL = "info@tagandtake.com"
+
+
 # Email backend configuration for sending emails.
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.yourmailprovider.com"  # The host to use for sending email.

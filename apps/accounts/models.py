@@ -9,7 +9,6 @@ from django.db import models
 import uuid
 
 
-
 class UserManager(BaseUserManager):
     def create_user(
         self,
@@ -27,7 +26,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, role=role, **extra_fields)
         user.set_password(password)
-        user.is_active = True # User must confirm email
+        user.is_active = True  # User must confirm email
         user.save(using=self._db)
         return user
 
@@ -50,8 +49,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=50, unique=True)
     password = models.CharField(max_length=128)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="member")
-    is_active = models.BooleanField(default=False)  
-    activation_token = models.UUIDField(default=uuid.uuid4, unique=True) 
+    is_active = models.BooleanField(default=False)
+    activation_token = models.UUIDField(default=uuid.uuid4, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     groups = models.ManyToManyField(Group, related_name="custom_user_set")
     user_permissions = models.ManyToManyField(
