@@ -4,54 +4,40 @@ from django.utils.timezone import now
 from django.http import QueryDict
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth.tokens import default_token_generator
 
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.accounts.serializers import (
-    StoreSignUpSerializer,
-    MemberSignUpSerializer,
+    SignUpSerializer,
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
 )
+from apps.accounts.utils import generate_activation_context
+from apps.notifications.utils import send_email
 
 User = get_user_model()
 
 
 class SignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
-
-    def get_serializer_class(self):
-        signup_type = self.request.query_params.get("type")
-        if signup_type == "store":
-            return StoreSignUpSerializer
-        elif signup_type == "member":
-            return MemberSignUpSerializer
-        else:
-            return None
+    serializer_class = SignUpSerializer
 
     def create(self, request, *args, **kwargs):
         signup_type = request.query_params.get("type")
-        serializer_class = self.get_serializer_class()
-        if not serializer_class:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Invalid signup type",
-                    "data": None,
-                    "errors": {},
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = serializer_class(data=request.data)
+        request.data["role"] = signup_type
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -76,6 +62,65 @@ class SignUpView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+class ActivateUserView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response(
+                {
+                    "status": "success", 
+                    "message": "Account activated successfully",
+                }, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {
+                    "status": "error", 
+                    "message": "Activation link is invalid",
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+class ResendActivationEmailView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        try:
+            user = User.objects.get(email=email)
+            if user.is_active:
+                return Response(
+                    {
+                        "status": "error", 
+                        "message": "User is already active."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            else:
+                context = generate_activation_context(user)
+                send_email(
+                    subject="Activate your account",
+                    to=user.email,
+                    template_name="./activation_email.html",
+                    context=context,
+                )
+                return Response(
+                    {
+                        "status": "success", 
+                        "message": "Activation email sent."
+                    },
+                    status=status.HTTP_200_OK,
+                )
+        except User.DoesNotExist:
+            return Response(
+                {
+                    "status": "error", 
+                    "message": "No user associated with this email."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 class LogoutView(APIView):
     def post(self, request, *args, **kwargs):
@@ -85,8 +130,6 @@ class LogoutView(APIView):
                 {
                     "status": "error",
                     "message": "Refresh token is required",
-                    "data": None,
-                    "errors": {},
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -99,8 +142,6 @@ class LogoutView(APIView):
                 {
                     "status": "success",
                     "message": "Successfully logged out",
-                    "data": None,
-                    "errors": {},
                 },
                 status=status.HTTP_204_NO_CONTENT,
             )
@@ -194,8 +235,6 @@ class CustomTokenRefreshView(TokenRefreshView):
                 {
                     "status": "error",
                     "message": "Refresh token is required",
-                    "data": None,
-                    "errors": {},
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -222,8 +261,6 @@ class CustomTokenRefreshView(TokenRefreshView):
                 response.data = {
                     "status": "success",
                     "message": "Access token refreshed successfully",
-                    "data": None,
-                    "errors": {},
                 }
             return response
         except TokenError as e:
@@ -259,8 +296,6 @@ class PasswordResetView(generics.GenericAPIView):
                 {
                     "status": "success",
                     "message": "Password reset link sent",
-                    "data": None,
-                    "errors": {},
                 },
                 status=status.HTTP_200_OK,
             )
@@ -286,8 +321,6 @@ class PasswordResetConfirmView(generics.GenericAPIView):
                 {
                     "status": "success",
                     "message": "Password has been reset",
-                    "data": None,
-                    "errors": {},
                 },
                 status=status.HTTP_200_OK,
             )
@@ -299,4 +332,16 @@ class PasswordResetConfirmView(generics.GenericAPIView):
                 "errors": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        user.delete()
+        return Response(
+            {"status": "success", "message": "Account deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT
         )

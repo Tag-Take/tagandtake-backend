@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -6,8 +8,6 @@ from django.contrib.auth.models import (
     Permission,
 )
 from django.db import models
-import uuid
-
 
 class UserManager(BaseUserManager):
     def create_user(
@@ -15,7 +15,7 @@ class UserManager(BaseUserManager):
         username,
         email,
         password=None,
-        role="member",  # Default role is 'member'
+        role="member",  
         **extra_fields
     ):
         if not email:
@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, role=role, **extra_fields)
         user.set_password(password)
-        user.is_active = True  # User must confirm email
+        user.is_active = False  # User must confirm email
         user.save(using=self._db)
         return user
 
@@ -37,7 +37,6 @@ class UserManager(BaseUserManager):
         return self.create_user(
             username, email, password, role="member", **extra_fields
         )
-
 
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (

@@ -1,11 +1,14 @@
 from django.urls import path
 from apps.accounts.views import (
     SignUpView,
+    ActivateUserView,
+    ResendActivationEmailView,
     LogoutView,
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
     PasswordResetView,
     PasswordResetConfirmView,
+    DeleteAccountView,
 )
 
 urlpatterns = [
@@ -13,6 +16,16 @@ urlpatterns = [
         "signup/", 
         SignUpView.as_view(), 
         name="signup"
+    ),
+    path(
+        "activate-user/<str:uidb64>/<str:token>/", 
+        ActivateUserView.as_view(), 
+        name="activate"
+    ),
+    path(
+        "resend-activation-email/", 
+        ResendActivationEmailView.as_view(), 
+        name="resend_activation_email"
     ),
     path(
         "token/", 
@@ -30,13 +43,19 @@ urlpatterns = [
         name="logout"
     ),
     path(
-        "password_reset/", 
+        "password-reset/", 
         PasswordResetView.as_view(), 
         name="password_reset"
     ),
     path(
-        "password_reset_confirm/",
+        "confirm-password-reset/",
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
+    path(
+        "delete-account/", 
+        DeleteAccountView.as_view(), 
+        name="delete_account"
+    ),
+
 ]
