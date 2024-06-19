@@ -8,10 +8,9 @@ from django.utils.encoding import force_str
 from django.utils.timezone import now
 from django.contrib.auth.tokens import default_token_generator
 
-from rest_framework import generics, status
+from rest_framework import generics, status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_simplejwt.tokens import RefreshToken
