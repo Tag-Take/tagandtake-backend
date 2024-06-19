@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from django.utils.timezone import now
 from django.http import QueryDict
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from django.utils.timezone import now
 from django.contrib.auth.tokens import default_token_generator
 
 from rest_framework import generics, status
@@ -26,6 +26,7 @@ from apps.accounts.serializers import (
 )
 from apps.accounts.utils import generate_activation_context
 from apps.notifications.utils import send_email
+from apps.accounts.signals import user_activated
 
 User = get_user_model()
 
@@ -63,6 +64,8 @@ class SignUpView(generics.CreateAPIView):
             )
 
 class ActivateUserView(APIView):
+    authentication_classes = [] 
+
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -73,6 +76,7 @@ class ActivateUserView(APIView):
         if user is not None and default_token_generator.check_token(user, token):
             user.is_active = True
             user.save()
+            user_activated.send(sender=user.__class__, instance=user)
             return Response(
                 {
                     "status": "success", 
