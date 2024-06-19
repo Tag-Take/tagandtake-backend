@@ -9,14 +9,10 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 
+
 class UserManager(BaseUserManager):
     def create_user(
-        self,
-        username,
-        email,
-        password=None,
-        role="member",  
-        **extra_fields
+        self, username, email, password=None, role="member", **extra_fields
     ):
         if not email:
             raise ValueError("The Email field must be set")
@@ -37,6 +33,7 @@ class UserManager(BaseUserManager):
         return self.create_user(
             username, email, password, role="member", **extra_fields
         )
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (

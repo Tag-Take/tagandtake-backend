@@ -2,9 +2,9 @@
 
 from django.apps import AppConfig
 
+
 class StoresConfig(AppConfig):
-    name = 'apps.stores'
+    name = "apps.stores"
 
     def ready(self):
         import apps.stores.signals
-

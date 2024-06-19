@@ -63,8 +63,9 @@ class SignUpView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
 class ActivateUserView(APIView):
-    authentication_classes = [] 
+    authentication_classes = []
 
     def get(self, request, uidb64, token):
         try:
@@ -79,16 +80,21 @@ class ActivateUserView(APIView):
             user_activated.send(sender=user.__class__, instance=user)
             return Response(
                 {
-                    "status": "success", 
+                    "status": "success",
                     "message": "Account activated successfully",
-                }, status=status.HTTP_200_OK)
+                },
+                status=status.HTTP_200_OK,
+            )
         else:
             return Response(
                 {
-                    "status": "error", 
+                    "status": "error",
                     "message": "Activation link is invalid",
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
 class ResendActivationEmailView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
@@ -96,10 +102,7 @@ class ResendActivationEmailView(APIView):
             user = User.objects.get(email=email)
             if user.is_active:
                 return Response(
-                    {
-                        "status": "error", 
-                        "message": "User is already active."
-                    },
+                    {"status": "error", "message": "User is already active."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             else:
@@ -111,20 +114,15 @@ class ResendActivationEmailView(APIView):
                     context=context,
                 )
                 return Response(
-                    {
-                        "status": "success", 
-                        "message": "Activation email sent."
-                    },
+                    {"status": "success", "message": "Activation email sent."},
                     status=status.HTTP_200_OK,
                 )
         except User.DoesNotExist:
             return Response(
-                {
-                    "status": "error", 
-                    "message": "No user associated with this email."
-                },
+                {"status": "error", "message": "No user associated with this email."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
 
 class LogoutView(APIView):
     def post(self, request, *args, **kwargs):
@@ -347,5 +345,5 @@ class DeleteAccountView(APIView):
         user.delete()
         return Response(
             {"status": "success", "message": "Account deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT,
         )

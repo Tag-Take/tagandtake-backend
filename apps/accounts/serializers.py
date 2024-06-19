@@ -10,8 +10,10 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.notifications.utils import send_email
-from apps.accounts.utils import generate_password_reset_email_context, generate_activation_context
-
+from apps.accounts.utils import (
+    generate_password_reset_email_context,
+    generate_activation_context,
+)
 
 
 User = get_user_model()
@@ -42,12 +44,11 @@ class SignUpSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
             role=role,
         )
-        self.send_activation_email(user)  
+        self.send_activation_email(user)
         return user
-    
+
     @staticmethod
     def send_activation_email(user):
-
         context = generate_activation_context(user)
         send_email(
             subject="Activate your account",
@@ -65,15 +66,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise serializers.ValidationError({"non_field_errors": ["Invalid credentials"]})
+            raise serializers.ValidationError(
+                {"non_field_errors": ["Invalid credentials"]}
+            )
 
         if not user.is_active:
             raise serializers.ValidationError(
-                {"non_field_errors": ["User account is not activated. Please check your email."]}
+                {
+                    "non_field_errors": [
+                        "User account is not activated. Please check your email."
+                    ]
+                }
             )
 
         if not check_password(password, user.password):
-            raise serializers.ValidationError({"non_field_errors": ["Invalid credentials"]})
+            raise serializers.ValidationError(
+                {"non_field_errors": ["Invalid credentials"]}
+            )
 
         data = super().validate(attrs)
 
@@ -89,7 +98,9 @@ class PasswordResetSerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=value)
         except User.DoesNotExist:
-            raise serializers.ValidationError("No user is associated with this email address")
+            raise serializers.ValidationError(
+                "No user is associated with this email address"
+            )
         return value
 
     def save(self):
@@ -130,4 +141,3 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     def save(self):
         self.user.set_password(self.validated_data["new_password"])
         self.user.save()
-

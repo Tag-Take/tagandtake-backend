@@ -12,50 +12,25 @@ from apps.accounts.views import (
 )
 
 urlpatterns = [
+    path("signup/", SignUpView.as_view(), name="signup"),
     path(
-        "signup/", 
-        SignUpView.as_view(), 
-        name="signup"
+        "activate-user/<str:uidb64>/<str:token>/",
+        ActivateUserView.as_view(),
+        name="activate",
     ),
     path(
-        "activate-user/<str:uidb64>/<str:token>/", 
-        ActivateUserView.as_view(), 
-        name="activate"
+        "resend-activation-email/",
+        ResendActivationEmailView.as_view(),
+        name="resend_activation_email",
     ),
-    path(
-        "resend-activation-email/", 
-        ResendActivationEmailView.as_view(), 
-        name="resend_activation_email"
-    ),
-    path(
-        "token/", 
-         CustomTokenObtainPairView.as_view(), 
-         name="token_obtain_pair"
-    ),
-    path(
-        "token/refresh/", 
-        CustomTokenRefreshView.as_view(), 
-        name="token_refresh"
-    ),
-    path(
-        "logout/", 
-        LogoutView.as_view(), 
-        name="logout"
-    ),
-    path(
-        "password-reset/", 
-        PasswordResetView.as_view(), 
-        name="password_reset"
-    ),
+    path("token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path("password-reset/", PasswordResetView.as_view(), name="password_reset"),
     path(
         "confirm-password-reset/",
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
-    path(
-        "delete-account/", 
-        DeleteAccountView.as_view(), 
-        name="delete_account"
-    ),
-
+    path("delete-account/", DeleteAccountView.as_view(), name="delete_account"),
 ]

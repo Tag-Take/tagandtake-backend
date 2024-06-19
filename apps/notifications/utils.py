@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 
+
 def send_email(subject, to, template_name, context, from_email=None):
     """
     Utility function to send emails using Django's built-in email backend.

@@ -5,8 +5,10 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.conf import settings
 
+
 def generate_activation_token(user):
     return default_token_generator.make_token(user)
+
 
 def generate_activation_context(user):
     token = generate_activation_token(user)
@@ -20,6 +22,7 @@ def generate_activation_context(user):
         "current_year": datetime.now().year,
     }
     return context
+
 
 def generate_password_reset_email_context(user):
     token = generate_activation_token(user)

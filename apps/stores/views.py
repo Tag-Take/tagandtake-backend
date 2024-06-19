@@ -3,13 +3,15 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from apps.stores.models import StoreProfile
 from apps.stores.serializers import StoreProfileSerializer
+
+
 class RetrieveStoreProfileView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = StoreProfileSerializer
 
     def get_object(self):
         user = self.request.user
-        if user.is_authenticated and user.role == 'store':
+        if user.is_authenticated and user.role == "store":
             try:
                 return StoreProfile.objects.get(user=user)
             except StoreProfile.DoesNotExist:
@@ -40,4 +42,3 @@ class RetrieveStoreProfileView(generics.RetrieveAPIView):
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
-

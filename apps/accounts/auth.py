@@ -8,9 +8,10 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class CustomJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        if getattr(request, 'skip_authentication', False):
+        if getattr(request, "skip_authentication", False):
             return None
 
         token = request.COOKIES.get("access_token")
