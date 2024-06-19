@@ -1,0 +1,47 @@
+[
+    {
+        "model": "yourapp.categories",
+        "pk": 1,
+        "fields": {
+            "category": "T-Shirts",
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "yourapp.categories",
+        "pk": 2,
+        "fields": {
+            "category": "Trousers",
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "yourapp.categories",
+        "pk": 3,
+        "fields": {
+            "category": "Shorts",
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "yourapp.categories",
+        "pk": 4,
+        "fields": {
+            "category": "Shoes",
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "yourapp.categories",
+        "pk": 5,
+        "fields": {
+            "category": "Jackerts",
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z"
+        }
+    }
+]
