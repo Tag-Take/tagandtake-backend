@@ -8,7 +8,7 @@ API_VERSION = "v1"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(f"api/{API_VERSION}/", include(account_urls)),
-    path(f"api/{API_VERSION}/", include(store_urls)),
-    path(f"api/{API_VERSION}/", include(member_urls)),
+    path(f"api/{API_VERSION}/accounts/", include(account_urls)),
+    path(f"api/{API_VERSION}/stores/", include(store_urls)),
+    path(f"api/{API_VERSION}/members/", include(member_urls)),
 ]

@@ -21,7 +21,6 @@ class Item(models.Model):
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default="registered")
     
 
-# Junction table to join with categories for each item
 class ItemCategory(models.Model):
     class Meta:
         db_table = "item_categories"
