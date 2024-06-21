@@ -3,7 +3,7 @@ from apps.members.views import RetrieveMemberProfileView
 
 urlpatterns = [
     path(
-        "member-profile/",
+        "profile/",
         RetrieveMemberProfileView.as_view(),
         name="retrieve_member_profile",
     ),
