@@ -2,7 +2,6 @@ import json
 import os
 
 from django.core.management.base import BaseCommand
-from django.apps import apps
 
 from apps.items.models import ItemCategory, ItemCondition
 
@@ -11,9 +10,7 @@ class Command(BaseCommand):
     help = 'Sync item categories and conditions from fixtures (JSON files)'
 
     def handle(self, *args, **options):
-        # Get the app config to determine the correct fixture directory
-        app_config = apps.get_app_config('apps.items')
-        base_dir = os.path.join(app_config.path, 'fixtures')
+        base_dir = 'apps/items/fixtures'
 
         # Sync conditions
         conditions_file = os.path.join(base_dir, 'item_conditions.json')
@@ -31,14 +28,15 @@ class Command(BaseCommand):
 
     def sync_conditions(self, conditions_data):
         existing_conditions = ItemCondition.objects.values_list('condition', flat=True)
-        new_conditions = [condition['condition'] for condition in conditions_data]
+        new_conditions = [condition['fields']['condition'] for condition in conditions_data]
         
         # Add new conditions
         for condition in new_conditions:
             if condition not in existing_conditions:
+                condition_data = next(c['fields'] for c in conditions_data if c['fields']['condition'] == condition)
                 ItemCondition.objects.create(
-                    condition=condition,
-                    description=[c['description'] for c in conditions_data if c['condition'] == condition][0]
+                    condition=condition_data['condition'],
+                    description=condition_data['description']
                 )
         
         # Remove old conditions
@@ -48,14 +46,15 @@ class Command(BaseCommand):
 
     def sync_categories(self, categories_data):
         existing_categories = ItemCategory.objects.values_list('name', flat=True)
-        new_categories = [category['name'] for category in categories_data]
+        new_categories = [category['fields']['name'] for category in categories_data]
         
         # Add new categories
         for category in new_categories:
             if category not in existing_categories:
+                category_data = next(c['fields'] for c in categories_data if c['fields']['name'] == category)
                 ItemCategory.objects.create(
-                    name=category,
-                    description=[c['description'] for c in categories_data if c['name'] == category][0]
+                    name=category_data['name'],
+                    description=category_data['description']
                 )
         
         # Remove old categories

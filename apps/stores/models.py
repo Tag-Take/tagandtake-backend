@@ -1,32 +1,43 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import (
+    MinValueValidator, MaxValueValidator, MinLengthValidator
+)
+
 from apps.items.models import ItemCategory, ItemCondition
-from django.core.validators import MinValueValidator, MaxValueValidator
+from apps.stores.utils import generate_pin
 
 
 User = get_user_model()
 
 
 class StoreProfile(models.Model):
-    # Basic store information
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    pin = models.CharField(
+        max_length=4, 
+        validators=[MinLengthValidator(4)],
+        default=generate_pin,
+        null=False
+    )
+    # Basic store information
     shop_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    store_bio = models.TextField(blank=True, null=True)
+    store_bio = models.CharField(max_length=255)
     profile_photo_url = models.URLField(blank=True, null=True)
     # Socials
-    website_url = models.URLField(blank=True, null=True)
     google_profile_url = models.URLField(null=True, blank=True)  
+    website_url = models.URLField(blank=True, null=True)
     instagram_url = models.URLField(blank=True, null=True)
     # Payment details
     stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
     commission = models.IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(50)]
+        validators=[MinValueValidator(0), MaxValueValidator(50)],
+        default=10
     )
     # Store settings
-    stock_limit = models.IntegerField(blank=True, null=True)
-    active_tags_count = models.IntegerField(default=0)  # Counter for active tags (< stock limit)
+    stock_limit = models.IntegerField(blank=True, default=50, null=True)
+    active_tags_count = models.IntegerField(default=0)  # (keep <= stock limit)
     min_listing_days = models.IntegerField(
         default=14,
         validators=[MinValueValidator(7)]

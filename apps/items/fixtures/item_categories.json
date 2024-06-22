@@ -1,6 +1,6 @@
 [
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 1,
         "fields": {
             "name": "Tops",
@@ -8,7 +8,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 2,
         "fields": {
             "name": "Bottoms",
@@ -16,7 +16,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 3,
         "fields": {
             "name": "Dresses & Jumpsuits",
@@ -24,7 +24,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 4,
         "fields": {
             "name": "Outerwear",
@@ -32,7 +32,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 5,
         "fields": {
             "name": "Footwear",
@@ -40,7 +40,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 6,
         "fields": {
             "name": "Accessories",
@@ -48,7 +48,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 7,
         "fields": {
             "name": "Activewear",
@@ -56,7 +56,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 8,
         "fields": {
             "name": "Swimwear",
@@ -64,7 +64,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 9,
         "fields": {
             "name": "Sleepwear & Loungewear",
@@ -72,7 +72,7 @@
         }
     },
     {
-        "model": "apps.items.ItemCategory",
+        "model": "items.ItemCategory",
         "pk": 10,
         "fields": {
             "name": "Underwear & Intimates",

@@ -1,9 +1,13 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
-from apps.accounts.signals import user_activated
 from django.contrib.auth import get_user_model
 
-from apps.stores.models import StoreProfile, StoreNotificationPreferences
+from apps.accounts.signals import user_activated
+from apps.stores.models import (
+    StoreProfile, StoreNotificationPreferences, TagGroup, Tag
+)
+
+from apps.stores.utils import send_pin_email
 
 User = get_user_model()
 
@@ -15,9 +19,9 @@ def create_store_profile(sender, instance, **kwargs):
             StoreNotificationPreferences.objects.create(store=store_profile)
 
 @receiver(post_save, sender=StoreProfile)
-def create_store_notification_preference(sender, instance, created, **kwargs):
+def send_pin_email_to_store(sender, instance, created, **kwargs):
     if created:
-        StoreNotificationPreferences.objects.create(store=instance, secondary_email=instance.user.email)
+        send_pin_email(instance)
 
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance, **kwargs):
@@ -34,3 +38,10 @@ def update_store_notification_preference(sender, instance, **kwargs):
             if notification_preferences.secondary_email == instance._old_email:
                 notification_preferences.secondary_email = instance.email
                 notification_preferences.save()
+
+@receiver(post_save, sender=TagGroup)
+def activate_tag_group(sender, instance, created, **kwargs):
+    if instance.activated and not instance.activated_at:
+        instance.activated_at = instance.created_at
+        instance.save()
+        Tag.objects.filter(tag_group=instance).update(status='active')

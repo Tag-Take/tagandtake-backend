@@ -1,6 +1,6 @@
 [
     {
-        "model": "apps.items.ItemCondition", 
+        "model": "items.ItemCondition", 
         "pk": 1, 
         "fields": { 
             "condition": "New", 
@@ -8,7 +8,7 @@
             } 
     },
     { 
-        "model": "apps.items.ItemCondition", 
+        "model": "items.ItemCondition", 
         "pk": 2, 
         "fields": { 
             "condition": "Like New", 
@@ -16,14 +16,14 @@
             } 
     },
     { 
-        "model": "apps.items.ItemCondition", 
+        "model": "items.ItemCondition", 
         "pk": 3, "fields": { 
             "condition": "Gently Used", 
             "description": "Worn a few times, minimal signs of wear" 
             } 
     },
     { 
-        "model": "apps.items.ItemCondition", 
+        "model": "items.ItemCondition", 
         "pk": 4, 
         "fields": { 
             "condition": "Fair", 
@@ -31,7 +31,7 @@
             } 
     },
     { 
-        "model": "apps.items.ItemCondition", 
+        "model": "items.ItemCondition", 
         "pk": 5, 
         "fields": { 
             "condition": "Needs Repair", 
