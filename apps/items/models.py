@@ -6,7 +6,7 @@ class ItemCategory(models.Model):
     description = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = "item_category"
+        db_table = "item_categories"
 
     def __str__(self):
         return self.name
@@ -16,7 +16,7 @@ class ItemCondition(models.Model):
     description = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = "item_condition"
+        db_table = "item_conditions"
 
     def __str__(self):
         return self.condition

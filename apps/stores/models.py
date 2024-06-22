@@ -1,46 +1,54 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import JSONField
+from apps.items.models import ItemCategory, ItemCondition
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 User = get_user_model()
 
 
 class StoreProfile(models.Model):
+    # Basic store information
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     shop_name = models.CharField(max_length=255)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    post_code = models.CharField(max_length=20, blank=True, null=True)
-    secondary_email = models.EmailField(unique=False)
     phone = models.CharField(max_length=20, blank=True, null=True)
+    store_bio = models.TextField(blank=True, null=True)
+    profile_photo_url = models.URLField(blank=True, null=True)
+    # Socials
+    website_url = models.URLField(blank=True, null=True)
+    google_profile_url = models.URLField(null=True, blank=True)  
+    instagram_url = models.URLField(blank=True, null=True)
+    # Payment details
     stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
-    website_url = models.URLField(blank=True, null=True)
-    instagram_url = models.URLField(blank=True, null=True)
-    opening_hours = JSONField(blank=True, null=True)
-    operating_days = JSONField(blank=True, null=True)
-    commission = models.DecimalField(
-        max_digits=5, decimal_places=2, blank=True, null=True
+    commission = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(50)]
     )
+    # Store settings
     stock_limit = models.IntegerField(blank=True, null=True)
-    min_listing_days = models.IntegerField(blank=True, null=True)
-    min_price = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True
+    active_tags_count = models.IntegerField(default=0)  # Counter for active tags (< stock limit)
+    min_listing_days = models.IntegerField(
+        default=14,
+        validators=[MinValueValidator(7)]
     )
-    store_description = models.TextField(blank=True, null=True)
-    store_logo_url = models.URLField(blank=True, null=True)
-    terms_conditions = models.TextField(blank=True, null=True)
+    min_price = models.DecimalField(
+        default=0.00,
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0.00)]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "store_profile"
+        db_table = "store_profiles"
 
 
 class StoreNotificationPreferences(models.Model):
     store = models.OneToOneField(StoreProfile, on_delete=models.CASCADE, related_name='notification_preferences')
-    sms_notifications = models.BooleanField(default=True)
-    email_notifications = models.BooleanField(default=True)
+    secondary_email = models.EmailField(blank=True)  
+    new_listing_notifications = models.BooleanField(default=True)
+    sale_notifications = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -48,17 +56,17 @@ class StoreNotificationPreferences(models.Model):
         db_table = "store_notification_preferences"
 
     def __str__(self):
-        return f'{self.store.shop_name} Preferences'
+        return f'{self.store.shop_name} notification preferences'
+    
 
-
-class StoreCategories(models.Model):
+class StoreItemCategorie(models.Model):
     store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name='preferred_categories')
-    category = models.ForeignKey('items.ItemCategory', on_delete=models.CASCADE, related_name='store_preferences')
+    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, related_name='store_preferences')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "store_categories"
+        db_table = "store_item_categories"
 
     def __str__(self):
         return f'{self.store.shop_name} - {self.category.name}'
@@ -66,7 +74,7 @@ class StoreCategories(models.Model):
 
 class StoreItemConditions(models.Model):
     store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name='preferred_conditions')
-    condition = models.ForeignKey('items.ItemCondition', on_delete=models.CASCADE, related_name='store_preferences')
+    condition = models.ForeignKey(ItemCondition, on_delete=models.CASCADE, related_name='store_preferences')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -85,7 +93,7 @@ class TagGroup(models.Model):
     activated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        db_table = "tag_group"
+        db_table = "tag_groups"
 
     def __str__(self):
         return f'{self.store.shop_name} - Group of {self.group_size}'
@@ -99,7 +107,11 @@ class Tag(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "tag"
+        db_table = "tags"
 
     def __str__(self):
-        return f'Tag {self.hash}'
+        return f'Store: {self.store.shop_name} - Tag: {self.hash}'
+
+    @property
+    def store(self):
+        return self.tag_group.store

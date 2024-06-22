@@ -1,47 +1,82 @@
 [
     {
-        "model": "yourapp.categories",
+        "model": "apps.items.ItemCategory",
         "pk": 1,
         "fields": {
-            "category": "T-Shirts",
-            "created_at": "2023-01-01T00:00:00Z",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "name": "Tops",
+            "description": "Upper body garments"
         }
     },
     {
-        "model": "yourapp.categories",
+        "model": "apps.items.ItemCategory",
         "pk": 2,
         "fields": {
-            "category": "Trousers",
-            "created_at": "2023-01-01T00:00:00Z",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "name": "Bottoms",
+            "description": "Lower body garments"
         }
     },
     {
-        "model": "yourapp.categories",
+        "model": "apps.items.ItemCategory",
         "pk": 3,
         "fields": {
-            "category": "Shorts",
-            "created_at": "2023-01-01T00:00:00Z",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "name": "Dresses & Jumpsuits",
+            "description": "One-piece garments"
         }
     },
     {
-        "model": "yourapp.categories",
+        "model": "apps.items.ItemCategory",
         "pk": 4,
         "fields": {
-            "category": "Shoes",
-            "created_at": "2023-01-01T00:00:00Z",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "name": "Outerwear",
+            "description": "Clothing worn over other clothing"
         }
     },
     {
-        "model": "yourapp.categories",
+        "model": "apps.items.ItemCategory",
         "pk": 5,
         "fields": {
-            "category": "Jackets",
-            "created_at": "2023-01-01T00:00:00Z",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "name": "Footwear",
+            "description": "Shoes, boots, sandals, etc."
+        }
+    },
+    {
+        "model": "apps.items.ItemCategory",
+        "pk": 6,
+        "fields": {
+            "name": "Accessories",
+            "description": "Bags, belts, hats, etc."
+        }
+    },
+    {
+        "model": "apps.items.ItemCategory",
+        "pk": 7,
+        "fields": {
+            "name": "Activewear",
+            "description": "Sports and gym clothing"
+        }
+    },
+    {
+        "model": "apps.items.ItemCategory",
+        "pk": 8,
+        "fields": {
+            "name": "Swimwear",
+            "description": "Clothing for swimming"
+        }
+    },
+    {
+        "model": "apps.items.ItemCategory",
+        "pk": 9,
+        "fields": {
+            "name": "Sleepwear & Loungewear",
+            "description": "Clothing for sleeping and lounging"
+        }
+    },
+    {
+        "model": "apps.items.ItemCategory",
+        "pk": 10,
+        "fields": {
+            "name": "Underwear & Intimates",
+            "description": "Undergarments"
         }
     }
 ]
