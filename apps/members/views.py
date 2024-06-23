@@ -42,3 +42,35 @@ class RetrieveMemberProfileView(generics.RetrieveAPIView):
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+
+# Retrieve Member Profile
+
+# GET /api/v1/members/profile/
+# Update Member Profile (Basic Info)
+
+# PUT /api/v1/members/profile/basic-info/
+# PATCH /api/v1/members/profile/basic-info/
+# Fields: username, email, phone
+# Update Member Profile (Social Links)
+
+# PUT /api/v1/members/profile/social-links/
+# PATCH /api/v1/members/profile/social-links/
+# Fields: instagram_url, website_url
+# Retrieve Member Notification Preferences
+
+# GET /api/v1/members/profile/notifications/
+# Update Member Notification Preferences
+
+# PUT /api/v1/members/profile/notifications/
+# PATCH /api/v1/members/profile/notifications/
+# Retrieve Member Profile Picture
+
+# GET /api/v1/members/profile/picture/
+# Update Member Profile Picture
+
+# PUT /api/v1/members/profile/picture/
+# PATCH /api/v1/members/profile/picture/
+# Delete Member Profile
+
+# DELETE /api/v1/members/profile/

@@ -1,6 +1,8 @@
 import random
 import string
 
+from django.conf import settings
+
 from apps.notifications.utils import send_email
 
 def generate_pin():
@@ -8,6 +10,7 @@ def generate_pin():
 
 def send_pin_email(store_profile):
     context = {
+        'logo_url': settings.LOGO_URL,
         'pin': store_profile.pin,
     }
     send_email(
@@ -16,3 +19,4 @@ def send_pin_email(store_profile):
         template_name="./send_pin.html",
         context=context,
     )
+

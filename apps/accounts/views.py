@@ -320,13 +320,18 @@ class PasswordResetView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(
+
+            response = Response(
                 {
                     "status": "success",
-                    "message": "Password reset link sent",
+                    "message": "Password has been reset and user has been logged out from all sessions.",
                 },
                 status=status.HTTP_200_OK,
             )
+            response.delete_cookie("refresh_token")
+            response.delete_cookie("access_token")
+            
+            return response
         return Response(
             {
                 "status": "error",
@@ -345,17 +350,31 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(
+
+            refresh_token = request.COOKIES.get("refresh_token")
+            if refresh_token:
+                try:
+                    refresh_token_obj = RefreshToken(refresh_token)
+                    refresh_token_obj.blacklist()
+                except TokenError:
+                    pass
+
+            response = Response(
                 {
                     "status": "success",
-                    "message": "Password has been reset",
+                    "message": "Password has been reset and user has been logged out from all sessions.",
                 },
                 status=status.HTTP_200_OK,
             )
+            response.delete_cookie("refresh_token", path="/")
+            response.delete_cookie("access_token", path="/")
+            
+            return response
+        
         return Response(
             {
                 "status": "error",
-                "message": "Invalid token or user ID",
+                "message": "Error setting new password",
                 "data": None,
                 "errors": serializer.errors,
             },

@@ -22,10 +22,6 @@ DATABASES = {
     }
 }
 
-# Specifies the root directory where static files will be collected.
-STATIC_ROOT = BASE_DIR / "staticfiles"
-# URL to use when referring to static files located in STATIC_ROOT.
-STATIC_URL = "/static/"
 
 FRONTEND_URL = "https://tagandtake.com"
 

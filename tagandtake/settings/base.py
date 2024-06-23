@@ -1,5 +1,6 @@
-from pathlib import Path
+import os
 import environ
+from pathlib import Path
 from datetime import timedelta
 
 env = environ.Env()
@@ -137,12 +138,15 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = ['./static/']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# APP URLS
+LOGO_URL = 'https://your-logo-url.com/logo.png'
+LOGIN_URL = 'https://tagandtake.com/login'
+HOW_IT_WORKS_URL = 'https://tagandtake.com/how-it-works'

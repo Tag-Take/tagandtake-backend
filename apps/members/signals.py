@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from apps.notifications.utils import send_email
+from apps.members.utils import send_welcome_email
 
 
 User = get_user_model()
@@ -19,11 +19,7 @@ def create_member_profile(sender, instance, **kwargs):
 @receiver(post_save, sender=MemberProfile)
 def send_member_welcome_email(sender, instance, created, **kwargs):
     if created:
-        send_email(
-            subject="Welcome to our Tag&Take!",
-            to=instance.user.email,
-            template_name="./welcome_email.html",
-        )
+        send_welcome_email(instance)
 
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance, **kwargs):

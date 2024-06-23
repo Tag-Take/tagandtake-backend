@@ -17,7 +17,6 @@ class CustomJWTAuthentication(BaseAuthentication):
         token = request.COOKIES.get("access_token")
         if not token:
             return None
-
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = User.objects.get(id=payload["user_id"])

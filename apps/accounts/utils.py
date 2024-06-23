@@ -17,7 +17,8 @@ def generate_activation_context(user):
     activation_url = f"{settings.FRONTEND_URL}/activate-user/{uid}/{token}/"
 
     context = {
-        "user": user,
+        "logo_url": settings.LOGO_URL,
+        "username": user.username,
         "activation_url": activation_url,
         "current_year": datetime.now().year,
     }
@@ -31,7 +32,8 @@ def generate_password_reset_email_context(user):
     reset_url = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
 
     context = {
-        "user": user,
+        "logo_url": settings.LOGO_URL,
+        "username": user.username,
         "reset_url": reset_url,
         "current_year": datetime.now().year,
     }

@@ -136,6 +136,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if data["new_password"] != data["confirm_new_password"]:
             raise serializers.ValidationError("Passwords do not match")
 
+        if check_password(data["new_password"], self.user.password):
+            raise serializers.ValidationError("The new password cannot be the same as the old password.")
+
         return data
 
     def save(self):

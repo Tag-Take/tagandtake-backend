@@ -4,75 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Tag&Take!</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f7;
-            color: #51545e;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        .header {
-            text-align: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eaeaec;
-        }
-        .header img {
-            width: 120px;
-        }
-        .content {
-            padding: 20px;
-            text-align: center;
-        }
-        .content h1 {
-            color: #333333;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .content p {
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-        .button {
-            display: inline-block;
-            background-color: #007bff;
-            color: #ffffff;
-            padding: 10px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px 0;
-            border-top: 1px solid #eaeaec;
-            font-size: 14px;
-            color: #888888;
-        }
-    </style>
+    <style>{{ css }}</style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://your-logo-url.com/logo.png" alt="Tag&Take Logo">
+            <img src="{{ logo_url }}" alt="Tag&Take Logo">
         </div>
         <div class="content">
             <h1>Welcome to Tag&Take!</h1>
             <p>We're thrilled to have you as a member of our community-driven marketplace.</p>
             <p>With Tag&Take, you’re not just selling second-hand goods—you're leading a new way of shopping, proving that smart solutions can redefine how we value and use what we already own. </p>
             <p>To get started, simply log in to your account and begin listing your items. You can manage account details and preferences on your profile, track your sales, and connect with buyers in store and through our easy-to-use platform.</p>
-            <a href="https://tagandtake.com/login" class="button">Log In to Your Account</a>
+            <a href="{{ login_url }}" class="button">Log In to Your Account</a>
+            <p>To find out more about how it works, visit our <a href="{{ how_it_works_url }}">How It Works</a> page.</p>
             <p>If you have any questions or need assistance, our support team is always here to help.</p>
             <p>Happy selling!</p>
         </div>
