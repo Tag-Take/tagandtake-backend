@@ -24,17 +24,11 @@ def send_email(subject, to, template_name, context=None, from_email=None):
     with open(css_path, 'r') as css_file:
         css_content = css_file.read().replace('"', '&quot;')
 
-    # Load logo from the static directory
-    logo_path = staticfiles_storage.path('images/logo.png')
-    with open(logo_path, 'rb') as logo_file:
-        logo_base64 = base64.b64encode(logo_file.read()).decode('utf-8')
-
     # Update context with CSS content and logo URL
     if context is None:
         context = {}
     context.update({
         'css': css_content,
-        'logo_url': f'data:image/png;base64,{logo_base64}'
     })
 
     # Render the email template with the context
