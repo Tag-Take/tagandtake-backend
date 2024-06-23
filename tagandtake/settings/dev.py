@@ -29,8 +29,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'info@tagandtake.com'
-EMAIL_HOST_PASSWORD = 'hlbx yzww turs kvrk'
+# EMAIL_HOST_USER = 'info@tagandtake.com'
+# EMAIL_HOST_PASSWORD = 'hlbx yzww turs kvrk'
+EMAIL_HOST_USER = 'no-reply@tagandtake.com'
+EMAIL_HOST_PASSWORD = 'ddxm mbjd rdzv gsdc'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 FRONTEND_URL = "http://localhost:3000"
