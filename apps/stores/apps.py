@@ -1,6 +1,10 @@
+# apps/stores/apps.py
+
 from django.apps import AppConfig
 
 
-class PartnersConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "partners"
+class StoresConfig(AppConfig):
+    name = "apps.stores"
+
+    def ready(self):
+        import apps.stores.signals

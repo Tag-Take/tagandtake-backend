@@ -1,0 +1,82 @@
+[
+    {
+        "model": "items.ItemCategory",
+        "pk": 1,
+        "fields": {
+            "name": "Tops",
+            "description": "Upper body garments"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 2,
+        "fields": {
+            "name": "Bottoms",
+            "description": "Lower body garments"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 3,
+        "fields": {
+            "name": "Dresses & Jumpsuits",
+            "description": "One-piece garments"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 4,
+        "fields": {
+            "name": "Outerwear",
+            "description": "Clothing worn over other clothing"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 5,
+        "fields": {
+            "name": "Footwear",
+            "description": "Shoes, boots, sandals, etc."
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 6,
+        "fields": {
+            "name": "Accessories",
+            "description": "Bags, belts, hats, etc."
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 7,
+        "fields": {
+            "name": "Activewear",
+            "description": "Sports and gym clothing"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 8,
+        "fields": {
+            "name": "Swimwear",
+            "description": "Clothing for swimming"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 9,
+        "fields": {
+            "name": "Sleepwear & Loungewear",
+            "description": "Clothing for sleeping and lounging"
+        }
+    },
+    {
+        "model": "items.ItemCategory",
+        "pk": 10,
+        "fields": {
+            "name": "Underwear & Intimates",
+            "description": "Undergarments"
+        }
+    }
+]

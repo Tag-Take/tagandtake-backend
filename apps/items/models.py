@@ -1,3 +1,22 @@
 from django.db import models
 
-# Create your models here.
+
+class ItemCategory(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "item_categories"
+
+    def __str__(self):
+        return self.name
+
+class ItemCondition(models.Model):
+    condition = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "item_conditions"
+
+    def __str__(self):
+        return self.condition

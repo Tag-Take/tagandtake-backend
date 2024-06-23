@@ -24,6 +24,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.DS_Store
 MANIFEST
 
 # PyInstaller
@@ -137,6 +138,9 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+# excess static files in staticfiles directory
+staticfiles/
 
 # mypy
 .mypy_cache/
