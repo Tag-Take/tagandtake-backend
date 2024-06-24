@@ -16,8 +16,10 @@ class MemberProfile(models.Model):
 
 
 class MemberNotificationPreferences(models.Model):
-    member = models.OneToOneField(MemberProfile, on_delete=models.CASCADE, related_name='notification_preferences')
-    secondary_email = models.EmailField(blank=True)  
+    member = models.OneToOneField(
+        MemberProfile, on_delete=models.CASCADE, related_name="notification_preferences"
+    )
+    secondary_email = models.EmailField(blank=True)
     new_listing_notifications = models.BooleanField(default=True)
     sale_notifications = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -27,4 +29,4 @@ class MemberNotificationPreferences(models.Model):
         db_table = "member_notification_preferences"
 
     def __str__(self):
-        return f'{self.member.name} notification preferences'
+        return f"{self.member.name} notification preferences"

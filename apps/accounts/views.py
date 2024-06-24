@@ -330,7 +330,7 @@ class PasswordResetView(generics.GenericAPIView):
             )
             response.delete_cookie("refresh_token")
             response.delete_cookie("access_token")
-            
+
             return response
         return Response(
             {
@@ -368,9 +368,9 @@ class PasswordResetConfirmView(generics.GenericAPIView):
             )
             response.delete_cookie("refresh_token", path="/")
             response.delete_cookie("access_token", path="/")
-            
+
             return response
-        
+
         return Response(
             {
                 "status": "error",

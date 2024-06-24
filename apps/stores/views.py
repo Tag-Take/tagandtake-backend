@@ -43,6 +43,7 @@ class RetrieveStoreProfileView(generics.RetrieveAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+
 # Retrieve Store Profile
 
 # GET /api/v1/stores/profile/

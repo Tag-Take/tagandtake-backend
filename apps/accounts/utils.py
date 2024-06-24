@@ -29,7 +29,9 @@ def generate_password_reset_email_context(user):
     token = generate_activation_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-    reset_url = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
+    reset_url = (
+        f"{settings.FRONTEND_URL}/reset-password/confirm?uid={uid}&token={token}"
+    )
 
     context = {
         "logo_url": settings.LOGO_URL,

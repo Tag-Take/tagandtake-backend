@@ -8,6 +8,7 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+
 def send_email(subject, to, template_name, context=None, from_email=None):
     """
     Utility function to send emails using Django's built-in email backend.
@@ -20,16 +21,18 @@ def send_email(subject, to, template_name, context=None, from_email=None):
     """
 
     # Load CSS from the static directory
-    css_path = staticfiles_storage.path('css/email_styles.css')
-    with open(css_path, 'r') as css_file:
-        css_content = css_file.read().replace('"', '&quot;')
+    css_path = staticfiles_storage.path("css/email_styles.css")
+    with open(css_path, "r") as css_file:
+        css_content = css_file.read().replace('"', "&quot;")
 
     # Update context with CSS content and logo URL
     if context is None:
         context = {}
-    context.update({
-        'css': css_content,
-    })
+    context.update(
+        {
+            "css": css_content,
+        }
+    )
 
     # Render the email template with the context
     html_message = render_to_string(template_name, context)

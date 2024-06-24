@@ -50,6 +50,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     @staticmethod
     def send_activation_email(user):
         context = generate_activation_context(user)
+
         send_email(
             subject="Activate your account",
             to=user.email,
@@ -137,7 +138,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match")
 
         if check_password(data["new_password"], self.user.password):
-            raise serializers.ValidationError("The new password cannot be the same as the old password.")
+            raise serializers.ValidationError(
+                "The new password cannot be the same as the old password."
+            )
 
         return data
 
