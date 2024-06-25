@@ -22,6 +22,7 @@ from apps.accounts.serializers import (
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
+    CustomTokenRefreshSerializer
 )
 from apps.accounts.utils import generate_activation_context
 from apps.accounts.signals import user_activated
@@ -97,8 +98,9 @@ class ActivateUserView(APIView):
                 access_token,
                 expires=expiry,
                 httponly=True,
-                secure=True,
-                samesite="Lax",
+                secure=settings.SESSION_COOKIE_SECURE,
+                samesite=settings.SAME_SITE_COOKIE,
+                domain=settings.DOMAIN,
             )
             expiry = datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
             response.set_cookie(
@@ -106,8 +108,9 @@ class ActivateUserView(APIView):
                 refresh_token,
                 expires=expiry,
                 httponly=True,
-                secure=True,
-                samesite="Lax",
+                secure=settings.SESSION_COOKIE_SECURE,
+                samesite=settings.SAME_SITE_COOKIE,
+                domain=settings.DOMAIN,
             )
 
             return response
@@ -239,8 +242,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             access,
             expires=expiry,
             httponly=True,
-            secure=True,
-            samesite="Lax",
+            secure=settings.SESSION_COOKIE_SECURE,
+            samesite=settings.SAME_SITE_COOKIE,
+            domain=settings.DOMAIN,
         )
         expiry = datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
         response.set_cookie(
@@ -248,14 +252,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             refresh,
             expires=expiry,
             httponly=True,
-            secure=True,
-            samesite="Lax",
+            secure=settings.SESSION_COOKIE_SECURE,
+            samesite=settings.SAME_SITE_COOKIE,
+            domain=settings.DOMAIN,
         )
 
         return response
 
 
 class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
+
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
@@ -283,8 +290,9 @@ class CustomTokenRefreshView(TokenRefreshView):
                     access_token,
                     expires=now() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"],
                     httponly=True,
-                    secure=True,
-                    samesite="Lax",
+                    secure=settings.SESSION_COOKIE_SECURE,
+                    samesite=settings.SAME_SITE_COOKIE,
+                    domain=settings.DOMAIN,
                 )
                 response.data = {
                     "status": "success",

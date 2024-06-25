@@ -4,10 +4,13 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import update_last_login
+from rest_framework_simplejwt.settings import api_settings
 
 from rest_framework import serializers
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.notifications.utils import send_email
 from apps.accounts.utils import (
@@ -88,6 +91,37 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
 
         data["user"] = {"id": user.id, "username": user.username, "role": user.role}
+
+        return data
+    
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['role'] = user.role  # Add custom claims
+        return token
+    
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        refresh = RefreshToken(attrs['refresh'])
+
+        # Get the user associated with the refresh token
+        decoded_refresh_token = refresh.payload
+        user_id = decoded_refresh_token['user_id']
+        user = User.objects.get(id=user_id)
+
+        # Add the custom claim to the access token
+        access_token = refresh.access_token
+        access_token['role'] = user.role
+
+        data = {
+            'access': str(access_token),
+            'refresh': str(refresh),
+        }
+
+        if api_settings.UPDATE_LAST_LOGIN:
+            update_last_login(None, user)
 
         return data
 

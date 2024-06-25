@@ -60,16 +60,22 @@ LOGGING = {
 SITE_ID = 1
 
 # Session and CSRF cookies are not marked as secure during development as HTTPS is not typically enabled.
+
+SAME_SITE_COOKIE = None
+# DOMAIN = "127.0.0.1"
+DOMAIN = None
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 SECURE_BROWSER_XSS_FILTER = False
 SECURE_CONTENT_TYPE_NOSNIFF = False
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_HSTS_SECONDS = 0
+SECURE_REDIRECT_EXEMPT = []
 SECURE_SSL_REDIRECT = False
+
 
 # HTTP Strict Transport Security is disabled in development.
 SECURE_HSTS_SECONDS = None
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
-
-# Specifies the default field type for model primary keys.
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
