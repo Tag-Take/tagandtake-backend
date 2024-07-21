@@ -21,7 +21,7 @@ class StoreProfile(models.Model):
         default=generate_pin,
         null=False,
     )
-    # Basic store information
+    # Store information
     shop_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, blank=True, null=True)
     store_bio = models.CharField(max_length=255)
@@ -30,14 +30,22 @@ class StoreProfile(models.Model):
     google_profile_url = models.URLField(null=True, blank=True)
     website_url = models.URLField(blank=True, null=True)
     instagram_url = models.URLField(blank=True, null=True)
-    # Payment details
-    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
-    stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
+    # Location
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, blank=True, null=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)]
+    )
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, blank=True, null=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)]
+    )
+    # Store settings
     commission = models.IntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(50)], default=10
     )
-    # Store settings
-    stock_limit = models.IntegerField(blank=True, default=50, null=True)
+    stock_limit = models.IntegerField(
+        blank=True, default=50, null=True, validators=[MinValueValidator(1)]
+    )
     active_tags_count = models.IntegerField(default=0)  # (keep <= stock limit)
     min_listing_days = models.IntegerField(
         default=14, validators=[MinValueValidator(7)]
@@ -48,11 +56,31 @@ class StoreProfile(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(0.00)],
     )
+    currency = models.CharField(max_length=3, default="GBP", null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "store_profiles"
+
+    def validate_pin(self, pin):
+        return self.pin == pin
+
+
+class StorePaymentDetails(models.Model):
+    store = models.OneToOneField(
+        StoreProfile, on_delete=models.CASCADE, related_name="payment_details"
+    )
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "store_payment_details"
+
+    def __str__(self):
+        return f"{self.store.shop_name} payment details"
 
 
 class StoreNotificationPreferences(models.Model):

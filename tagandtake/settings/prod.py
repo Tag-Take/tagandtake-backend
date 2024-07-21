@@ -88,5 +88,4 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = (
 SECURE_HSTS_PRELOAD = (
     True  # If True, the site will be included in the preload list for HSTS.
 )
-SAME_SITE_COOKIE = "Strict" 
-
+SAME_SITE_COOKIE = "Strict"

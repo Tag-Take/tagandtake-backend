@@ -5,14 +5,18 @@ from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import update_last_login
-from rest_framework_simplejwt.settings import api_settings
+from django.db.models import Q
 
 from rest_framework import serializers
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
 
-from apps.notifications.utils import send_email
+from apps.common.utils import send_email
 from apps.accounts.utils import (
     generate_password_reset_email_context,
     generate_activation_context,
@@ -64,60 +68,53 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        username = attrs.get(self.username_field)
+        username_or_email = attrs.get("username")
         password = attrs.get("password")
 
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
+        user = User.objects.filter(username=username_or_email).first()
+        user = User.objects.get(
+            Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
+        )
+        # TODO - Make email verification work ^
+        if not user:
+            self.username_field = User.EMAIL_FIELD
+            user = User.objects.filter(email=username_or_email).first()
+
+        if user and user.check_password(password):
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    {
+                        "non_field_errors": [
+                            "User account is not activated. Please check your email."
+                        ]
+                    }
+                )
+        else:
             raise serializers.ValidationError(
                 {"non_field_errors": ["Invalid credentials"]}
             )
 
-        if not user.is_active:
-            raise serializers.ValidationError(
-                {
-                    "non_field_errors": [
-                        "User account is not activated. Please check your email."
-                    ]
-                }
-            )
-
-        if not check_password(password, user.password):
-            raise serializers.ValidationError(
-                {"non_field_errors": ["Invalid credentials"]}
-            )
-
+        self.user = user
         data = super().validate(attrs)
-
         data["user"] = {"id": user.id, "username": user.username, "role": user.role}
 
         return data
-    
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['role'] = user.role  # Add custom claims
-        return token
-    
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
-        refresh = RefreshToken(attrs['refresh'])
+        refresh = RefreshToken(attrs["refresh"])
 
-        # Get the user associated with the refresh token
         decoded_refresh_token = refresh.payload
-        user_id = decoded_refresh_token['user_id']
+        user_id = decoded_refresh_token["user_id"]
         user = User.objects.get(id=user_id)
 
-        # Add the custom claim to the access token
         access_token = refresh.access_token
-        access_token['role'] = user.role
+        access_token["role"] = user.role
 
         data = {
-            'access': str(access_token),
-            'refresh': str(refresh),
+            "access": str(access_token),
+            "refresh": str(refresh),
         }
 
         if api_settings.UPDATE_LAST_LOGIN:

@@ -3,9 +3,15 @@ from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
-from apps.stores.models import StoreProfile, StoreNotificationPreferences, TagGroup, Tag
+from apps.stores.models import (
+    StoreProfile,
+    StorePaymentDetails,
+    StoreNotificationPreferences,
+    TagGroup,
+    Tag,
+)
 
-from apps.stores.utils import send_pin_email
+from apps.stores.utils import send_welcome_email
 
 User = get_user_model()
 
@@ -16,12 +22,13 @@ def create_store_profile(sender, instance, **kwargs):
         store_profile, created = StoreProfile.objects.get_or_create(user=instance)
         if created:
             StoreNotificationPreferences.objects.create(store=store_profile)
+            StorePaymentDetails.objects.create(store=store_profile)
 
 
 @receiver(post_save, sender=StoreProfile)
 def send_pin_email_to_store(sender, instance, created, **kwargs):
     if created:
-        send_pin_email(instance)
+        send_welcome_email(instance)
 
 
 @receiver(pre_save, sender=User)

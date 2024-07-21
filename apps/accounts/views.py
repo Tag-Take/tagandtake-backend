@@ -22,11 +22,11 @@ from apps.accounts.serializers import (
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
-    CustomTokenRefreshSerializer
+    CustomTokenRefreshSerializer,
 )
 from apps.accounts.utils import generate_activation_context
 from apps.accounts.signals import user_activated
-from apps.notifications.utils import send_email
+from apps.common.utils import send_email
 
 
 User = get_user_model()

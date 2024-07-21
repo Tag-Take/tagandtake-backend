@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    "drf_spectacular",
+    # internal apps
     "apps.accounts",
     "apps.stores",
     "apps.members",
@@ -45,6 +47,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DEFAULT_PARSER_CLASSES": ("rest_framework.parsers.JSONParser",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTAUCLAR_SETTINGS = {
+    "TITLE": "Tag & Take API",
 }
 
 
@@ -124,9 +131,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 CORS_ALLOW_HEADERS = [
-    'authorization',
-    'content-type',
-    'withcredentials',
+    "authorization",
+    "content-type",
+    "withcredentials",
 ]
 
 TEMPLATES = [

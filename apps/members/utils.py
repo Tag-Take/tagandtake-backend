@@ -1,5 +1,5 @@
 from django.conf import settings
-from apps.notifications.utils import send_email
+from apps.common.utils import send_email
 
 
 def send_welcome_email(member):
