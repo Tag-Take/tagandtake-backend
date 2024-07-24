@@ -1,9 +1,15 @@
-"""
-Development 
-"""
+###################
+#                 #
+#   DEVELOPMENT   #
+#                 #
+###################
 
 from .base import *
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Enables debugging mode in development for error tracking.
 DEBUG = True
@@ -12,15 +18,14 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 # DATABASES['default'].update(dj_database_url.parse(os.environ.get('DATABASE_URL')))
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "tagandtake_core"),
-        "USER": os.environ.get("POSTGRES_USER", "postgres"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "123456"),
-        "HOST": os.environ.get("DB_HOST", "db"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "NAME": os.environ.get("NAME", "tagandtake_core"),
+        "USER": os.environ.get("USER", "postgres"),
+        "PASSWORD": os.environ.get("PASSWORD", "123456"),
+        "HOST": os.environ.get("HOST", "db"),
+        "PORT": os.environ.get("PORT", "5432"),
     }
 }
 
@@ -31,8 +36,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'info@tagandtake.com'
 # EMAIL_HOST_PASSWORD = 'hlbx yzww turs kvrk'
-EMAIL_HOST_USER = "no-reply@tagandtake.com"
-EMAIL_HOST_PASSWORD = "ddxm mbjd rdzv gsdc"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 FRONTEND_URL = "http://localhost:3000"
@@ -79,3 +84,20 @@ SECURE_SSL_REDIRECT = False
 SECURE_HSTS_SECONDS = None
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
+
+
+# AWS S3 settings
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
+
+
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+# Stripe 
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")

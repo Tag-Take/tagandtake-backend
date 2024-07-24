@@ -1,4 +1,5 @@
 from django.dispatch import receiver
+from django.conf import settings
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
@@ -10,11 +11,11 @@ from apps.stores.models import (
     TagGroup,
     Tag,
 )
-
 from apps.stores.utils import send_welcome_email
+from apps.common.s3.utils import create_folder_in_s3, generate_store_profile_folder_name
+from apps.common.stripe.utils import create_stripe_connected_account
 
 User = get_user_model()
-
 
 @receiver(user_activated, sender=User)
 def create_store_profile(sender, instance, **kwargs):
@@ -24,19 +25,33 @@ def create_store_profile(sender, instance, **kwargs):
             StoreNotificationPreferences.objects.create(store=store_profile)
             StorePaymentDetails.objects.create(store=store_profile)
 
+@receiver(post_save, sender=StoreProfile)
+def create_strpie_connect_account(sender, instance, created, **kwargs):
+    if created:
+        try:
+            stripe_account_id = create_stripe_connected_account(instance.user.email)
+            instance.stripe_account_id = stripe_account_id
+            instance.save()
+        except Exception as e:
+            # Handle error, maybe log it or notify admin
+            pass
+
+@receiver(post_save, sender=StoreProfile)
+def create_store_profile_s3_folder(sender, instance, created, **kwargs):
+    if created:
+        folder_name = generate_store_profile_folder_name(instance.id)
+        create_folder_in_s3(folder_name)
 
 @receiver(post_save, sender=StoreProfile)
 def send_pin_email_to_store(sender, instance, created, **kwargs):
     if created:
         send_welcome_email(instance)
 
-
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance, **kwargs):
     if instance.pk:
         old_email = User.objects.get(pk=instance.pk).email
         instance._old_email = old_email
-
 
 @receiver(post_save, sender=User)
 def update_store_notification_preference(sender, instance, **kwargs):
@@ -47,7 +62,6 @@ def update_store_notification_preference(sender, instance, **kwargs):
             if notification_preferences.secondary_email == instance._old_email:
                 notification_preferences.secondary_email = instance.email
                 notification_preferences.save()
-
 
 @receiver(post_save, sender=TagGroup)
 def activate_tag_group(sender, instance, created, **kwargs):

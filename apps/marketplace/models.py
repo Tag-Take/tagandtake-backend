@@ -1,3 +1,3 @@
 from django.db import models
-
-# Create your models here.
+from apps.accounts.models import User
+from apps.items.models import Item

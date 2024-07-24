@@ -3,7 +3,9 @@ from apps.stores.views import (
     StoreProfileView,
     GenerateNewPinView,
     StoreItemCategoriesView,
-    StoreItemConditionsView
+    StoreItemConditionsView,
+    StoreNotificationPreferencesView,
+    StoreProfileImageView
 )
 
 urlpatterns = [
@@ -27,4 +29,14 @@ urlpatterns = [
         StoreItemConditionsView.as_view(),
         name="store-item-conditions",
     ),
+    path(
+        "profile/notifications/",
+        StoreNotificationPreferencesView.as_view(),
+        name="store-notification-preferences",
+    ),
+    path('profile/profile-photo/', 
+         StoreProfileImageView.as_view(), 
+         name='profile-photo'
+    ),
+
 ]

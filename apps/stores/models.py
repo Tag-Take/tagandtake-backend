@@ -25,7 +25,7 @@ class StoreProfile(models.Model):
     shop_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, blank=True, null=True)
     store_bio = models.CharField(max_length=255)
-    profile_photo_url = models.URLField(blank=True, null=True)
+    profile_photo_url = models.URLField(max_length=2048, blank=True, null=True)
     # Socials
     google_profile_url = models.URLField(null=True, blank=True)
     website_url = models.URLField(blank=True, null=True)
@@ -65,6 +65,10 @@ class StoreProfile(models.Model):
 
     def validate_pin(self, pin):
         return self.pin == pin
+    
+    @property
+    def remaining_stock(self):
+        return self.stock_limit - self.active_tags_count
 
 
 class StorePaymentDetails(models.Model):

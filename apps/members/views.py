@@ -3,74 +3,70 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from apps.members.models import MemberProfile
 from apps.members.serializers import MemberProfileSerializer
+from apps.members.permissions import IsMemberUser
 
 
-class RetrieveMemberProfileView(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+class MemberProfileView(generics.RetrieveUpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsMemberUser]
     serializer_class = MemberProfileSerializer
 
     def get_object(self):
         user = self.request.user
-        if user.is_authenticated and user.role == "member":
-            try:
-                return MemberProfile.objects.get(user=user)
-            except MemberProfile.DoesNotExist:
-                raise PermissionDenied("Profile not found.")
-        else:
-            raise PermissionDenied("You do not have permission to access this profile.")
+        try:
+            return MemberProfile.objects.get(user=user)
+        except MemberProfile.DoesNotExist:
+            raise PermissionDenied("Profile not found.")
 
-    def get(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):
         profile = self.get_object()
-        if profile:
-            serializer = MemberProfileSerializer(profile)
+        serializer = MemberProfileSerializer(profile)
+        return Response(
+            {
+                "status": "success",
+                "message": "Profile retrieved successfully.",
+                "data": serializer.data,
+                "errors": {},
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def update(self, request, *args, **kwargs):
+        profile = self.get_object()
+        serializer = MemberProfileSerializer(profile, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
             return Response(
                 {
                     "status": "success",
-                    "message": "Profile retrieved successfully.",
+                    "message": "Profile updated successfully.",
                     "data": serializer.data,
                     "errors": {},
                 },
                 status=status.HTTP_200_OK,
             )
-        else:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Profile not found or user is not activated.",
-                    "data": None,
-                    "errors": {},
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        return Response(
+            {
+                "status": "error",
+                "message": "Profile update failed.",
+                "data": {},
+                "errors": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
-# Retrieve Member Profile
-
-# GET /api/v1/members/profile/
-# Update Member Profile (Basic Info)
-
-# PUT /api/v1/members/profile/basic-info/
-# PATCH /api/v1/members/profile/basic-info/
-# Fields: username, email, phone
-# Update Member Profile (Social Links)
-
-# PUT /api/v1/members/profile/social-links/
-# PATCH /api/v1/members/profile/social-links/
-# Fields: instagram_url, website_url
-# Retrieve Member Notification Preferences
 
 # GET /api/v1/members/profile/notifications/
 # Update Member Notification Preferences
-
 # PUT /api/v1/members/profile/notifications/
 # PATCH /api/v1/members/profile/notifications/
 # Retrieve Member Profile Picture
 
 # GET /api/v1/members/profile/picture/
 # Update Member Profile Picture
-
 # PUT /api/v1/members/profile/picture/
 # PATCH /api/v1/members/profile/picture/
 # Delete Member Profile
 
-# DELETE /api/v1/members/profile/
+# GET /api/v1/members/<id>/items/

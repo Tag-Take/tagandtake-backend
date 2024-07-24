@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from apps.stores.models import StoreProfile, StoreItemCategorie, StoreItemConditions
+from apps.stores.models import (
+    StoreProfile, 
+    StoreItemCategorie,
+    StoreItemConditions, 
+    StoreNotificationPreferences
+    )
 from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
 
@@ -12,7 +17,6 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "shop_name",
             "phone",
             "store_bio",
-            "profile_photo_url",
             "google_profile_url",
             "website_url",
             "instagram_url",
@@ -21,12 +25,13 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "commission",
             "stock_limit",
             "active_tags_count",
+            "remaining_stock",
             "min_listing_days",
             "min_price",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["user", "active_tags_count", "created_at", "updated_at"]
+        read_only_fields = ["user", "active_tags_count", "created_at", "updated_at","profile_photo_url"]
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
@@ -138,3 +143,9 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
         StoreItemConditions.objects.filter(store=store).delete()
         for condition in conditions:
             StoreItemConditions.objects.create(store=store, condition=condition)
+
+
+class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreNotificationPreferences
+        fields = ['secondary_email', 'new_listing_notifications', 'sale_notifications']

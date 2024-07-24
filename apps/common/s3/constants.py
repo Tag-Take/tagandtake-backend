@@ -1,0 +1,1 @@
+PROFILE_PHOTO = 'profile_photo'
