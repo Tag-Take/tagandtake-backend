@@ -13,8 +13,8 @@ class Item(models.Model):
     size = models.CharField(max_length=255, null=True, blank=True)
     brand = models.CharField(max_length=255, null=True, blank=True)
     price = models.DecimalField(max_digits=9, decimal_places=2)
-    category = models.ForeignKey(
-        "ItemCategory", on_delete=models.CASCADE, related_name="items"
+    categories = models.ManyToManyField(
+        'ItemCategory', through='ItemCategoryRelation', related_name='items'
     )
     condition = models.ForeignKey(
         "ItemCondition", on_delete=models.CASCADE, related_name="items"
@@ -28,6 +28,22 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @property
+    def main_image(self):
+        main_image = self.images.order_by('order').first()
+        return main_image.image_url if main_image else None
+    
+    @property
+    def all_images(self):
+        images = self.images.order_by('order').all()
+        return images if images else []
+        
+    @property
+    def categories_list(self):
+        categories = self.categories.all()
+        return categories if categories else []
+
 
 class ItemCategory(models.Model):
     name = models.CharField(max_length=255)
@@ -38,6 +54,17 @@ class ItemCategory(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class ItemCategoryRelation(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "item_category_relation"
+
+    def __str__(self):
+        return f"{self.item.name} - {self.category.name}"
 
 
 class ItemCondition(models.Model):
@@ -49,3 +76,19 @@ class ItemCondition(models.Model):
 
     def __str__(self):
         return self.condition
+
+
+class ItemImages(models.Model):
+    order_choices = [(i, i) for i in range(1, 4)]
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="images")
+    image_url = models.URLField(blank=True, null=True)
+    order = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta: 
+        db_table = "item_images"
+
+    def __str__(self):
+        return self.image

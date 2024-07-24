@@ -4,7 +4,7 @@ FROM python:3.11-slim as base
 # Set environment variables for Python
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.8.2 \
+    POETRY_VERSION=1.8.3 \
     PATH="/root/.local/bin:$PATH"
 
 # Install system dependencies

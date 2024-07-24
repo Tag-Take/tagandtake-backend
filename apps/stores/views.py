@@ -382,6 +382,8 @@ class StoreProfileImageView(APIView):
         )
 
 
+# Get all stores near a location 
+# GET /api/v1/stores/nearby/
 
 # Retrieve Store Payment Details
 # PUT /api/v1/stores/profile/payment-details/

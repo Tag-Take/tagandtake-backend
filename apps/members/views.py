@@ -55,18 +55,17 @@ class MemberProfileView(generics.RetrieveUpdateAPIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+# All the views needed for users in the marketplace to manage their profile and related data (CRUD)
 
+# Get a user's profile
+# GET /api/members/profile/
 
-# GET /api/v1/members/profile/notifications/
-# Update Member Notification Preferences
-# PUT /api/v1/members/profile/notifications/
-# PATCH /api/v1/members/profile/notifications/
-# Retrieve Member Profile Picture
+# Update a user's profile
+# PUT /api/members/profile/
 
-# GET /api/v1/members/profile/picture/
-# Update Member Profile Picture
-# PUT /api/v1/members/profile/picture/
-# PATCH /api/v1/members/profile/picture/
-# Delete Member Profile
+# Get a user's stripe account
+# GET /api/members/stripe/
 
-# GET /api/v1/members/<id>/items/
+# Update a user's stripe account    
+# PUT /api/members/stripe/
+
