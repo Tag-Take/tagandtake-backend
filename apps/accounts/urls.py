@@ -1,4 +1,5 @@
 from django.urls import path
+
 from apps.accounts.views import (
     SignUpView,
     ActivateUserView,

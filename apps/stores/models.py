@@ -32,12 +32,18 @@ class StoreProfile(models.Model):
     instagram_url = models.URLField(blank=True, null=True)
     # Location
     longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, blank=True, null=True,
-        validators=[MinValueValidator(-180), MaxValueValidator(180)]
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
     )
     latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, blank=True, null=True,
-        validators=[MinValueValidator(-90), MaxValueValidator(90)]
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
     )
     # Store settings
     commission = models.IntegerField(
@@ -65,7 +71,7 @@ class StoreProfile(models.Model):
 
     def validate_pin(self, pin):
         return self.pin == pin
-    
+
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_tags_count

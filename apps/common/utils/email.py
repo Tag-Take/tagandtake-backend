@@ -1,12 +1,10 @@
-import os
 from premailer import transform
-import base64
 
+from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django.conf import settings
-from django.contrib.staticfiles.storage import staticfiles_storage
 
 
 def send_email(subject, to, template_name, context=None, from_email=None):

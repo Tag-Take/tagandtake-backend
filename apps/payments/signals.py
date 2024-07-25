@@ -12,6 +12,7 @@ def create_store_profile(sender, instance, **kwargs):
         if created:
             StorePaymentDetails.objects.create(store=store_profile)
 
+
 @receiver(post_save, sender=MemberProfile)
 def create_member_profile(sender, instance, **kwargs):
     if instance.is_active and instance.role == "member":

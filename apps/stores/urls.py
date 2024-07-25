@@ -5,7 +5,7 @@ from apps.stores.views import (
     StoreItemCategoriesView,
     StoreItemConditionsView,
     StoreNotificationPreferencesView,
-    StoreProfileImageView
+    StoreProfileImageView,
 )
 
 urlpatterns = [
@@ -34,9 +34,7 @@ urlpatterns = [
         StoreNotificationPreferencesView.as_view(),
         name="store-notification-preferences",
     ),
-    path('profile/profile-photo/', 
-         StoreProfileImageView.as_view(), 
-         name='profile-photo'
+    path(
+        "profile/profile-photo/", StoreProfileImageView.as_view(), name="profile-photo"
     ),
-
 ]

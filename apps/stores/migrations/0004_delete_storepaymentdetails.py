@@ -4,13 +4,12 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stores', '0003_alter_storeprofile_profile_photo_url'),
+        ("stores", "0003_alter_storeprofile_profile_photo_url"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='StorePaymentDetails',
+            name="StorePaymentDetails",
         ),
     ]

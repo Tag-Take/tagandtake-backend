@@ -15,12 +15,18 @@ class MemberProfile(models.Model):
     profile_photo_url = models.URLField(max_length=2048, blank=True, null=True)
     instagram_url = models.URLField(blank=True)
     longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, blank=True, null=True,
-        validators=[MinValueValidator(-180), MaxValueValidator(180)]
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
     )
     latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, blank=True, null=True,
-        validators=[MinValueValidator(-90), MaxValueValidator(90)]
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

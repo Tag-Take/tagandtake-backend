@@ -1,5 +1,9 @@
 from django.urls import path
-from apps.members.views import MemberProfileView, MemberNotificationPreferencesView, MemberProfileImageView
+from apps.members.views import (
+    MemberProfileView,
+    MemberNotificationPreferencesView,
+    MemberProfileImageView,
+)
 
 urlpatterns = [
     path(
@@ -12,8 +16,7 @@ urlpatterns = [
         MemberNotificationPreferencesView.as_view(),
         name="store-notification-preferences",
     ),
-    path('profile/profile-photo/', 
-         MemberProfileImageView.as_view(), 
-         name='profile-photo'
+    path(
+        "profile/profile-photo/", MemberProfileImageView.as_view(), name="profile-photo"
     ),
 ]

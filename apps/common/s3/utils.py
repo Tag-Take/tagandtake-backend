@@ -2,58 +2,61 @@ import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError, ClientError
 from django.conf import settings
 
-def get_s3_client():
-    try:
-        return boto3.client(
-            's3',
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=settings.AWS_S3_REGION_NAME
-        )
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception("AWS credentials error") from e
-    except Exception as e:
-        raise Exception("Error creating S3 client") from e
 
-def create_folder_in_s3(folder_name):
-    s3 = get_s3_client()
-    try:
-        s3.put_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=f"{folder_name}/")
-    except ClientError as e:
-        raise Exception("Failed to create folder in S3") from e
-    except Exception as e:
-        raise Exception("Error creating folder in S3") from e
+class S3BaseHandler:
+    def __init__(self):
+        self.s3_client = self.get_s3_client()
 
-def upload_file_to_s3(file, key):
-    s3 = get_s3_client()
-    try:
-        s3.upload_fileobj(file, settings.AWS_STORAGE_BUCKET_NAME, key)
-    except ClientError as e:
-        raise Exception("Failed to upload file to S3") from e
-    except Exception as e:
-        raise Exception("Error uploading file to S3") from e
+    def get_s3_client(self):
+        try:
+            return boto3.client(
+                "s3",
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME,
+            )
+        except (NoCredentialsError, PartialCredentialsError) as e:
+            raise Exception(f"AWS credentials error: {e}") from e
+        except Exception as e:
+            raise Exception(f"Error creating S3 client: {e}") from e
 
-def generate_s3_url(key):
-    return f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{key}"
+    def generate_s3_url(self, key):
+        return f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{key}"
 
-def generate_store_profile_folder_name(instance_id):
-    return f'stores/profiles/{instance_id}'
+    def generate_presigned_url(self, key, expiration=3600):
+        try:
+            url = self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": key},
+                ExpiresIn=expiration,
+            )
+            return url
+        except ClientError as e:
+            raise Exception(f"Failed to generate pre-signed URL: {e}") from e
+        except Exception as e:
+            raise Exception(f"Error generating pre-signed URL: {e}") from e
 
-def generate_member_profile_folder_name(instance_id):
-    return f'members/profiles/{instance_id}'
 
-### Generate pre-signed URL for Testing
-def generate_presigned_url(key, expiration=3600):
-    s3 = get_s3_client()
-    try:
-        url = s3.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': key},
-            ExpiresIn=expiration
-        )
-        return url
-    except ClientError as e:
-        raise Exception("Failed to generate pre-signed URL") from e
-    except Exception as e:
-        raise Exception("Error generating pre-signed URL") from e
+class S3ImageHandler(S3BaseHandler):
+    def upload_image(self, file, key):
+        try:
+            self.s3_client.upload_fileobj(
+                file,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                key
+            )
+            return self.generate_s3_url(key)
+        except ClientError as e:
+            raise Exception(f"Failed to upload file to S3: {e}") from e
+        except Exception as e:
+            raise Exception(f"Error uploading file to S3: {e}") from e
 
+    def delete_image(self, key):
+        try:
+            self.s3_client.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key
+            )
+        except ClientError as e:
+            raise Exception(f"Failed to delete file from S3: {e}") from e
+        except Exception as e:
+            raise Exception(f"Error deleting file from S3: {e}") from e

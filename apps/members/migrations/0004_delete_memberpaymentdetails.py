@@ -4,13 +4,15 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('members', '0003_rename_new_listing_notifications_membernotificationpreferences_email_notifications_and_more'),
+        (
+            "members",
+            "0003_rename_new_listing_notifications_membernotificationpreferences_email_notifications_and_more",
+        ),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='MemberPaymentDetails',
+            name="MemberPaymentDetails",
         ),
     ]

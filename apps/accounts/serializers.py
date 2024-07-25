@@ -1,11 +1,11 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import update_last_login
-from django.db.models import Q
 
 from rest_framework import serializers
 
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
-from apps.common.utils import send_email
+from apps.common.utils.email import send_email
 from apps.accounts.utils import (
     generate_password_reset_email_context,
     generate_activation_context,

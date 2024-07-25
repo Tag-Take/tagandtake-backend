@@ -5,29 +5,62 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('items', '0001_initial'),
+        ("items", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Item',
+            name="Item",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('size', models.CharField(blank=True, max_length=255, null=True)),
-                ('brand', models.CharField(blank=True, max_length=255, null=True)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=9)),
-                ('status', models.CharField(choices=[('available', 'Available'), ('listed', 'Listed'), ('recalled', 'Recalled'), ('sold', 'Sold')], default='available', max_length=255)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='items.itemcategory')),
-                ('condition', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='items.itemcondition')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("size", models.CharField(blank=True, max_length=255, null=True)),
+                ("brand", models.CharField(blank=True, max_length=255, null=True)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=9)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("available", "Available"),
+                            ("listed", "Listed"),
+                            ("recalled", "Recalled"),
+                            ("sold", "Sold"),
+                        ],
+                        default="available",
+                        max_length=255,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="items",
+                        to="items.itemcategory",
+                    ),
+                ),
+                (
+                    "condition",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="items",
+                        to="items.itemcondition",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'items',
+                "db_table": "items",
             },
         ),
     ]

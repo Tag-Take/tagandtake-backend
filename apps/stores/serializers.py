@@ -1,12 +1,14 @@
 from rest_framework import serializers
 from apps.stores.models import (
-    StoreProfile, 
+    StoreProfile,
     StoreItemCategorie,
-    StoreItemConditions, 
-    StoreNotificationPreferences
-    )
+    StoreItemConditions,
+    StoreNotificationPreferences,
+)
 from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
+from apps.common.s3.utils import S3ImageHandler
+from apps.common.s3.s3_config import get_store_profile_folder, FILE_NAMES, IMAGE_FILE_TYPE
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
@@ -31,7 +33,13 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["user", "active_tags_count", "created_at", "updated_at","profile_photo_url"]
+        read_only_fields = [
+            "user",
+            "active_tags_count",
+            "created_at",
+            "updated_at",
+            "profile_photo_url",
+        ]
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
@@ -70,15 +78,19 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
 
         data["store"] = store
 
-        category_ids = data['categories']
+        category_ids = data["categories"]
         if not category_ids:
-            raise serializers.ValidationError("You must provide at least one category ID.")
+            raise serializers.ValidationError(
+                "You must provide at least one category ID."
+            )
 
         categories = ItemCategory.objects.filter(id__in=category_ids)
-        invalid_ids = set(category_ids) - set(categories.values_list('id', flat=True))
+        invalid_ids = set(category_ids) - set(categories.values_list("id", flat=True))
 
         if invalid_ids:
-            raise serializers.ValidationError(f"The following category IDs are invalid: {', '.join(map(str, invalid_ids))}")
+            raise serializers.ValidationError(
+                f"The following category IDs are invalid: {', '.join(map(str, invalid_ids))}"
+            )
 
         data["categories"] = categories
         return data
@@ -122,16 +134,19 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
 
         data["store"] = store
 
-        condition_ids = data['conditions']
+        condition_ids = data["conditions"]
         if not condition_ids:
-            raise serializers.ValidationError("You must provide at least one condition ID.")
+            raise serializers.ValidationError(
+                "You must provide at least one condition ID."
+            )
 
         conditions = ItemCondition.objects.filter(id__in=condition_ids)
-        invalid_ids = set(condition_ids) - set(conditions.values_list('id', flat=True))
+        invalid_ids = set(condition_ids) - set(conditions.values_list("id", flat=True))
 
         if invalid_ids:
-            raise serializers.ValidationError(f"The following condition IDs are invalid: {', '.join(map(str, invalid_ids))}")
-
+            raise serializers.ValidationError(
+                f"The following condition IDs are invalid: {', '.join(map(str, invalid_ids))}"
+            )
 
         data["conditions"] = conditions
         return data
@@ -148,4 +163,80 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
 class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreNotificationPreferences
-        fields = ['new_listing_notifications', 'sale_notifications']
+        fields = ["new_listing_notifications", "sale_notifications"]
+
+
+class StoreProfileImageUploadSerializer(serializers.Serializer):
+    profile_photo = serializers.ImageField()
+    pin = serializers.CharField(max_length=4)
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        try:
+            profile = StoreProfile.objects.get(user=request.user)
+        except StoreProfile.DoesNotExist:
+            raise serializers.ValidationError("Store profile not found.")
+
+        pin = attrs.get("pin")
+        if not pin or not profile.validate_pin(pin):
+            raise serializers.ValidationError("Invalid PIN.")
+
+        attrs["profile"] = profile
+        return attrs
+
+    def save(self):
+        profile = self.validated_data["profile"]
+        file = self.validated_data["profile_photo"]
+
+        s3_handler = S3ImageHandler()
+        folder_name = get_store_profile_folder(profile.id)
+        key = f"{folder_name}/{FILE_NAMES.profile_photo}.{IMAGE_FILE_TYPE}"
+
+        try:
+            image_url = s3_handler.upload_image(file, key)
+            profile.profile_photo_url = image_url
+            profile.save()
+        except Exception as e:
+            raise serializers.ValidationError(
+                f"Failed to upload profile photo: {str(e)}"
+            )
+        
+        return profile
+
+
+class StoreProfileImageDeleteSerializer(serializers.Serializer):
+    pin = serializers.CharField(max_length=4)
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        try:
+            profile = StoreProfile.objects.get(user=request.user)
+        except StoreProfile.DoesNotExist:
+            raise serializers.ValidationError("Store profile not found.")
+
+        pin = attrs.get("pin")
+        if not pin or not profile.validate_pin(pin):
+            raise serializers.ValidationError("Invalid PIN.")
+
+        if not profile.profile_photo_url:
+            raise serializers.ValidationError("No profile photo to delete.")
+
+        attrs["profile"] = profile
+        return attrs
+
+    def save(self):
+        profile = self.validated_data["profile"]
+        folder_name = get_store_profile_folder(profile.id)
+        key = f"{folder_name}/{FILE_NAMES.profile_photo}.{IMAGE_FILE_TYPE}"
+
+        s3_handler = S3ImageHandler()
+        try:
+            s3_handler.delete_image(key)
+            profile.profile_photo_url = None
+            profile.save()
+        except Exception as e:
+            raise serializers.ValidationError(
+                f"Failed to delete profile photo: {str(e)}"
+            )
+
+        return profile

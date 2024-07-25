@@ -2,7 +2,8 @@ from django.db import models
 from apps.members.models import MemberProfile
 from apps.stores.models import StoreProfile
 
-class MemberPaymentDetails(models.Model):   
+
+class MemberPaymentDetails(models.Model):
     member = models.OneToOneField(
         MemberProfile, on_delete=models.CASCADE, related_name="payment_details"
     )
@@ -16,7 +17,7 @@ class MemberPaymentDetails(models.Model):
 
     def __str__(self):
         return f"{self.member.name} payment details"
-    
+
 
 class StorePaymentDetails(models.Model):
     store = models.OneToOneField(

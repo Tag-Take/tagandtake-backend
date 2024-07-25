@@ -1,5 +1,9 @@
 from django.db import models
 
+# import min and max value validators
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+
 class Item(models.Model):
     STATUSES = (
         ("available", "Available"),
@@ -12,9 +16,11 @@ class Item(models.Model):
     description = models.TextField(null=True, blank=True)
     size = models.CharField(max_length=255, null=True, blank=True)
     brand = models.CharField(max_length=255, null=True, blank=True)
-    price = models.DecimalField(max_digits=9, decimal_places=2)
-    categories = models.ManyToManyField(
-        'ItemCategory', through='ItemCategoryRelation', related_name='items'
+    price = models.DecimalField(
+        max_digits=9, decimal_places=2, validators=[MinValueValidator(0.00)]
+    )
+    categories_list = models.ManyToManyField(
+        "ItemCategory", through="ItemCategoryRelation", related_name="items"
     )
     condition = models.ForeignKey(
         "ItemCondition", on_delete=models.CASCADE, related_name="items"
@@ -28,17 +34,17 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     @property
     def main_image(self):
-        main_image = self.images.order_by('order').first()
+        main_image = self.images.order_by("order").first()
         return main_image.image_url if main_image else None
-    
+
     @property
     def all_images(self):
-        images = self.images.order_by('order').all()
+        images = self.images.order_by("order").all()
         return images if images else []
-        
+
     @property
     def categories_list(self):
         categories = self.categories.all()
@@ -54,7 +60,7 @@ class ItemCategory(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class ItemCategoryRelation(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
@@ -87,7 +93,7 @@ class ItemImages(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta: 
+    class Meta:
         db_table = "item_images"
 
     def __str__(self):
