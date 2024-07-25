@@ -12,7 +12,7 @@ User = get_user_model()
 class MemberProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     member_bio = models.CharField(max_length=255, blank=True)
-    profile_photo_url = models.URLField(max_length=2048, blank=True)
+    profile_photo_url = models.URLField(max_length=2048, blank=True, null=True)
     instagram_url = models.URLField(blank=True)
     longitude = models.DecimalField(
         max_digits=9, decimal_places=6, blank=True, null=True,
@@ -31,21 +31,6 @@ class MemberProfile(models.Model):
     @property
     def username(self):
         return self.user.username
-    
-class MemberPaymentDetails(models.Model):   
-    member = models.OneToOneField(
-        MemberProfile, on_delete=models.CASCADE, related_name="payment_details"
-    )
-    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
-    stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "member_payment_details"
-
-    def __str__(self):
-        return f"{self.member.name} payment details"
 
 
 class MemberNotificationPreferences(models.Model):

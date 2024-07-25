@@ -71,22 +71,6 @@ class StoreProfile(models.Model):
         return self.stock_limit - self.active_tags_count
 
 
-class StorePaymentDetails(models.Model):
-    store = models.OneToOneField(
-        StoreProfile, on_delete=models.CASCADE, related_name="payment_details"
-    )
-    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
-    stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "store_payment_details"
-
-    def __str__(self):
-        return f"{self.store.shop_name} payment details"
-
-
 class StoreNotificationPreferences(models.Model):
     store = models.OneToOneField(
         StoreProfile, on_delete=models.CASCADE, related_name="notification_preferences"

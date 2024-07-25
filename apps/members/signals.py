@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
 from apps.members.models import (
-    MemberProfile, MemberNotificationPreferences, MemberPaymentDetails
+    MemberProfile, MemberNotificationPreferences
 )
 from apps.members.utils import send_welcome_email
 
@@ -17,7 +17,6 @@ def create_member_profile(sender, instance, **kwargs):
     if instance.is_active and instance.role == "member":
         member_profile, created = MemberProfile.objects.get_or_create(user=instance)
         if created:
-            MemberPaymentDetails.objects.create(member=member_profile)
             MemberNotificationPreferences.objects.create(member=member_profile)
 
 

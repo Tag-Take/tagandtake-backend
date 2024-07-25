@@ -6,14 +6,13 @@ from django.contrib.auth import get_user_model
 from apps.accounts.signals import user_activated
 from apps.stores.models import (
     StoreProfile,
-    StorePaymentDetails,
     StoreNotificationPreferences,
     TagGroup,
     Tag,
 )
 from apps.stores.utils import send_welcome_email
 from apps.common.s3.utils import create_folder_in_s3, generate_store_profile_folder_name
-from apps.common.stripe.utils import create_stripe_connected_account
+from apps.payments.stripe.utils import create_stripe_connected_account
 
 User = get_user_model()
 
@@ -23,18 +22,18 @@ def create_store_profile(sender, instance, **kwargs):
         store_profile, created = StoreProfile.objects.get_or_create(user=instance)
         if created:
             StoreNotificationPreferences.objects.create(store=store_profile)
-            StorePaymentDetails.objects.create(store=store_profile)
 
-@receiver(post_save, sender=StoreProfile)
-def create_strpie_connect_account(sender, instance, created, **kwargs):
-    if created:
-        try:
-            stripe_account_id = create_stripe_connected_account(instance.user.email)
-            instance.stripe_account_id = stripe_account_id
-            instance.save()
-        except Exception as e:
-            # Handle error, maybe log it or notify admin
-            pass
+#  TODO: create stripe account for store
+# @receiver(post_save, sender=StoreProfile)
+# def create_strpie_connect_account(sender, instance, created, **kwargs):
+#     if created:
+#         try:
+#             stripe_account_id = create_stripe_connected_account(instance.user.email)
+#             instance.stripe_account_id = stripe_account_id
+#             instance.save()
+#         except Exception as e:
+#             # Handle error, maybe log it or notify admin
+#             pass
 
 @receiver(post_save, sender=StoreProfile)
 def create_store_profile_s3_folder(sender, instance, created, **kwargs):

@@ -148,4 +148,4 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
 class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreNotificationPreferences
-        fields = ['secondary_email', 'new_listing_notifications', 'sale_notifications']
+        fields = ['new_listing_notifications', 'sale_notifications']
