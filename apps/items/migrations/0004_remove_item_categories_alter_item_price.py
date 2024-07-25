@@ -5,19 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('items', '0003_remove_item_category_itemcategoryrelation_and_more'),
+        ("items", "0003_remove_item_category_itemcategoryrelation_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='item',
-            name='categories',
+            model_name="item",
+            name="categories",
         ),
         migrations.AlterField(
-            model_name='item',
-            name='price',
-            field=models.DecimalField(decimal_places=2, max_digits=9, validators=[django.core.validators.MinValueValidator(0.0)]),
+            model_name="item",
+            name="price",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=9,
+                validators=[django.core.validators.MinValueValidator(0.0)],
+            ),
         ),
     ]

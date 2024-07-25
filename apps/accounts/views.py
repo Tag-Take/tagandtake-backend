@@ -46,13 +46,11 @@ class SignUpView(generics.CreateAPIView):
             return create_success_response(
                 f"{signup_type.capitalize()} user created successfully.",
                 {"user": serializer.data},
-                status.HTTP_201_CREATED
+                status.HTTP_201_CREATED,
             )
         else:
             return create_error_response(
-                "User creation failed.",
-                serializer.errors,
-                status.HTTP_400_BAD_REQUEST
+                "User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -77,7 +75,9 @@ class ActivateUserView(APIView):
 
             # Set the tokens in cookies
             expiry = datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
-            response = create_success_response("Account activated successfully", {}, status.HTTP_200_OK)
+            response = create_success_response(
+                "Account activated successfully", {}, status.HTTP_200_OK
+            )
             response.set_cookie(
                 "access_token",
                 access_token,
@@ -100,7 +100,10 @@ class ActivateUserView(APIView):
 
             return response
         else:
-            return create_error_response("Activation link is invalid", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Activation link is invalid", {}, status.HTTP_400_BAD_REQUEST
+            )
+
 
 class ResendActivationEmailView(APIView):
     def post(self, request, *args, **kwargs):
@@ -108,7 +111,9 @@ class ResendActivationEmailView(APIView):
         try:
             user = User.objects.get(email=email)
             if user.is_active:
-                return create_error_response("User is already active.", {}, status.HTTP_400_BAD_REQUEST)
+                return create_error_response(
+                    "User is already active.", {}, status.HTTP_400_BAD_REQUEST
+                )
             else:
                 context = generate_activation_context(user)
                 send_email(
@@ -117,30 +122,42 @@ class ResendActivationEmailView(APIView):
                     template_name="./activation_email.html",
                     context=context,
                 )
-                return create_success_response("Activation email sent.", {}, status.HTTP_200_OK)
+                return create_success_response(
+                    "Activation email sent.", {}, status.HTTP_200_OK
+                )
         except User.DoesNotExist:
-            return create_error_response("No user associated with this email.", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "No user associated with this email.", {}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class LogoutView(APIView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
-            return create_error_response("Refresh token is required", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             refresh_token_obj = RefreshToken(refresh_token)
             refresh_token_obj.blacklist()
 
-            response = create_success_response("Successfully logged out", {}, status.HTTP_204_NO_CONTENT)
+            response = create_success_response(
+                "Successfully logged out", {}, status.HTTP_204_NO_CONTENT
+            )
             response.delete_cookie("refresh_token", path="/")
             response.delete_cookie("access_token", path="/")
 
             return response
         except TokenError as e:
-            return create_error_response("Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED)
+            return create_error_response(
+                "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
+            )
         except Exception as e:
-            return create_error_response("An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -152,13 +169,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return create_error_response("Authentication failed.", e.detail, status.HTTP_401_UNAUTHORIZED)
+            return create_error_response(
+                "Authentication failed.", e.detail, status.HTTP_401_UNAUTHORIZED
+            )
 
         user = serializer.validated_data["user"]
         access = serializer.validated_data["access"]
         refresh = serializer.validated_data["refresh"]
 
-        response = create_success_response("Authentication successful.", {"user": user}, status.HTTP_200_OK)
+        response = create_success_response(
+            "Authentication successful.", {"user": user}, status.HTTP_200_OK
+        )
 
         expiry = datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
         response.set_cookie(
@@ -190,7 +211,9 @@ class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
-            return create_error_response("Refresh token is required", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
+            )
 
         mutable_data = QueryDict("", mutable=True)
         mutable_data.update(request.data)
@@ -203,7 +226,9 @@ class CustomTokenRefreshView(TokenRefreshView):
             if response.status_code == 200:
                 access_token = response.data["access"]
 
-                response = create_success_response("Access token refreshed successfully", {}, status.HTTP_200_OK)
+                response = create_success_response(
+                    "Access token refreshed successfully", {}, status.HTTP_200_OK
+                )
 
                 response.set_cookie(
                     "access_token",
@@ -216,9 +241,13 @@ class CustomTokenRefreshView(TokenRefreshView):
                 )
             return response
         except TokenError as e:
-            return create_error_response("Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED)
+            return create_error_response(
+                "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
+            )
         except Exception as e:
-            return create_error_response("An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class PasswordResetView(generics.GenericAPIView):
@@ -238,7 +267,9 @@ class PasswordResetView(generics.GenericAPIView):
             response.delete_cookie("access_token")
 
             return response
-        return create_error_response("Invalid email", serializer.errors, status.HTTP_400_BAD_REQUEST)
+        return create_error_response(
+            "Invalid email", serializer.errors, status.HTTP_400_BAD_REQUEST
+        )
 
 
 class PasswordResetConfirmView(generics.GenericAPIView):
@@ -267,7 +298,9 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
             return response
 
-        return create_error_response("Error setting new password", serializer.errors, status.HTTP_400_BAD_REQUEST)
+        return create_error_response(
+            "Error setting new password", serializer.errors, status.HTTP_400_BAD_REQUEST
+        )
 
 
 class DeleteAccountView(APIView):
@@ -276,4 +309,6 @@ class DeleteAccountView(APIView):
     def delete(self, request, *args, **kwargs):
         user = request.user
         user.delete()
-        return create_success_response("Account deleted successfully", {}, status.HTTP_204_NO_CONTENT)
+        return create_success_response(
+            "Account deleted successfully", {}, status.HTTP_204_NO_CONTENT
+        )

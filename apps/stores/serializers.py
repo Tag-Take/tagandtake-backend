@@ -8,7 +8,11 @@ from apps.stores.models import (
 from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
 from apps.common.s3.utils import S3ImageHandler
-from apps.common.s3.s3_config import get_store_profile_folder, FILE_NAMES, IMAGE_FILE_TYPE
+from apps.common.s3.s3_config import (
+    get_store_profile_folder,
+    FILE_NAMES,
+    IMAGE_FILE_TYPE,
+)
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
@@ -200,7 +204,7 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 f"Failed to upload profile photo: {str(e)}"
             )
-        
+
         return profile
 
 

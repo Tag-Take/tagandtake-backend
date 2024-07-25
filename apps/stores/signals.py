@@ -15,12 +15,14 @@ from apps.stores.utils import send_welcome_email
 
 User = get_user_model()
 
+
 @receiver(user_activated, sender=User)
 def create_store_profile(sender, instance, **kwargs):
     if instance.is_active and instance.role == "store":
         store_profile, created = StoreProfile.objects.get_or_create(user=instance)
         if created:
             StoreNotificationPreferences.objects.create(store=store_profile)
+
 
 @receiver(post_save, sender=StoreProfile)
 def send_pin_email_to_store(sender, instance, created, **kwargs):

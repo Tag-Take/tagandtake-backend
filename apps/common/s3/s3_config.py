@@ -7,7 +7,7 @@ BASE_PATHS = {
     "profiles": "profiles",
 }
 
-IMAGE_FILE_TYPE = 'jpg'
+IMAGE_FILE_TYPE = "jpg"
 
 FILE_NAMES = {
     "profile_photo": "profile_photo",

@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal
 
 # import min and max value validators
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -17,7 +18,7 @@ class Item(models.Model):
     size = models.CharField(max_length=255, null=True, blank=True)
     brand = models.CharField(max_length=255, null=True, blank=True)
     price = models.DecimalField(
-        max_digits=9, decimal_places=2, validators=[MinValueValidator(0.00)]
+        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))]
     )
     categories_list = models.ManyToManyField(
         "ItemCategory", through="ItemCategoryRelation", related_name="items"
@@ -26,6 +27,8 @@ class Item(models.Model):
         "ItemCondition", on_delete=models.CASCADE, related_name="items"
     )
     status = models.CharField(max_length=255, choices=STATUSES, default="available")
+    listed_at = models.DateTimeField(null=True, blank=True)
+    sold_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,7 +44,7 @@ class Item(models.Model):
         return main_image.image_url if main_image else None
 
     @property
-    def all_images(self):
+    def images(self):
         images = self.images.order_by("order").all()
         return images if images else []
 

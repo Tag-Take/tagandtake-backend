@@ -40,11 +40,7 @@ class S3BaseHandler:
 class S3ImageHandler(S3BaseHandler):
     def upload_image(self, file, key):
         try:
-            self.s3_client.upload_fileobj(
-                file,
-                settings.AWS_STORAGE_BUCKET_NAME,
-                key
-            )
+            self.s3_client.upload_fileobj(file, settings.AWS_STORAGE_BUCKET_NAME, key)
             return self.generate_s3_url(key)
         except ClientError as e:
             raise Exception(f"Failed to upload file to S3: {e}") from e
