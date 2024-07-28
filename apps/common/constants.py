@@ -1,0 +1,1 @@
+LISTING: str = 'listing'

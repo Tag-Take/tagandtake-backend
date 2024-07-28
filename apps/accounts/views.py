@@ -7,8 +7,10 @@ from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.utils.timezone import now
+# import response
 
 from rest_framework import generics, status, serializers
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
@@ -65,37 +67,41 @@ class ActivateUserView(APIView):
             user = None
 
         if user is not None and default_token_generator.check_token(user, token):
-            user.is_active = True
-            user.save()
-            user_activated.send(sender=user.__class__, instance=user)
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+                user_activated.send(sender=user.__class__, instance=user)
 
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-            refresh_token = str(refresh)
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
+                refresh_token = str(refresh)
 
-            # Set the tokens in cookies
-            expiry = datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
-            response = create_success_response(
-                "Account activated successfully", {}, status.HTTP_200_OK
-            )
-            response.set_cookie(
-                "access_token",
-                access_token,
-                expires=expiry,
-                httponly=True,
-                secure=settings.SESSION_COOKIE_SECURE,
-                samesite=settings.SAME_SITE_COOKIE,
-                domain=settings.DOMAIN,
-            )
-            expiry = datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
-            response.set_cookie(
-                "refresh_token",
-                refresh_token,
-                expires=expiry,
-                httponly=True,
-                secure=settings.SESSION_COOKIE_SECURE,
-                samesite=settings.SAME_SITE_COOKIE,
-                domain=settings.DOMAIN,
+                # Set the tokens in cookies
+                expiry = datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+                response = create_success_response(
+                    "Account activated successfully", {}, status.HTTP_200_OK
+                )
+                response.set_cookie(
+                    "access_token",
+                    access_token,
+                    expires=expiry,
+                    httponly=True,
+                    secure=settings.SESSION_COOKIE_SECURE,
+                    samesite=settings.SAME_SITE_COOKIE,
+                    domain=settings.DOMAIN,
+                )
+                expiry = datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+                response.set_cookie(
+                    "refresh_token",
+                    refresh_token,
+                    expires=expiry,
+                    httponly=True,
+                    secure=settings.SESSION_COOKIE_SECURE,
+                    samesite=settings.SAME_SITE_COOKIE,
+                    domain=settings.DOMAIN,
+                )
+            return create_error_response(
+                "Account is already active", {}, status.HTTP_400_BAD_REQUEST
             )
 
             return response

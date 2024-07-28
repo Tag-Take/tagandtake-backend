@@ -23,6 +23,7 @@ django-storages = "^1.14.4"
 python-dotenv = "^1.0.1"
 stripe = "^10.4.0"
 pillow = "^10.4.0"
+qrcode = "^7.4.2"
 
 
 [build-system]

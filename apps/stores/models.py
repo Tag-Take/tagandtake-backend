@@ -133,7 +133,6 @@ class TagGroup(models.Model):
         StoreProfile, on_delete=models.CASCADE, related_name="tag_groups"
     )
     group_size = models.IntegerField()
-    activated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     activated_at = models.DateTimeField(null=True, blank=True)
 
@@ -149,11 +148,6 @@ class Tag(models.Model):
         TagGroup, on_delete=models.CASCADE, related_name="tags"
     )
     hash = models.CharField(max_length=255, unique=True)
-    status = models.CharField(
-        max_length=50,
-        choices=[("active", "Active"), ("inactive", "Inactive")],
-        default="inactive",
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

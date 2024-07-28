@@ -1,24 +1,20 @@
-from django.dispatch import receiver
+from django.dispatch import receiver, Signal
 from django.db.models.signals import post_save
 from apps.payments.models import StorePaymentDetails, MemberPaymentDetails
 from apps.stores.models import StoreProfile
 from apps.members.models import MemberProfile
 
 
+tags_purchased = Signal()
+
 @receiver(post_save, sender=StoreProfile)
 def create_store_profile(sender, instance, **kwargs):
-    if instance.is_active and instance.role == "store":
-        store_profile, created = StoreProfile.objects.get_or_create(user=instance)
-        if created:
-            StorePaymentDetails.objects.create(store=store_profile)
+    StorePaymentDetails.objects.create(store=instance)
 
 
 @receiver(post_save, sender=MemberProfile)
 def create_member_profile(sender, instance, **kwargs):
-    if instance.is_active and instance.role == "member":
-        member_profile, created = MemberProfile.objects.get_or_create(user=instance)
-        if created:
-            MemberPaymentDetails.objects.create(member=member_profile)
+    MemberPaymentDetails.objects.create(member=instance)
 
 
 #  TODO: create stripe account for store

@@ -7,10 +7,10 @@ from apps.accounts.signals import user_activated
 from apps.stores.models import (
     StoreProfile,
     StoreNotificationPreferences,
-    TagGroup,
-    Tag,
 )
 from apps.stores.utils import send_welcome_email
+from apps.stores.services import TagHandler
+from apps.payments.signals import tags_purchased
 
 
 User = get_user_model()
@@ -48,9 +48,7 @@ def update_store_notification_preference(sender, instance, **kwargs):
                 notification_preferences.save()
 
 
-@receiver(post_save, sender=TagGroup)
-def activate_tag_group(sender, instance, created, **kwargs):
-    if instance.activated and not instance.activated_at:
-        instance.activated_at = instance.created_at
-        instance.save()
-        Tag.objects.filter(tag_group=instance).update(status="active")
+@receiver(tags_purchased)
+def create_tag_group_and_tags(sender, store, tag_count, **kwargs):
+    tag_handler = TagHandler()
+    tag_handler.create_tag_group_and_tags(store, tag_count)  
