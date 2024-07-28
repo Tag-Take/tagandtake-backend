@@ -4,7 +4,6 @@ from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
 )
-from apps.items.models import Item, ItemCategory, ItemCondition
 
 User = get_user_model()
 

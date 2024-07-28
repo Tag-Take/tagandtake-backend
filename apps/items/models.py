@@ -1,8 +1,11 @@
 from django.db import models
 from decimal import Decimal
+from django.contrib.auth import get_user_model
 
 # import min and max value validators
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
+
+User = get_user_model()
 
 
 class Item(models.Model):
@@ -13,15 +16,16 @@ class Item(models.Model):
         ("sold", "Sold"),
     )
 
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     size = models.CharField(max_length=255, null=True, blank=True)
     brand = models.CharField(max_length=255, null=True, blank=True)
     price = models.DecimalField(
-        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))]
+        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
     )
-    categories_list = models.ManyToManyField(
-        "ItemCategory", through="ItemCategoryRelation", related_name="items"
+    category = models.ForeignKey(
+        "ItemCategory", on_delete=models.CASCADE, related_name="items"
     )
     condition = models.ForeignKey(
         "ItemCondition", on_delete=models.CASCADE, related_name="items"
@@ -48,11 +52,6 @@ class Item(models.Model):
         images = self.images.order_by("order").all()
         return images if images else []
 
-    @property
-    def categories_list(self):
-        categories = self.categories.all()
-        return categories if categories else []
-
 
 class ItemCategory(models.Model):
     name = models.CharField(max_length=255)
@@ -63,17 +62,6 @@ class ItemCategory(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class ItemCategoryRelation(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = "item_category_relation"
-
-    def __str__(self):
-        return f"{self.item.name} - {self.category.name}"
 
 
 class ItemCondition(models.Model):

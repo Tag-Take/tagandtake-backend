@@ -4,61 +4,127 @@ from apps.common.s3.utils import S3ImageHandler
 from apps.common.s3.s3_config import get_item_images_folder, IMAGE_FILE_TYPE, FILE_NAMES
 from django.db import transaction
 
-
-class ItemImageSerializer(serializers.Serializer):
-    image = serializers.ImageField()
-    order = serializers.IntegerField()
+class ItemImagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemImages
+        fields = ["image_url", "order"]
 
 
 class ItemCreateSerializer(serializers.ModelSerializer):
-    images = ItemImageSerializer(many=True, write_only=True)
+    image = serializers.ImageField(write_only=True)
+    images = ItemImagesSerializer(many=True, read_only=True)
 
     class Meta:
         model = Item
         fields = [
             'name', 'description', 'size', 'brand', 'price', 'condition',
-            'categories_list', 'images'
+            'category', 'image','images'
         ]
 
     def validate(self, data):
-        if 'images' not in data or len(data['images']) == 0:
-            raise serializers.ValidationError("At least one image is required to create an item.")
-        
-        if 'categories_list' not in data or len(data.get('categories_list')) == 0:
-            raise serializers.ValidationError("At least one category is required to create an item.")
-        
-        category_ids = data.get('categories_list')
-        valid_categories = ItemCategory.objects.filter(id__in=category_ids).count()
-        if valid_categories != len(category_ids):
-            raise serializers.ValidationError("One or more category IDs are invalid.")
+        category = data.get('category')
+        valid_category = ItemCategory.objects.filter(id=category.id).exists()
+        if not valid_category:
+            raise serializers.ValidationError("Invalid category ID.")
         
         condition = data.get('condition')
-        valid_condition = ItemCondition.objects.filter(id=condition).exists()
+        valid_condition = ItemCondition.objects.filter(id=condition.id).exists()
         if not valid_condition:
             raise serializers.ValidationError("Invalid condition ID.")
 
         return data
 
     def create(self, validated_data):
-        images_data = validated_data.pop('images')
-        categories_data = validated_data.pop('categories_list', [])
+        request = self.context.get("request")
+        image = validated_data.pop('image')
+        order = 0
 
+        item = Item.objects.create(owner=request.user, **validated_data, status='available')
+
+        s3_handler = S3ImageHandler()
+
+        folder_name = get_item_images_folder(item.id)
+        key = f"{folder_name}/{FILE_NAMES['item_image']}_{order}.{IMAGE_FILE_TYPE}"
+        image_url = s3_handler.upload_image(image, key)
+
+        ItemImages.objects.create(item=item, image_url=image_url, order=order)
+
+        return item
+    
+
+
+class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(write_only=True)
+    images = ItemImagesSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Item
+        fields = [
+            'name', 'description', 'size', 'brand', 'price', 'condition',
+            'category', 'image', 'images'
+        ]
+        read_only_fields = ['status', 'created_at', 'updated_at']
+
+    def validate(self, data):
+        category = data.get('category')
+        valid_category = ItemCategory.objects.filter(id=category.id).exists()
+        if not valid_category:
+            raise serializers.ValidationError("Invalid category ID.")
         
-        with transaction.atomic():
-            item = Item.objects.create(**validated_data, status='available')
-            item.categories_list.set(categories_data)
+        condition = data.get('condition')
+        valid_condition = ItemCondition.objects.filter(id=condition.id).exists()
+        if not valid_condition:
+            raise serializers.ValidationError("Invalid condition ID.")
 
+        return data
+    
+    def update(self, instance, validated_data):
+        image = validated_data.pop('image', None)
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        if image:
             s3_handler = S3ImageHandler()
-            for image_data in images_data:
-                image = image_data['image']
-                order = image_data['order']
-                folder_name = get_item_images_folder(item.id)
+            order = 0  
+
+            try:
+                folder_name = get_item_images_folder(instance.id)
                 key = f"{folder_name}/{FILE_NAMES['item_image']}_{order}.{IMAGE_FILE_TYPE}"
                 image_url = s3_handler.upload_image(image, key)
 
-                ItemImages.objects.create(item=item, image_url=image_url, order=order)
+                item_image, created = ItemImages.objects.update_or_create(
+                    item=instance,
+                    order=order,
+                    defaults={'image_url': image_url}
+                )
+            except Exception as e:
+                raise serializers.ValidationError(f"Failed to upload image: {e}")
 
-            return item
+        instance.save()
+        return instance
+
+    def destroy(self, instance):
+        s3_handler = S3ImageHandler()
+        folder_name = get_item_images_folder(instance.id)
+
+        try:
+            for image in instance.images.all():
+                key = f"{folder_name}/{FILE_NAMES['item_image']}_{image.order}.{IMAGE_FILE_TYPE}"
+                s3_handler.delete_image(key)
+
+            instance.delete()
+        except Exception as e:
+            raise serializers.ValidationError(f"Failed to delete item: {e}")
+
+
+class MemberItemListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id', 'name', 'price', 'main_image']
+
+    def get_main_image(self, obj):
+        return
 
 
 class ItemCategorySerializer(serializers.ModelSerializer):
@@ -73,7 +139,4 @@ class ItemConditionSerializer(serializers.ModelSerializer):
         fields = ["id", "condition", "description"]
 
 
-class ItemImagesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ItemImages
-        fields = ["image_url", "order"]
+
