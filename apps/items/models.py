@@ -51,6 +51,16 @@ class Item(models.Model):
     def images(self):
         images = self.images.order_by("order").all()
         return images if images else []
+    
+    @property
+    def category_details(self):
+        return self.category
+    
+    @property
+    def condition_details(self):
+        return self.condition
+    
+
 
 
 class ItemCategory(models.Model):

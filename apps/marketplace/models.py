@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from apps.items.models import Item
 from apps.stores.models import Tag, StoreProfile
-from apps.marketplace.services import PricingEngine
+from apps.marketplace.pricing import PricingEngine
 
 User = get_user_model()
 

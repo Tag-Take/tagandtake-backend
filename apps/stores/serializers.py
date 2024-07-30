@@ -30,7 +30,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "latitude",
             "commission",
             "stock_limit",
-            "active_tags_count",
+            "active_listings_count",
             "remaining_stock",
             "min_listing_days",
             "min_price",
@@ -39,9 +39,9 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "user",
-            "active_tags_count",
             "created_at",
             "updated_at",
+            "active_listings_count",
             "profile_photo_url",
         ]
 

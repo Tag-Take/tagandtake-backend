@@ -56,12 +56,15 @@ class ItemCreateSerializer(serializers.ModelSerializer):
 class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(write_only=True)
     images = ItemImagesSerializer(many=True, read_only=True)
+    main_image = serializers.SerializerMethodField()
+    category_details = serializers.SerializerMethodField()
+    condition_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
         fields = [
             'name', 'description', 'size', 'brand', 'price', 'condition',
-            'category', 'image', 'images'
+            'category', 'image', 'images', 'main_image', 'category_details', 'condition_details'
         ]
         read_only_fields = ['status', 'created_at', 'updated_at']
 
@@ -116,6 +119,17 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
             instance.delete()
         except Exception as e:
             raise serializers.ValidationError(f"Failed to delete item: {e}")
+        
+    def get_main_image(self, obj):
+        return obj.main_image
+
+    def get_category_details(self, obj):
+        category = obj.category
+        return ItemCategorySerializer(category).data
+
+    def get_condition_details(self, obj):
+        condition = obj.condition
+        return ItemConditionSerializer(condition).data
 
 
 class MemberItemListSerializer(serializers.ModelSerializer):

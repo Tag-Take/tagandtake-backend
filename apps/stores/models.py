@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
     MinLengthValidator,
 )
+from django.utils.translation import gettext_lazy as _
 
 from apps.items.models import ItemCategory, ItemCondition
 from apps.stores.utils import generate_pin
@@ -52,7 +54,6 @@ class StoreProfile(models.Model):
     stock_limit = models.IntegerField(
         blank=True, default=50, null=True, validators=[MinValueValidator(1)]
     )
-    active_tags_count = models.IntegerField(default=0)  # (keep <= stock limit)
     min_listing_days = models.IntegerField(
         default=14, validators=[MinValueValidator(7)]
     )
@@ -73,8 +74,25 @@ class StoreProfile(models.Model):
         return self.pin == pin
 
     @property
+    def active_listings_count(self):
+        from apps.marketplace.models import Listing  
+
+        return Listing.objects.filter(tag__tag_group__store=self).count()
+    
+    @property
     def remaining_stock(self):
-        return self.stock_limit - self.active_tags_count
+        return self.stock_limit - self.active_listings_count
+    
+    def clean(self):
+        super().clean()
+        if self.stock_limit is not None and self.stock_limit < self.active_listings_count:
+            raise ValidationError(
+                {'stock_limit': _('Stock limit cannot be less than the number of active tags.')}
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # This will call the clean method to perform the validation
+        super().save(*args, **kwargs)
 
 
 class StoreNotificationPreferences(models.Model):
