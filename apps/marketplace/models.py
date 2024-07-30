@@ -9,14 +9,11 @@ from apps.marketplace.services import PricingEngine
 
 User = get_user_model()
 
-# create models for listings that are related to Tags and Items, 
-# and listing_issues that is a list og issues that can be reported on a listing
-# and recalled items that are items that have been recalled by the store for a issue reason
 
 class Listing(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    stroe_comission = models.DecimalField(
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    store_commission = models.DecimalField(
         max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
         )
     min_listing_days = models.IntegerField(validators=[MinValueValidator(1)])
@@ -35,45 +32,21 @@ class Listing(models.Model):
         return PricingEngine().calculate_transaction_fee(self.item.price)
     
     @property
-    def store_comission_amount(self):
-        return PricingEngine().calculate_store_comission(self.item.price, self.store_comission)
+    def store_commission_amount(self):
+        return PricingEngine().calculate_store_commission(self.item.price, self.store_commission)
     
     @property
     def member_earnings(self):
-        return PricingEngine().calculate_user_earnings(self.item.price, self.store_comission)
+        return PricingEngine().calculate_user_earnings(self.item.price, self.store_commission)
 
     @property
     def store(self):
         return self.tag.store
 
     @property
-    def name(self):
-        return self.item.name
+    def item_details(self): 
+        return self.item
 
-    @property
-    def owner(self):
-        return self.item.owner
-
-    @property
-    def description(self):
-        return self.item.description
-
-    @property
-    def size(self):
-        return self.item.size
-
-    @property
-    def brand(self):
-        return self.item.brand
-
-    @property
-    def category(self):
-        return self.item.category
-
-    @property
-    def condition(self):
-        return self.item.condition
-    
 
 class RecallReason(models.Model):
     RECALL_REASONS_TYPES = [

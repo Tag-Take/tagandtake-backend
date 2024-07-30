@@ -1,21 +1,14 @@
-from datetime import datetime
-
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
-from django.utils.timezone import now
-# import response
 
 from rest_framework import generics, status, serializers
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.accounts.serializers import (
@@ -28,7 +21,7 @@ from apps.accounts.serializers import (
 from apps.accounts.utils import generate_activation_context
 from apps.accounts.signals import user_activated
 from apps.common.utils.email import send_email
-from apps.common.utils.responses import create_success_response, create_error_response
+from apps.common.utils.responses import create_success_response, create_error_response, JWTCookieHandler
 
 
 User = get_user_model()
@@ -72,39 +65,17 @@ class ActivateUserView(APIView):
                 user.save()
                 user_activated.send(sender=user.__class__, instance=user)
 
-                refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
-                refresh_token = str(refresh)
-
-                # Set the tokens in cookies
-                expiry = datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
                 response = create_success_response(
                     "Account activated successfully", {}, status.HTTP_200_OK
                 )
-                response.set_cookie(
-                    "access_token",
-                    access_token,
-                    expires=expiry,
-                    httponly=True,
-                    secure=settings.SESSION_COOKIE_SECURE,
-                    samesite=settings.SAME_SITE_COOKIE,
-                    domain=settings.DOMAIN,
-                )
-                expiry = datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
-                response.set_cookie(
-                    "refresh_token",
-                    refresh_token,
-                    expires=expiry,
-                    httponly=True,
-                    secure=settings.SESSION_COOKIE_SECURE,
-                    samesite=settings.SAME_SITE_COOKIE,
-                    domain=settings.DOMAIN,
-                )
+                access_token, refresh_token = JWTCookieHandler(response)._generate_tokens(user)
+                return  JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)
+
+            
             return create_error_response(
                 "Account is already active", {}, status.HTTP_400_BAD_REQUEST
             )
 
-            return response
         else:
             return create_error_response(
                 "Activation link is invalid", {}, status.HTTP_400_BAD_REQUEST
@@ -146,16 +117,11 @@ class LogoutView(APIView):
             )
 
         try:
-            refresh_token_obj = RefreshToken(refresh_token)
-            refresh_token_obj.blacklist()
-
             response = create_success_response(
                 "Successfully logged out", {}, status.HTTP_204_NO_CONTENT
             )
-            response.delete_cookie("refresh_token", path="/")
-            response.delete_cookie("access_token", path="/")
-
-            return response
+            return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
+        
         except TokenError as e:
             return create_error_response(
                 "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
@@ -187,28 +153,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             "Authentication successful.", {"user": user}, status.HTTP_200_OK
         )
 
-        expiry = datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
-        response.set_cookie(
-            "access_token",
-            access,
-            expires=expiry,
-            httponly=True,
-            secure=settings.SESSION_COOKIE_SECURE,
-            samesite=settings.SAME_SITE_COOKIE,
-            domain=settings.DOMAIN,
-        )
-        expiry = datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
-        response.set_cookie(
-            "refresh_token",
-            refresh,
-            expires=expiry,
-            httponly=True,
-            secure=settings.SESSION_COOKIE_SECURE,
-            samesite=settings.SAME_SITE_COOKIE,
-            domain=settings.DOMAIN,
-        )
-
-        return response
+        return JWTCookieHandler(response).set_jwt_cookies(access, refresh)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -235,17 +180,8 @@ class CustomTokenRefreshView(TokenRefreshView):
                 response = create_success_response(
                     "Access token refreshed successfully", {}, status.HTTP_200_OK
                 )
+                return JWTCookieHandler(response).set_jwt_cookies(access_token)
 
-                response.set_cookie(
-                    "access_token",
-                    access_token,
-                    expires=now() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"],
-                    httponly=True,
-                    secure=settings.SESSION_COOKIE_SECURE,
-                    samesite=settings.SAME_SITE_COOKIE,
-                    domain=settings.DOMAIN,
-                )
-            return response
         except TokenError as e:
             return create_error_response(
                 "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
@@ -269,10 +205,8 @@ class PasswordResetView(generics.GenericAPIView):
                 {},
                 status.HTTP_200_OK,
             )
-            response.delete_cookie("refresh_token")
-            response.delete_cookie("access_token")
+            return JWTCookieHandler(response).delete_jwt_cookies()
 
-            return response
         return create_error_response(
             "Invalid email", serializer.errors, status.HTTP_400_BAD_REQUEST
         )
@@ -287,22 +221,13 @@ class PasswordResetConfirmView(generics.GenericAPIView):
             serializer.save()
 
             refresh_token = request.COOKIES.get("refresh_token")
-            if refresh_token:
-                try:
-                    refresh_token_obj = RefreshToken(refresh_token)
-                    refresh_token_obj.blacklist()
-                except TokenError:
-                    pass
 
             response = create_success_response(
                 "Password has been reset and user has been logged out from all sessions.",
                 {},
                 status.HTTP_200_OK,
             )
-            response.delete_cookie("refresh_token", path="/")
-            response.delete_cookie("access_token", path="/")
-
-            return response
+            return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
 
         return create_error_response(
             "Error setting new password", serializer.errors, status.HTTP_400_BAD_REQUEST

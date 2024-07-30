@@ -4,7 +4,7 @@ from apps.stores.models import StoreProfile
 
 
 class MemberPaymentDetails(models.Model):
-    member = models.OneToOneField(
+    member = models.ForeignKey(
         MemberProfile, on_delete=models.CASCADE, related_name="payment_details"
     )
     stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
@@ -20,7 +20,7 @@ class MemberPaymentDetails(models.Model):
 
 
 class StorePaymentDetails(models.Model):
-    store = models.OneToOneField(
+    store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="payment_details"
     )
     stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
