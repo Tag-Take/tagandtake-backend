@@ -1,0 +1,29 @@
+[
+    {
+        "model": "marketplace.RecallReasons",
+        "pk": 1,
+        "fields": {
+            "reason": "Item Condition",
+            "type": "Issue",
+            "description": "Item does not meet store's condition standards"
+        }
+    },
+    {
+        "model": "marketplace.RecallReasons",
+        "pk": 2,
+        "fields": {
+            "reason": "Store Discrtion",
+            "type": "Store Discrtion",
+            "description": "Item has exceeded the store's listing period gaurantee and is being recalled"
+        }
+    },
+    {
+        "model": "marketplace.RecallReasons",
+        "pk": 3,
+        "fields": {
+            "reason": "Owner Request",
+            "type": "Owner Request",
+            "description": "Owner has requested to recall their item"
+        }
+    }
+]

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "apps.members",
     "apps.items",
     "apps.payments",
+    "apps.marketplace",
 ]
 
 REST_FRAMEWORK = {
