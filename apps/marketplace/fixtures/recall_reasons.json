@@ -12,6 +12,15 @@
         "model": "marketplace.RecallReasons",
         "pk": 2,
         "fields": {
+            "reason": "Item Category",
+            "type": "Issue",
+            "description": "Item categegoy is not one of the store's approved categories"
+        }
+    },
+    {
+        "model": "marketplace.RecallReasons",
+        "pk": 2,
+        "fields": {
             "reason": "Store Discrtion",
             "type": "Store Discrtion",
             "description": "Item has exceeded the store's listing period gaurantee and is being recalled"

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -24,9 +26,9 @@ class StoreProfile(models.Model):
         null=False,
     )
     # Store information
-    shop_name = models.CharField(max_length=255)
+    shop_name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    store_bio = models.CharField(max_length=255)
+    store_bio = models.CharField(max_length=255, blank=True, null=True)
     profile_photo_url = models.URLField(max_length=2048, blank=True, null=True)
     # Socials
     google_profile_url = models.URLField(null=True, blank=True)
@@ -38,21 +40,21 @@ class StoreProfile(models.Model):
         decimal_places=6,
         blank=True,
         null=True,
-        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+        validators=[MinValueValidator(Decimal("-180.00")), MaxValueValidator(Decimal("180.00"))],
     )
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
         blank=True,
         null=True,
-        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+        validators=[MinValueValidator(Decimal("-90.00")), MaxValueValidator(Decimal("90.00"))],
     )
     # Store settings
     commission = models.IntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(50)], default=10
     )
     stock_limit = models.IntegerField(
-        blank=True, default=50, null=True, validators=[MinValueValidator(1)]
+        blank=False, default=50, null=False, validators=[MinValueValidator(1)]
     )
     min_listing_days = models.IntegerField(
         default=14, validators=[MinValueValidator(7)]
@@ -75,24 +77,17 @@ class StoreProfile(models.Model):
 
     @property
     def active_listings_count(self):
-        from apps.marketplace.models import Listing  
+        from apps.marketplace.models import Listing
 
         return Listing.objects.filter(tag__tag_group__store=self).count()
-    
+
+    @property
+    def accepting_listings(self):
+        return self.active_listings_count < self.stock_limit
+
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
-    
-    def clean(self):
-        super().clean()
-        if self.stock_limit is not None and self.stock_limit < self.active_listings_count:
-            raise ValidationError(
-                {'stock_limit': _('Stock limit cannot be less than the number of active tags.')}
-            )
-
-    def save(self, *args, **kwargs):
-        self.full_clean()  # This will call the clean method to perform the validation
-        super().save(*args, **kwargs)
 
 
 class StoreNotificationPreferences(models.Model):

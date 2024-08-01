@@ -20,6 +20,7 @@ def create_error_response(message, errors, status_code):
         status=status_code,
     )
 
+
 def create_success_response(message, data, status_code):
     return Response(
         {
@@ -50,14 +51,15 @@ class JWTCookieHandler:
             self.response.set_cookie(
                 "refresh_token",
                 refresh_token,
-                expires=datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
+                expires=datetime.utcnow()
+                + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
                 httponly=True,
                 secure=settings.SESSION_COOKIE_SECURE,
                 samesite=settings.SAME_SITE_COOKIE,
                 domain=settings.DOMAIN,
             )
         return self.response
-    
+
     def delete_jwt_cookies(self, refresh_token=None):
         if refresh_token:
             refresh_token_obj = RefreshToken(refresh_token)
@@ -67,7 +69,7 @@ class JWTCookieHandler:
         self.response.delete_cookie("access_token", path="/")
 
         return self.response
-    
+
     @staticmethod
     def _generate_tokens(user):
         refresh = RefreshToken.for_user(user)
@@ -75,6 +77,3 @@ class JWTCookieHandler:
         refresh_token = str(refresh)
 
         return access_token, refresh_token
-    
-
-    

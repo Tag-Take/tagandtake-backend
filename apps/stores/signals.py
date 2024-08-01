@@ -51,4 +51,4 @@ def update_store_notification_preference(sender, instance, **kwargs):
 @receiver(tags_purchased)
 def create_tag_group_and_tags(sender, store, tag_count, **kwargs):
     tag_handler = TagHandler()
-    tag_handler.create_tag_group_and_tags(store, tag_count)  
+    tag_handler.create_tag_group_and_tags(store, tag_count)

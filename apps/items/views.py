@@ -6,8 +6,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 
 from apps.items.serializers import (
-    ItemCreateSerializer, 
-    ItemRetrieveUpdateDeleteSerializer, 
+    ItemCreateSerializer,
+    ItemRetrieveUpdateDeleteSerializer,
     MemberItemListSerializer,
     ItemCategorySerializer,
     ItemConditionSerializer,
@@ -38,6 +38,7 @@ class ItemCreateView(generics.CreateAPIView):
             "Item creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
         )
 
+
 class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ItemRetrieveUpdateDeleteSerializer
     queryset = Item.objects.all()
@@ -50,10 +51,10 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
             return create_error_response(
                 "Item not found.", {}, status.HTTP_404_NOT_FOUND
             )
-        
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if isinstance(instance, Response):  
+        if isinstance(instance, Response):
             return instance
         serializer = self.get_serializer(instance)
         return create_success_response(
@@ -66,9 +67,9 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         if isinstance(instance, Response):
             return instance
-        permission_response = check_item_permissions(request, self, instance)
-        if permission_response:
-            return permission_response
+        permission_error_response = check_item_permissions(request, self, instance)
+        if permission_error_response:
+            return permission_error_response
 
         partial = kwargs.pop("partial", False)
         serializer = self.get_serializer(
@@ -85,7 +86,9 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
                 )
             except serializers.ValidationError as e:
                 return create_error_response(
-                    "Item update failed.", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
+                    "Item update failed.",
+                    {"exception": str(e)},
+                    status.HTTP_400_BAD_REQUEST,
                 )
         return create_error_response(
             "Item update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST

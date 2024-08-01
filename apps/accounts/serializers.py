@@ -72,9 +72,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         password = attrs.get("password")
 
         user = User.objects.filter(username=username_or_email).first()
-        user = User.objects.get(
-            Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
-        )
+        # user = User.objects.get(
+        #     Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
+        # )
         # TODO - Make email verification work ^
         if not user:
             self.username_field = User.EMAIL_FIELD

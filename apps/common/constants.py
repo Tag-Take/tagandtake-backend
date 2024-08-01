@@ -1,1 +1,1 @@
-LISTING: str = 'listing'
+LISTING: str = "listing"

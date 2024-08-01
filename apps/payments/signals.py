@@ -7,6 +7,7 @@ from apps.members.models import MemberProfile
 
 tags_purchased = Signal()
 
+
 @receiver(post_save, sender=StoreProfile)
 def create_store_profile(sender, instance, **kwargs):
     StorePaymentDetails.objects.create(store=instance)

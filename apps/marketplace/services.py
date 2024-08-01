@@ -1,19 +1,121 @@
-from decimal import Decimal, ROUND_HALF_UP
+from datetime import datetime
+from django.db import transaction
 
-from apps.marketplace.models import Listing
+from rest_framework import serializers
+
+from apps.stores.models import Tag
+from apps.marketplace.models import (
+    Listing,
+    RecalledListing,
+    DelistedListing,
+    SoldListing,
+    RecallReason,
+)
+
 
 class ListingHandler:
     def __init__(self, listing=None):
         self.listing = listing
 
-    def create_listing():
-        pass
-    
-    def create_item_and_listing():
-        pass
+    @staticmethod
+    def create_listing(item, tag, store_commission, min_listing_days):
+        with transaction.atomic():
+            listing = Listing.objects.create(
+                item=item,
+                tag=tag,
+                store_commission=store_commission,
+                min_listing_days=min_listing_days,
+            )
+            item.status = "Listed"
+            item.save()
+        return listing
 
-    def recall_listing():
-        pass
+    @staticmethod
+    def create_item_and_listing(serializer, request):
+        with transaction.atomic():
+            item = serializer.save()
+            tag_id = request.data.get("tag_id")
 
-    def purchase_listing():
-        pass
+            try:
+                tag = Tag.objects.get(id=tag_id)
+            except Tag.DoesNotExist:
+                raise serializers.ValidationError("Tag does not exist.")
+
+            store_commission = tag.store.commission
+            min_listing_days = tag.store.min_listing_days
+
+            listing = ListingHandler.create_listing(
+                item=item,
+                tag=tag,
+                store_commission=store_commission,
+                min_listing_days=min_listing_days,
+            )
+            item.status = "listed"
+            item.save()
+            return listing
+
+    def recall_listing(self, reason_id):
+        try:
+            reason = RecallReason.objects.get(id=reason_id)
+            with transaction.atomic():
+                RecalledListing.objects.create(
+                    tag=self.listing.tag,
+                    item=self.listing.item,
+                    store_commission=self.listing.store_commission,
+                    min_listing_days=self.listing.min_listing_days,
+                    reason=reason,
+                )
+                self.listing.item.status = "recalled"
+                self.listing.item.save()
+                self.listing.delete()
+        except RecallReason.DoesNotExist:
+            raise serializers.ValidationError("Invalid reason provided")
+
+    def delist_listing(self, reason_id):
+        try:
+            reason = RecallReason.objects.get(id=reason_id)
+            with transaction.atomic():
+                DelistedListing.objects.create(
+                    tag=self.listing.tag,
+                    item=self.listing.item,
+                    store_commission=self.listing.store_commission,
+                    min_listing_days=self.listing.min_listing_days,
+                    reason=reason,
+                )
+                self.listing.item.status = "available"
+                self.listing.item.save()
+                self.listing.delete()
+        except RecallReason.DoesNotExist:
+            raise serializers.ValidationError("Invalid reason provided")
+            
+    def delist_recalled_listing(self):
+        with transaction.atomic():
+            DelistedListing.objects.create(
+                tag=self.listing.tag,
+                item=self.listing.item,
+                store_commission=self.listing.store_commission,
+                min_listing_days=self.listing.min_listing_days,
+                reason=self.listing.reason,
+            )
+            self.listing.item.status = "available"
+            self.listing.item.save()
+            self.listing.delete()
+
+
+    def purchase_listing(self, buyer):
+        if self.listing:
+            with transaction.atomic():
+                SoldListing.objects.create(
+                    tag=self.listing.tag,
+                    item=self.listing.item,
+                    store_commission=self.listing.store_commission,
+                    min_listing_days=self.listing.min_listing_days,
+                    buyer=buyer,
+                )
+                self.listing.item.status = "sold"
+                self.listing.item.save()
+                self.listing.delete()
+
+    @staticmethod
+    def get_recall_reasons(id):
+        return RecallReason.objects.get(id=id)

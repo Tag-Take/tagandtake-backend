@@ -1,5 +1,5 @@
-import json 
-import os 
+import json
+import os
 
 from django.core.management.base import BaseCommand
 
@@ -18,9 +18,7 @@ class Command(BaseCommand):
             recall_reasons = json.load(file)
             self.sync_recall_reasons(recall_reasons)
 
-        self.stdout.write(
-            self.style.SUCCESS("Successfully synced recall reasons")
-        )
+        self.stdout.write(self.style.SUCCESS("Successfully synced recall reasons"))
 
     def sync_recall_reasons(self, conditions_data):
         existing_conditions = RecallReason.objects.values_list("reason", flat=True)

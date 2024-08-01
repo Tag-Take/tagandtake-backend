@@ -21,7 +21,11 @@ from apps.accounts.serializers import (
 from apps.accounts.utils import generate_activation_context
 from apps.accounts.signals import user_activated
 from apps.common.utils.email import send_email
-from apps.common.utils.responses import create_success_response, create_error_response, JWTCookieHandler
+from apps.common.utils.responses import (
+    create_success_response,
+    create_error_response,
+    JWTCookieHandler,
+)
 
 
 User = get_user_model()
@@ -68,10 +72,13 @@ class ActivateUserView(APIView):
                 response = create_success_response(
                     "Account activated successfully", {}, status.HTTP_200_OK
                 )
-                access_token, refresh_token = JWTCookieHandler(response)._generate_tokens(user)
-                return  JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)
+                access_token, refresh_token = JWTCookieHandler(
+                    response
+                )._generate_tokens(user)
+                return JWTCookieHandler(response).set_jwt_cookies(
+                    access_token, refresh_token
+                )
 
-            
             return create_error_response(
                 "Account is already active", {}, status.HTTP_400_BAD_REQUEST
             )
@@ -121,7 +128,7 @@ class LogoutView(APIView):
                 "Successfully logged out", {}, status.HTTP_204_NO_CONTENT
             )
             return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
-        
+
         except TokenError as e:
             return create_error_response(
                 "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED

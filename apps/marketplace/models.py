@@ -1,51 +1,78 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from decimal import Decimal
 
 from apps.items.models import Item
-from apps.stores.models import Tag, StoreProfile
+from apps.stores.models import Tag
 from apps.marketplace.pricing import PricingEngine
 
 User = get_user_model()
 
 
-class Listing(models.Model):
+class BaseListing(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     store_commission = models.DecimalField(
         max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
-        )
+    )
     min_listing_days = models.IntegerField(validators=[MinValueValidator(1)])
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta: 
-        db_table = "listing"
+    class Meta:
+        abstract = True
 
     @property
     def price(self):
         return PricingEngine().calculate_list_price(self.item.price)
-    
+
     @property
     def transaction_fee(self):
         return PricingEngine().calculate_transaction_fee(self.item.price)
-    
+
     @property
     def store_commission_amount(self):
-        return PricingEngine().calculate_store_commission(self.item.price, self.store_commission)
-    
+        return PricingEngine().calculate_store_commission(
+            self.item.price, self.store_commission
+        )
+
     @property
     def member_earnings(self):
-        return PricingEngine().calculate_user_earnings(self.item.price, self.store_commission)
+        return PricingEngine().calculate_user_earnings(
+            self.item.price, self.store_commission
+        )
 
     @property
     def store(self):
         return self.tag.store
 
     @property
-    def item_details(self): 
+    def item_details(self):
         return self.item
+
+
+class Listing(BaseListing):
+    class Meta:
+        db_table = "listings"
+
+    def clean(self):
+        active_tag_listings = Listing.objects.filter(tag=self.tag)
+        if self.pk:
+            active_tag_listings = active_tag_listings.exclude(pk=self.pk)
+        if active_tag_listings.exists():
+            raise ValidationError("There is already an active listing with this tag.")
+
+        active_item_listings = Listing.objects.filter(item=self.item)
+        if self.pk:
+            active_item_listings = active_item_listings.exclude(pk=self.pk)
+        if active_item_listings.exists():
+            raise ValidationError("There is already an active listing with this item.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
 
 class RecallReason(models.Model):
@@ -65,20 +92,40 @@ class RecallReason(models.Model):
         db_table = "recall_reasons"
 
     def __str__(self):
-        return f"{self.issue}"
-    
+        return f"{self.reason}"
 
-class RecalledItem(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE)
-    min_listing_days = models.IntegerField(validators=[MinValueValidator(1)])
+
+class RecalledListing(BaseListing):
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    recalled_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "recalled_item"
+        db_table = "recalled_listings"
 
     def __str__(self):
-        return f"{self.item.name} - {self.issue.issue}"
-    
+        return f"{self.reason}"
+
+
+class DelistedListing(BaseListing):
+    reason = models.CharField(max_length=255)
+    delisted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "delisted_listings"
+
+    def __str__(self):
+        return f"{self.reason}"
+
+
+class SoldListing(BaseListing):
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    sold_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "sold_listings"
+
+    def __str__(self):
+        return f"{self.buyer}"

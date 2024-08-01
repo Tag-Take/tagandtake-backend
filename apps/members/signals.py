@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from apps.members.utils import send_welcome_email
+from apps.members.services import send_welcome_email
 
 
 User = get_user_model()

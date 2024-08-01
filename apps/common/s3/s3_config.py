@@ -30,5 +30,6 @@ def get_store_profile_folder(instance_id):
 def get_item_images_folder(item_id):
     return f"{BASE_PATHS['items']}/{item_id}/{BASE_PATHS['images']}"
 
+
 def get_tag_image_folder(tag_group_id, tag_id):
     return f"{BASE_PATHS['tags']}/{BASE_PATHS['groups']}/{tag_group_id}/{tag_id}"

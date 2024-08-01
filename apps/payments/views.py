@@ -15,6 +15,7 @@ from apps.common.utils.responses import create_success_response
 
 # create dummy view for now to send signal to create tag group and tags for a store (to be handled elsewhere)
 
+
 class PurchaseTagsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreUser]
 
@@ -40,10 +41,10 @@ class PurchaseTagsView(APIView):
                 "Invalid tag count provided.", {}, status.HTTP_400_BAD_REQUEST
             )
 
-        tags_purchased.send(sender=StoreProfile, store=store_profile, tag_count=group_size)
+        tags_purchased.send(
+            sender=StoreProfile, store=store_profile, tag_count=group_size
+        )
 
         return create_success_response(
             "Tags purchased successfully.", {}, status.HTTP_200_OK
         )
-
-

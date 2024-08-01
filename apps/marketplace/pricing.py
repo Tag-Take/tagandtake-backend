@@ -1,5 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP
 
+
 class PricingEngine:
     def __init__(self):
         self.tagandtake_commission = Decimal("0.05")
@@ -39,6 +40,6 @@ class PricingEngine:
 
     def _round_decimal(self, value):
         return float(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    
+
     def _rebase_commission(self, commission):
         return Decimal(str(commission)) / Decimal("100")

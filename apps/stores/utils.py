@@ -29,7 +29,7 @@ def send_rest_pin_email(store_profile):
         "pin": store_profile.pin,
     }
     send_email(
-        subject="New Tag&Take Store Profile PIN",
+        subject="New Tag&Take Store PIN",
         to=store_profile.user.email,
         template_name="./resend_pin.html",
         context=context,

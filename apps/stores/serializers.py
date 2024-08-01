@@ -42,9 +42,19 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "active_listings_count",
-            "profile_photo_url",
+            "accepting_listings" "profile_photo_url",
         ]
 
+    def validate(self, data):
+        instance = self.instance
+        stock_limit = data.get('stock_limit', instance.stock_limit)
+
+        if stock_limit is not None and stock_limit < instance.active_listings_count:
+            raise serializers.ValidationError({
+                "stock_limit": "Stock limit cannot be less than the number of active tags."
+            })
+        return data
+    
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

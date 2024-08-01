@@ -1,8 +1,8 @@
 from django.urls import path
 
 from apps.items.views import (
-    ItemCreateView, 
-    ItemDetailView, 
+    ItemCreateView,
+    ItemDetailView,
     MemberItemListView,
     ItemCategoryListView,
     ItemConditionListView,
