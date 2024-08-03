@@ -7,11 +7,17 @@ class PricingEngine:
         self.tagandtake_flat_fee = Decimal("1")
 
     def calculate_list_price(self, price):
+        """
+        Price that the buyer sees.
+        """
         price = self._to_decimal(price)
         new_price = price + self.calculate_transaction_fee(price, round_result=False)
         return self._round_decimal(new_price)
 
     def calculate_transaction_fee(self, price, round_result=True):
+        """
+        Fee that tagandtake (on top of listing price).
+        """
         price = self._to_decimal(price)
         transaction_fee = (
             price * self.tagandtake_commission
@@ -19,12 +25,18 @@ class PricingEngine:
         return self._round_decimal(transaction_fee) if round_result else transaction_fee
 
     def calculate_store_commission(self, price, commission):
+        """
+        Commission that the store earns.
+        """
         price = self._to_decimal(price)
         commission = self._rebase_commission(commission)
         store_commission = price * commission
         return self._round_decimal(store_commission)
 
     def calculate_user_earnings(self, price, commission):
+        """
+        Earnings that the seller takes home.
+        """
         price = self._to_decimal(price)
         commission = self._rebase_commission(commission)
         user_earnings = price - (price * commission)

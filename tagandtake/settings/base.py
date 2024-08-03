@@ -3,6 +3,10 @@ import environ
 from pathlib import Path
 from datetime import timedelta
 
+from celery import Celery
+
+from my_celery.schedules import CELERY_SCHEDULES
+
 env = environ.Env()
 environ.Env.read_env()
 
@@ -51,6 +55,16 @@ REST_FRAMEWORK = {
     "DEFAULT_PARSER_CLASSES": ("rest_framework.parsers.JSONParser",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# Celery configuration
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_BEAT_SCHEDULE = CELERY_SCHEDULES
 
 SPECTAUCLAR_SETTINGS = {
     "TITLE": "Tag & Take API",
@@ -177,3 +191,5 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 LOGO_URL = "https://your-logo-url.com/logo.png"
 LOGIN_URL = "https://tagandtake.com/login"
 HOW_IT_WORKS_URL = "https://tagandtake.com/how-it-works"
+
+

@@ -56,7 +56,7 @@ class ListingHandler:
 
     def recall_listing(self, reason_id):
         try:
-            reason = RecallReason.objects.get(id=reason_id)
+            reason = self.get_recall_reasons(reason_id)
             with transaction.atomic():
                 RecalledListing.objects.create(
                     tag=self.listing.tag,
@@ -73,7 +73,7 @@ class ListingHandler:
 
     def delist_listing(self, reason_id):
         try:
-            reason = RecallReason.objects.get(id=reason_id)
+            reason = self.get_recall_reasons(reason_id)
             with transaction.atomic():
                 DelistedListing.objects.create(
                     tag=self.listing.tag,
@@ -118,4 +118,7 @@ class ListingHandler:
 
     @staticmethod
     def get_recall_reasons(id):
-        return RecallReason.objects.get(id=id)
+        try:
+            return RecallReason.objects.get(id=id)
+        except RecallReason.DoesNotExist:
+            raise serializers.ValidationError("Invalid reason provided")
