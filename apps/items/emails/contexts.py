@@ -40,7 +40,7 @@ class EmailContextGenerator:
             "store_name": self.store.shop_name,
             "recall_reason_title": recall_reason.reason,
             "recall_reason_description": recall_reason.description,
-            "storage_fee": f"£{PricingEngine.storage_fee}",
+            "storage_fee": f"{PricingEngine().storage_fee}",
             "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
         })
         return base_context
