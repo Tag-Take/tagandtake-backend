@@ -1,6 +1,6 @@
 # emails/senders.py
 
-from common.utils.email import send_email
+from apps.common.utils.email import send_email
 from apps.items.emails.contexts import EmailContextGenerator
 
 class ItemEmailSender:
@@ -12,7 +12,7 @@ class ItemEmailSender:
         send_email(
             subject=f"Item Listed - {item}",
             to=listing.item.owner.email,
-            template_name="emails/templates/item_listed.html",
+            template_name="action_triggered/item_listed.html",
             context=context
         )
 
@@ -24,7 +24,7 @@ class ItemEmailSender:
         send_email(
             subject=f"Congratulations! Your Item Sold - {item}",
             to=listing.item.owner.email,
-            template_name="emails/templates/item_sold.html",
+            template_name="action_triggered/item_sold.html",
             context=context
         )
 
@@ -36,7 +36,7 @@ class ItemEmailSender:
         send_email(
             subject=f"Item Recalled - {item}",
             to=listing.item.owner.email,
-            template_name="emails/templates/item_recalled.html",
+            template_name="action_triggered/item_recalled.html",
             context=context
         )
 
@@ -48,7 +48,7 @@ class ItemEmailSender:
         send_email(
             subject=f"Item Delisted - {item}",
             to=listing.item.owner.email,
-            template_name="emails/templates/item_delisted.html",
+            template_name="action_triggered/item_delisted.html",
             context=context
         )
 
@@ -60,6 +60,6 @@ class ItemEmailSender:
         send_email(
             subject=f"Item Collected - {item}",
             to=listing.item.owner.email,
-            template_name="emails/templates/item_collected.html",
+            template_name="action_triggered/item_collected.html",
             context=context
         )

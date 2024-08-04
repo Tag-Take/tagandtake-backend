@@ -13,7 +13,7 @@ class EmailContextGenerator:
 
     def get_base_context(self):
         return {
-            "username": self.user.get_full_name() or self.user.username,
+            "username": self.user.username,
             "item_name": self.item.name,
             "current_year": datetime.now().year,
         }
@@ -21,8 +21,8 @@ class EmailContextGenerator:
     def generate_item_listed_context(self):
         base_context = self.get_base_context()
         base_context.update({
-            "store_name": self.store.name,
-            "item_page_url": f"{settings.SITE_URL}/items/{self.item.id}",
+            "store_name": self.store.shop_name,
+            "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
         })
         return base_context
 
@@ -37,11 +37,11 @@ class EmailContextGenerator:
     def generate_item_recalled_context(self, recall_reason):
         base_context = self.get_base_context()
         base_context.update({
-            "store_name": self.store.name,
+            "store_name": self.store.shop_name,
             "recall_reason_title": recall_reason.reason,
             "recall_reason_description": recall_reason.description,
             "storage_fee": f"£{PricingEngine.storage_fee}",
-            "item_page_url": f"{settings.SITE_URL}/items/{self.item.id}",
+            "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
         })
         return base_context
 
@@ -51,6 +51,6 @@ class EmailContextGenerator:
     def generate_item_collected_context(self):
         base_context = self.get_base_context()
         base_context.update({
-            "store_name": self.store.name,
+            "store_name": self.store.shop_name,
         })
         return base_context

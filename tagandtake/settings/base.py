@@ -155,7 +155,9 @@ CORS_ALLOW_HEADERS = [
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            'apps/items/emails/templates',
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
