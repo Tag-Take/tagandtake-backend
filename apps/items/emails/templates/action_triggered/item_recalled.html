@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>{{ css }}</style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h2>Item Recalled</h2>
+            <p>Hi {{ username }},</p>
+            <p>Unfortunately, your item <strong>{{ item_name }}</strong> has been recalled by <strong>{{ store_name }}</strong> for the following reason:</p>
+            <p><strong>{{ recall_reason_title }}</strong>: {{ recall_reason_description }}</p>
+            <p>Please visit the store within 7 days to collect your item. If you do not collect it within this timeframe, a storage fee of <strong>${{ storage_fee }}</strong> will be applied.</p>
+            <p>A member of staff will be able to help you find your item. Showing your item page <a href="{{ item_page_url }}">{{ item_page_url }}</a> as proof of the listing may be helpful.</p>
+            <p>We understand this might be disappointing, but we believe in second chances. Maybe your next listing will be the one!</p>
+            <p>If you have any questions or need further assistance, feel free to contact our support team.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} Tag&Take. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

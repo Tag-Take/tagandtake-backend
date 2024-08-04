@@ -5,6 +5,7 @@ class PricingEngine:
     def __init__(self):
         self.tagandtake_commission = Decimal("0.05")
         self.tagandtake_flat_fee = Decimal("1")
+        self.storage_fee = Decimal("3.00")
 
     def calculate_list_price(self, price):
         """

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>{{ css }}</style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h2>Your Item is Now Listed!</h2>
+            <p>Hi {{ username }},</p>
+            <p>We're thrilled to let you know that your item <strong>{{ item_name }}</strong> is now live in <strong>{{ store_name }}</strong>! Buyers can now see and purchase your item. We'll notify you as soon as it sells.</p>
+            <p>To manage the details and price of your item, visit your item page: <a href="{{ item_page_url }}">{{ item_page_url }}</a>.</p>
+            <p>Thank you for contributing to our vibrant marketplace! Remember, the more you list, the more you can earn. Keep sharing your amazing items with our community!</p>
+            <p>Happy selling!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} Tag&Take. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

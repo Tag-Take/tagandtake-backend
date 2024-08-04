@@ -11,6 +11,7 @@ from apps.marketplace.models import (
     SoldListing,
     RecallReason,
 )
+from apps.items.emails.senders import ItemEmailSender
 
 
 class ListingHandler:
@@ -28,6 +29,7 @@ class ListingHandler:
             )
             item.status = "Listed"
             item.save()
+            ItemEmailSender.send_item_listed_email(listing)
         return listing
 
     @staticmethod
@@ -52,6 +54,7 @@ class ListingHandler:
             )
             item.status = "listed"
             item.save()
+            ItemEmailSender.send_item_listed_email(listing)
             return listing
 
     def recall_listing(self, reason_id):
@@ -68,6 +71,7 @@ class ListingHandler:
                 self.listing.item.status = "recalled"
                 self.listing.item.save()
                 self.listing.delete()
+                ItemEmailSender.send_item_recalled_email(self.listing, reason)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
@@ -85,6 +89,7 @@ class ListingHandler:
                 self.listing.item.status = "available"
                 self.listing.item.save()
                 self.listing.delete()
+                ItemEmailSender.send_item_delisted_email(self.listing)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
             
@@ -100,7 +105,7 @@ class ListingHandler:
             self.listing.item.status = "available"
             self.listing.item.save()
             self.listing.delete()
-
+            ItemEmailSender.send_item_collected_email(self.listing)
 
     def purchase_listing(self, buyer):
         if self.listing:
@@ -115,6 +120,7 @@ class ListingHandler:
                 self.listing.item.status = "sold"
                 self.listing.item.save()
                 self.listing.delete()
+                ItemEmailSender.send_item_sold_email(self.listing)
 
     @staticmethod
     def get_recall_reasons(id):
