@@ -7,6 +7,7 @@ from django.utils.encoding import force_str
 from rest_framework import generics, status, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.request import Request
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -18,9 +19,8 @@ from apps.accounts.serializers import (
     PasswordResetConfirmSerializer,
     CustomTokenRefreshSerializer,
 )
-from apps.accounts.utils import generate_activation_context
 from apps.accounts.signals import user_activated
-from apps.common.utils.email import send_email
+from apps.emails.services.senders import AccountEmailSender
 from apps.common.utils.responses import (
     create_success_response,
     create_error_response,
@@ -56,7 +56,7 @@ class SignUpView(generics.CreateAPIView):
 class ActivateUserView(APIView):
     authentication_classes = []
 
-    def get(self, request, uidb64, token):
+    def get(self, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -90,7 +90,7 @@ class ActivateUserView(APIView):
 
 
 class ResendActivationEmailView(APIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         email = request.data.get("email")
         try:
             user = User.objects.get(email=email)
@@ -99,13 +99,7 @@ class ResendActivationEmailView(APIView):
                     "User is already active.", {}, status.HTTP_400_BAD_REQUEST
                 )
             else:
-                context = generate_activation_context(user)
-                send_email(
-                    subject="Activate your account",
-                    to=user.email,
-                    template_name="./activation_email.html",
-                    context=context,
-                )
+                AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Activation email sent.", {}, status.HTTP_200_OK
                 )
@@ -116,7 +110,7 @@ class ResendActivationEmailView(APIView):
 
 
 class LogoutView(APIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return create_error_response(
@@ -142,7 +136,7 @@ class LogoutView(APIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
         try:
@@ -166,7 +160,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return create_error_response(
@@ -202,7 +196,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -222,7 +216,7 @@ class PasswordResetView(generics.GenericAPIView):
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -244,7 +238,7 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request: Request, *args, **kwargs):
         user = request.user
         user.delete()
         return create_success_response(

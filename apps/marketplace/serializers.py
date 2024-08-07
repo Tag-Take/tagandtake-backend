@@ -4,7 +4,7 @@ from apps.marketplace.models import Listing, RecallReason
 from apps.items.models import Item
 from apps.stores.models import Tag
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
-from apps.marketplace.services import ListingHandler
+from apps.marketplace.services.listing_manager import ListingHandler
 
 
 class CreateListingSerializer(serializers.ModelSerializer):

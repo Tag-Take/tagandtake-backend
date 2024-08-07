@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.items",
     "apps.payments",
     "apps.marketplace",
+    "apps.emails",
 ]
 
 REST_FRAMEWORK = {

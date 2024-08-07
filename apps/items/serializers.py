@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.items.models import Item, ItemCategory, ItemCondition, ItemImages
-from apps.common.s3.utils import S3ImageHandler
+from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import get_item_images_folder, IMAGE_FILE_TYPE, FILE_NAMES
 from django.db import transaction
 
