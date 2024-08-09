@@ -1,5 +1,5 @@
 # emails/senders.py
-from apps.common.utils.constants import ACTION_TRIGGERED, NOTIFICATIONS
+from apps.common.utils.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS
 from apps.emails.services.email_service import send_email
 from apps.emails.services.email_contexts import (
     AccountEmailContextGenerator,
@@ -157,3 +157,14 @@ class ItemEmailSender:
                 template_name=f"{NOTIFICATIONS}/recurring_storage_fee_charged.html",
                 context=context,
             )
+
+    def send_collection_reminder_email(self):
+        context_generator = ListingEmailContextGenerator(self.listing)
+        context = context_generator.generate_collection_reminder_context()
+        item = self.listing.item.name
+        send_email(
+            subject=f"Collection Reminder - {item}",
+            to=self.listing.item.owner.email,
+            template_name=f"{REMINDERS}/collect_item.html",
+            context=context
+        )

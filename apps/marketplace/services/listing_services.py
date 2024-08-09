@@ -13,7 +13,7 @@ from apps.marketplace.models import (
     SoldListing,
     RecallReason,
 )
-from apps.marketplace.services.pricing import (
+from apps.marketplace.services.pricing_services import (
     RECALLED_LISTING_RECURRING_FEE,
     GRACE_PERIOD_DAYS,
     RECURRING_FEE_INTERVAL_DAYS,
@@ -85,20 +85,17 @@ class ListingHandler:
             raise serializers.ValidationError("Invalid reason provided")
 
     def apply_recurring_storage_fee(self):
-        try:
-            with transaction.atomic():
-                self.listing.fee_charged_count += 1
-                self.listing.last_fee_charge_at = now()
-                self.listing.last_fee_charge_amount = (
-                    self.listing.last_fee_charge_amount or Decimal("0.00")
-                ) + RECALLED_LISTING_RECURRING_FEE
-                self.listing.next_fee_charge_at = now() + timedelta(
-                    days=self.get_recurring_fee_interval_days()
-                )
-                self.listing.save()
-                ItemEmailSender(self.listing).send_storage_fee_charged_email()
-        except RecalledListing.DoesNotExist:
-            raise serializers.ValidationError("Recalled listing not found.")
+        with transaction.atomic():
+            self.listing.fee_charged_count += 1
+            self.listing.last_fee_charge_at = now()
+            self.listing.last_fee_charge_amount = (
+                self.listing.last_fee_charge_amount or Decimal("0.00")
+            ) + RECALLED_LISTING_RECURRING_FEE
+            self.listing.next_fee_charge_at = now() + timedelta(
+                days=self.get_recurring_fee_interval_days()
+            )
+            self.listing.save()
+            ItemEmailSender(self.listing).send_storage_fee_charged_email()
 
     def delist_listing(self, reason_id):
         try:
@@ -161,3 +158,45 @@ class ListingHandler:
     @staticmethod
     def get_recurring_fee_interval_days():
         return RECURRING_FEE_INTERVAL_DAYS
+
+
+class RecalledListingCollectionReminderService:
+    def __init__(self, recalled_listing: RecalledListing):
+        self.recalled_listing = recalled_listing
+
+    def is_time_to_remind(self):
+        if (
+            not now() >= self.recalled_listing.next_fee_charge_at
+            and not self.recalled_listing.next_fee_charge_at.date() == now().date()
+        ):
+            return True
+
+    def send_listing_collection_reminder(self):
+        ItemEmailSender(self.recalled_listing).send_collection_reminder_email()
+
+    @staticmethod
+    def run_storage_fee_reminder_checks():
+        recalled_listings = RecalledListing.objects.all()
+        for recalled_listing in recalled_listings:
+            service = RecalledListingCollectionReminderService(recalled_listing)
+            if service.is_time_to_remind():
+                service.send_listing_collection_reminder()
+
+
+class RecalledListingStorageFeeService:
+    def __init__(self, recalled_listing: RecalledListing):
+        self.recalled_listing = recalled_listing
+
+    def is_time_to_charge(self):
+        return now() >= self.recalled_listing.next_fee_charge_at
+
+    def apply_storage_fee(self):
+        ListingHandler(self.recalled_listing).apply_recurring_storage_fee()
+
+    @staticmethod
+    def run_storage_fee_checks():
+        recalled_listings = RecalledListing.objects.all()
+        for recalled_listing in recalled_listings:
+            service = RecalledListingStorageFeeService(recalled_listing)
+            if service.is_time_to_charge():
+                service.apply_storage_fee()

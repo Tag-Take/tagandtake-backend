@@ -7,7 +7,7 @@ from apps.common.utils.responses import create_success_response, create_error_re
 
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import StoreProfile
-from apps.stores.services.tag_manager import TagHandler
+from apps.stores.services.tags_services import TagHandler
 
 
 from apps.payments.signals import tags_purchased

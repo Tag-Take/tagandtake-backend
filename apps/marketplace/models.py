@@ -8,7 +8,7 @@ from decimal import Decimal
 
 from apps.items.models import Item
 from apps.stores.models import Tag
-from apps.marketplace.services.pricing import PricingEngine
+from apps.marketplace.services.pricing_services import PricingEngine
 
 User = get_user_model()
 

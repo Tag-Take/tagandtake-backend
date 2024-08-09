@@ -1,5 +1,3 @@
-# emails/contexts.py
-
 from datetime import datetime
 
 from django.conf import settings
@@ -7,7 +5,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
-from apps.marketplace.services.pricing import PricingEngine
+from apps.marketplace.services.pricing_services import RECALLED_LISTING_RECURRING_FEE
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
@@ -118,7 +116,7 @@ class ListingEmailContextGenerator:
                 "store_name": self.store.shop_name,
                 "recall_reason_title": recall_reason.reason,
                 "recall_reason_description": recall_reason.description,
-                "storage_fee": f"{PricingEngine().storage_fee}",
+                "storage_fee": f"{RECALLED_LISTING_RECURRING_FEE}",
                 "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
             }
         )
@@ -167,4 +165,15 @@ class ListingEmailContextGenerator:
                 "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
             }
         )
+        return base_context
+    
+    def generate_collection_reminder_context(self):
+        next_charge_at = self.listing.next_fee_charge_at
+        base_context = self.get_base_context()
+        base_context.update({
+            "store_name": self.store.shop_name,
+            "recall_reason": self.listing.reason.reason,  
+            "next_charge_time": next_charge_at.strftime('%H:%M %p'),
+            "next_charge_date": next_charge_at.strftime('%B %d, %Y'),
+        })
         return base_context

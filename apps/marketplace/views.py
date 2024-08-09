@@ -7,7 +7,7 @@ from apps.marketplace.serializers import CreateListingSerializer, ListingSeriali
 from apps.marketplace.models import Listing, RecalledListing
 from apps.stores.models import Tag
 from apps.items.models import Item
-from apps.marketplace.services.listing_manager import ListingHandler
+from apps.marketplace.services.listing_services import ListingHandler
 from apps.marketplace.permissions import check_listing_store_permissions
 from apps.items.serializers import ItemCreateSerializer
 from apps.members.permissions import IsMemberUser
