@@ -18,7 +18,7 @@ from apps.marketplace.services.pricing_services import (
     GRACE_PERIOD_DAYS,
     RECURRING_FEE_INTERVAL_DAYS,
 )
-from apps.emails.services.email_senders import ItemEmailSender
+from apps.emails.services.email_senders import ListingEmailSender
 
 
 class ListingHandler:
@@ -36,7 +36,7 @@ class ListingHandler:
             )
             item.status = "Listed"
             item.save()
-            ItemEmailSender(listing).send_item_listed_email()
+            ListingEmailSender(listing).send_listed_created_email()
         return listing
 
     @staticmethod
@@ -61,7 +61,7 @@ class ListingHandler:
             )
             item.status = "listed"
             item.save()
-            ItemEmailSender(listing).send_item_listed_email()
+            ListingEmailSender(listing).send_listed_created_email()
             return listing
 
     def recall_listing(self, reason_id):
@@ -80,7 +80,7 @@ class ListingHandler:
                 self.listing.item.status = "recalled"
                 self.listing.item.save()
                 self.listing.delete()
-                ItemEmailSender(self.listing).send_item_recalled_email(reason)
+                ListingEmailSender(self.listing).send_listing_recalled_email(reason)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
@@ -95,7 +95,7 @@ class ListingHandler:
                 days=self.get_recurring_fee_interval_days()
             )
             self.listing.save()
-            ItemEmailSender(self.listing).send_storage_fee_charged_email()
+            ListingEmailSender(self.listing).send_storage_fee_charged_email()
 
     def delist_listing(self, reason_id):
         try:
@@ -111,7 +111,7 @@ class ListingHandler:
                 self.listing.item.status = "available"
                 self.listing.item.save()
                 self.listing.delete()
-                ItemEmailSender(self.listing).send_item_delisted_email()
+                ListingEmailSender(self.listing).send_listing_delisted_email()
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
@@ -127,7 +127,7 @@ class ListingHandler:
             self.listing.item.status = "available"
             self.listing.item.save()
             self.listing.delete()
-            ItemEmailSender(self.listing).send_item_collected_email()
+            ListingEmailSender(self.listing).send_listing_collected_email()
 
     def purchase_listing(self, buyer):
         if self.listing:
@@ -142,7 +142,7 @@ class ListingHandler:
                 self.listing.item.status = "sold"
                 self.listing.item.save()
                 self.listing.delete()
-                ItemEmailSender(self.listing).send_item_sold_email()
+                ListingEmailSender(self.listing).send_listing_sold_email()
 
     @staticmethod
     def get_recall_reasons(id):
@@ -172,7 +172,7 @@ class RecalledListingCollectionReminderService:
             return True
 
     def send_listing_collection_reminder(self):
-        ItemEmailSender(self.recalled_listing).send_collection_reminder_email()
+        ListingEmailSender(self.recalled_listing).send_collection_reminder_email()
 
     @staticmethod
     def run_storage_fee_reminder_checks():

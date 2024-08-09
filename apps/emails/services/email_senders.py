@@ -78,11 +78,11 @@ class StoreEmailSender:
         )
 
 
-class ItemEmailSender:
+class ListingEmailSender:
     def __init__(self, listing: Listing):
         self.listing = listing
 
-    def send_item_listed_email(self):
+    def send_listed_created_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_listed_context()
         item = self.listing.item.name
@@ -93,7 +93,7 @@ class ItemEmailSender:
             context=context,
         )
 
-    def send_item_sold_email(self, sale_price: str):
+    def send_listing_sold_email(self, sale_price: str):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_sold_context(sale_price)
         item = self.listing.item.name
@@ -104,7 +104,7 @@ class ItemEmailSender:
             context=context,
         )
 
-    def send_item_recalled_email(self, recall_reason: int):
+    def send_listing_recalled_email(self, recall_reason: int):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_recalled_context(recall_reason)
         item = self.listing.item.name
@@ -115,7 +115,7 @@ class ItemEmailSender:
             context=context,
         )
 
-    def send_item_delisted_email(self):
+    def send_listing_delisted_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_delisted_context()
         item = self.listing.item.name
@@ -126,7 +126,7 @@ class ItemEmailSender:
             context=context,
         )
 
-    def send_item_collected_email(self):
+    def send_listing_collected_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_collected_context()
         item = self.listing.item.name
@@ -166,5 +166,5 @@ class ItemEmailSender:
             subject=f"Collection Reminder - {item}",
             to=self.listing.item.owner.email,
             template_name=f"{REMINDERS}/collect_item.html",
-            context=context
+            context=context,
         )
