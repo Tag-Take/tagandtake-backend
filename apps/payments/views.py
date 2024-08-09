@@ -46,7 +46,7 @@ class PurchaseTagsView(APIView):
         #     sender=StoreProfile, store=store_profile, tag_count=group_size
         # )
 
-        #TODO: Implement this signal correctly ^ 
+        # TODO: Implement this signal correctly ^
 
         tag_handler = TagHandler()
         tag_handler.create_tag_group_and_tags(store_profile, group_size)

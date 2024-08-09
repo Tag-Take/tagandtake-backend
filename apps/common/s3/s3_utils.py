@@ -59,16 +59,17 @@ class S3ImageHandler(S3BaseHandler):
         except Exception as e:
             raise Exception(f"Error deleting file from S3: {e}") from e
 
+
 # @shared_task
 # def upload_image_task(file_data, key):
 #     s3_client = S3BaseHandler().get_s3_client()
 #     try:
-#         file_data = base64.b64decode(file_data)  
+#         file_data = base64.b64decode(file_data)
 #         s3_client.put_object(
 #             Bucket=settings.AWS_STORAGE_BUCKET_NAME,
 #             Key=key,
 #             Body=file_data,
-#             ContentType='image/jpeg' 
+#             ContentType='image/jpeg'
 #         )
 #         return S3BaseHandler().generate_s3_url(key)
 #     except ClientError as e:

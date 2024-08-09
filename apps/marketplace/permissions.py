@@ -6,7 +6,7 @@ from apps.common.utils.responses import create_error_response
 class IsTagOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, listing):
         return listing.tag.tag_group.store.user == request.user
-    
+
 
 def check_listing_store_permissions(request, view, instance):
     if not IsTagOwner().has_object_permission(request, view, instance):

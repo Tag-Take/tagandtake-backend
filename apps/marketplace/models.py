@@ -100,14 +100,17 @@ class RecallReason(models.Model):
 class RecalledListing(BaseListing):
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     recalled_at = models.DateTimeField(auto_now_add=True)
-    fee_charged_count = models.PositiveIntegerField(default=0) 
+    fee_charged_count = models.PositiveIntegerField(default=0)
     last_fee_charge_at = models.DateTimeField(null=True, blank=True)
     last_fee_charge_amount = models.DecimalField(
-        max_digits=9, decimal_places=2, 
-        validators=[MinValueValidator(Decimal("0.00"))], 
-        default=Decimal("0.00"), null=True, blank=True
+        max_digits=9,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))],
+        default=Decimal("0.00"),
+        null=True,
+        blank=True,
     )
-    next_fee_charge_at = models.DateTimeField() 
+    next_fee_charge_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

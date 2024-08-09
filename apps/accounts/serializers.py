@@ -50,7 +50,6 @@ class SignUpSerializer(serializers.ModelSerializer):
         return user
 
 
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         username_or_email = attrs.get("username")

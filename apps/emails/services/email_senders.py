@@ -90,7 +90,7 @@ class ItemEmailSender:
             subject=f"Item Listed - {item}",
             to=self.listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_listed.html",
-            context=context
+            context=context,
         )
 
     def send_item_sold_email(self, sale_price: str):
@@ -101,7 +101,7 @@ class ItemEmailSender:
             subject=f"Congratulations! Your Item Sold - {item}",
             to=self.listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_sold.html",
-            context=context
+            context=context,
         )
 
     def send_item_recalled_email(self, recall_reason: int):
@@ -112,7 +112,7 @@ class ItemEmailSender:
             subject=f"Item Recalled - {item}",
             to=self.listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_recalled.html",
-            context=context
+            context=context,
         )
 
     def send_item_delisted_email(self):
@@ -123,7 +123,7 @@ class ItemEmailSender:
             subject=f"Item Delisted - {item}",
             to=self.listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_delisted.html",
-            context=context
+            context=context,
         )
 
     def send_item_collected_email(self):
@@ -134,10 +134,10 @@ class ItemEmailSender:
             subject=f"Collection Confirmation - {item}",
             to=self.listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_collected.html",
-            context=context
+            context=context,
         )
 
-    def send_storage_fee_charged_email(self): 
+    def send_storage_fee_charged_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         item = self.listing.item.name
 
@@ -147,7 +147,7 @@ class ItemEmailSender:
                 subject=f"Storage Fee Charged - {item}",
                 to=self.listing.item.owner.email,
                 template_name=f"{NOTIFICATIONS}/initial_storage_fee_charged.html",
-                context=context
+                context=context,
             )
         elif self.listing.fee_charged_count > 1:
             context = context_generator.generate_recurring_storage_fee_context()
@@ -155,6 +155,5 @@ class ItemEmailSender:
                 subject=f"Recurring Storage Fee Charged - {item}",
                 to=self.listing.item.owner.email,
                 template_name=f"{NOTIFICATIONS}/recurring_storage_fee_charged.html",
-                context=context
+                context=context,
             )
-

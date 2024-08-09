@@ -22,5 +22,4 @@ class StorageFeeService:
         for recalled_listing in recalled_listings:
             service = StorageFeeService(recalled_listing)
             if service.is_time_to_charge():
-                service.apply_storage_fee() 
-
+                service.apply_storage_fee()

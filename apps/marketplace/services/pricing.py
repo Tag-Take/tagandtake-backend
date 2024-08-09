@@ -5,6 +5,7 @@ GRACE_PERIOD_DAYS = 7
 RECURRING_FEE_INTERVAL_DAYS = 7
 RECALLED_LISTING_RECURRING_FEE = Decimal("5.00")
 
+
 class PricingEngine:
     def __init__(self):
         self.tagandtake_commission = Decimal("0.05")
@@ -63,4 +64,3 @@ class PricingEngine:
 
 
 # create a class that handles the recurring fee for recalled listings
-

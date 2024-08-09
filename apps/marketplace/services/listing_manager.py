@@ -16,7 +16,7 @@ from apps.marketplace.models import (
 from apps.marketplace.services.pricing import (
     RECALLED_LISTING_RECURRING_FEE,
     GRACE_PERIOD_DAYS,
-    RECURRING_FEE_INTERVAL_DAYS
+    RECURRING_FEE_INTERVAL_DAYS,
 )
 from apps.emails.services.email_senders import ItemEmailSender
 
@@ -74,10 +74,8 @@ class ListingHandler:
                     store_commission=self.listing.store_commission,
                     min_listing_days=self.listing.min_listing_days,
                     reason=reason,
-                    next_fee_charge_at=now() #TODO: REMOVE!!!!
-                #     + timedelta(
-                #         days=self.get_grace_period_days()
-                #         )  
+                    next_fee_charge_at=now()
+                    + timedelta(days=self.get_grace_period_days()),
                 )
                 self.listing.item.status = "recalled"
                 self.listing.item.save()
@@ -96,7 +94,7 @@ class ListingHandler:
                 ) + RECALLED_LISTING_RECURRING_FEE
                 self.listing.next_fee_charge_at = now() + timedelta(
                     days=self.get_recurring_fee_interval_days()
-                    )
+                )
                 self.listing.save()
                 ItemEmailSender(self.listing).send_storage_fee_charged_email()
         except RecalledListing.DoesNotExist:
@@ -119,7 +117,7 @@ class ListingHandler:
                 ItemEmailSender(self.listing).send_item_delisted_email()
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
-            
+
     def delist_recalled_listing(self):
         with transaction.atomic():
             DelistedListing.objects.create(
@@ -149,20 +147,17 @@ class ListingHandler:
                 self.listing.delete()
                 ItemEmailSender(self.listing).send_item_sold_email()
 
-
     @staticmethod
     def get_recall_reasons(id):
         try:
             return RecallReason.objects.get(id=id)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
-        
-        
+
     @staticmethod
     def get_grace_period_days():
         return GRACE_PERIOD_DAYS
-    
-    @staticmethod 
+
+    @staticmethod
     def get_recurring_fee_interval_days():
         return RECURRING_FEE_INTERVAL_DAYS
-

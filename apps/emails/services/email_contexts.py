@@ -18,7 +18,6 @@ class AccountEmailContextGenerator:
     def __init__(self, user: User):
         self.user = user
 
-
     def generate_account_activation_context(self):
         token = self.generate_activation_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
@@ -29,7 +28,6 @@ class AccountEmailContextGenerator:
             "current_year": datetime.now().year,
         }
         return context
-
 
     def generate_password_reset_context(self):
         token = self.generate_activation_token(self.user)
@@ -46,7 +44,7 @@ class AccountEmailContextGenerator:
 
     def generate_activation_token(self):
         return default_token_generator.make_token(self.user)
-    
+
 
 class MemberEmailContextGenerator:
     def __init__(self, member: Member):
@@ -58,7 +56,7 @@ class MemberEmailContextGenerator:
             "how_it_works_url": settings.HOW_IT_WORKS_URL,
         }
         return context
-    
+
 
 class StoreEmailContextGenerator:
     def __init__(self, store: Store):
@@ -70,7 +68,7 @@ class StoreEmailContextGenerator:
             "pin": self.store.pin,
         }
         return context
-    
+
     def generate_new_store_pin_context(self):
         context = {
             "logo_url": settings.LOGO_URL,
@@ -95,64 +93,78 @@ class ListingEmailContextGenerator:
 
     def generate_item_listed_context(self):
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-            "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+                "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
+            }
+        )
         return base_context
 
     def generate_item_sold_context(self, sale_price):
         base_context = self.get_base_context()
-        base_context.update({
-            "sale_price": sale_price,
-            "earnings": self.listing.member_earnings,
-        })
+        base_context.update(
+            {
+                "sale_price": sale_price,
+                "earnings": self.listing.member_earnings,
+            }
+        )
         return base_context
 
     def generate_item_recalled_context(self, recall_reason: RecallReason):
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-            "recall_reason_title": recall_reason.reason,
-            "recall_reason_description": recall_reason.description,
-            "storage_fee": f"{PricingEngine().storage_fee}",
-            "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+                "recall_reason_title": recall_reason.reason,
+                "recall_reason_description": recall_reason.description,
+                "storage_fee": f"{PricingEngine().storage_fee}",
+                "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
+            }
+        )
         return base_context
 
     def generate_item_delisted_context(self):
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+            }
+        )
         return base_context
 
     def generate_item_collected_context(self):
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+            }
+        )
         return base_context
-    
+
     def generate_initial_storage_fee_context(self):
         next_charge_at = self.listing.next_fee_charge_at
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-            "storage_fee": f"{self.listing.last_fee_charge_amount}",
-            "next_charge_time": next_charge_at.strftime('%H:%M %p'),
-            "next_charge_date": next_charge_at.strftime('%B %d, %Y')
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+                "storage_fee": f"{self.listing.last_fee_charge_amount}",
+                "next_charge_time": next_charge_at.strftime("%H:%M %p"),
+                "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
+            }
+        )
         return base_context
 
     def generate_recurring_storage_fee_context(self):
         next_charge_at = self.listing.next_fee_charge_at
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-            "storage_fee": f"{self.listing.last_fee_charge_amount}",
-            "fee_count": self.listing.fee_charged_count,
-            "next_charge_time": next_charge_at.strftime('%H:%M %p'),
-            "next_charge_date": next_charge_at.strftime('%B %d, %Y')
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+                "storage_fee": f"{self.listing.last_fee_charge_amount}",
+                "fee_count": self.listing.fee_charged_count,
+                "next_charge_time": next_charge_at.strftime("%H:%M %p"),
+                "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
+            }
+        )
         return base_context

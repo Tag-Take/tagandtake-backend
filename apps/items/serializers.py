@@ -63,7 +63,6 @@ class ItemCreateSerializer(serializers.ModelSerializer):
                 return item
         except Exception as e:
             raise serializers.ValidationError(f"Failed to create item: {e}")
-        
 
 
 class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
