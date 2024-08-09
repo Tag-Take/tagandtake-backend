@@ -5,20 +5,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stores', '0003_alter_storeprofile_shop_name'),
+        ("stores", "0003_alter_storeprofile_shop_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='storeprofile',
-            name='stock_limit',
-            field=models.IntegerField(default=50, validators=[django.core.validators.MinValueValidator(1)]),
+            model_name="storeprofile",
+            name="stock_limit",
+            field=models.IntegerField(
+                default=50, validators=[django.core.validators.MinValueValidator(1)]
+            ),
         ),
         migrations.AlterField(
-            model_name='storeprofile',
-            name='store_bio',
+            model_name="storeprofile",
+            name="store_bio",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

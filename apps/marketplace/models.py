@@ -2,11 +2,13 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from datetime import timedelta
+from django.utils.timezone import now
 from decimal import Decimal
 
 from apps.items.models import Item
 from apps.stores.models import Tag
-from apps.marketplace.pricing import PricingEngine
+from apps.marketplace.services.pricing_services import PricingEngine
 
 User = get_user_model()
 
@@ -98,6 +100,17 @@ class RecallReason(models.Model):
 class RecalledListing(BaseListing):
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     recalled_at = models.DateTimeField(auto_now_add=True)
+    fee_charged_count = models.PositiveIntegerField(default=0)
+    last_fee_charge_at = models.DateTimeField(null=True, blank=True)
+    last_fee_charge_amount = models.DecimalField(
+        max_digits=9,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))],
+        default=Decimal("0.00"),
+        null=True,
+        blank=True,
+    )
+    next_fee_charge_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

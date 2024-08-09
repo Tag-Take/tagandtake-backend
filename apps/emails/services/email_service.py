@@ -8,6 +8,20 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 
+def send_email(subject, to, template_name, context=None, from_email=None):
+    """
+    Generic function to send emails using Django's built-in email backend.
+    This function now sends the email asynchronously using a Celery task.
+
+    :param subject: Subject of the email.
+    :param to: Recipient email address.
+    :param template_name: Path to the email template.
+    :param context: Context to render the template with.
+    :param from_email: Sender's email address. Defaults to settings.DEFAULT_FROM_EMAIL.
+    """
+    send_email_task.delay(subject, to, template_name, context, from_email)
+
+
 @shared_task
 def send_email_task(subject, to, template_name, context=None, from_email=None):
     """
@@ -49,17 +63,3 @@ def send_email_task(subject, to, template_name, context=None, from_email=None):
     )
     email_message.attach_alternative(html_message, "text/html")
     email_message.send()
-
-
-def send_email(subject, to, template_name, context=None, from_email=None):
-    """
-    Utility function to send emails using Django's built-in email backend.
-    This function now sends the email asynchronously using a Celery task.
-
-    :param subject: Subject of the email.
-    :param to: Recipient email address.
-    :param template_name: Path to the email template.
-    :param context: Context to render the template with.
-    :param from_email: Sender's email address. Defaults to settings.DEFAULT_FROM_EMAIL.
-    """
-    send_email_task.delay(subject, to, template_name, context, from_email)

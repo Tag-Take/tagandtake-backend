@@ -9,8 +9,8 @@ from django.conf import settings
 from django.db import transaction
 
 from apps.stores.models import Tag, TagGroup
-from apps.common.constants import LISTING
-from apps.common.s3.utils import S3ImageHandler
+from apps.common.utils.constants import LISTING
+from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import FILE_NAMES, get_tag_image_folder, IMAGE_FILE_TYPE
 
 

@@ -4,7 +4,7 @@ from apps.marketplace.models import Listing, RecallReason
 from apps.items.models import Item
 from apps.stores.models import Tag
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
-from apps.marketplace.services import ListingHandler
+from apps.marketplace.services.listing_services import ListingHandler
 
 
 class CreateListingSerializer(serializers.ModelSerializer):
@@ -28,7 +28,9 @@ class CreateListingSerializer(serializers.ModelSerializer):
         try:
             item = Item.objects.get(id=item_id)
             if item.status != "available":
-                errors["item_id"] = f"Item is not available for listing. Item is currelty {item.status}."
+                errors[
+                    "item_id"
+                ] = f"Item is not available for listing. Item is currelty {item.status}."
         except Item.DoesNotExist:
             errors["item_id"] = "Item does not exist."
             item = None
@@ -91,6 +93,7 @@ class ListingSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
 class RecallListingSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
     transaction_fee = serializers.DecimalField(
@@ -121,4 +124,3 @@ class RecallListingSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-

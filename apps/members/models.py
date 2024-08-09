@@ -19,14 +19,20 @@ class MemberProfile(models.Model):
         decimal_places=6,
         blank=True,
         null=True,
-        validators=[MinValueValidator(Decimal("-180.00")), MaxValueValidator(Decimal("180.00"))],
+        validators=[
+            MinValueValidator(Decimal("-180.00")),
+            MaxValueValidator(Decimal("180.00")),
+        ],
     )
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
         blank=True,
         null=True,
-        validators=[MinValueValidator(Decimal("-90.00")), MaxValueValidator(Decimal("90.00"))],
+        validators=[
+            MinValueValidator(Decimal("-90.00")),
+            MaxValueValidator(Decimal("90.00")),
+        ],
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

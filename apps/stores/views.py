@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from apps.common.utils.responses import create_error_response, create_success_response
-from apps.stores.utils import generate_pin, send_rest_pin_email
+from apps.stores.utils import generate_pin
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import (
     StoreProfile,
@@ -22,6 +22,7 @@ from apps.stores.serializers import (
     StoreProfileImageDeleteSerializer,
     StoreProfileImageUploadSerializer,
 )
+from apps.emails.services.email_senders import StoreEmailSender
 
 
 class StoreProfileView(generics.RetrieveUpdateAPIView):
@@ -77,7 +78,7 @@ class GenerateNewPinView(APIView):
         profile.pin = generate_pin()
         profile.save()
 
-        send_rest_pin_email(profile)
+        StoreEmailSender(profile).send_reset_pin_email()
 
         return create_success_response(
             "New PIN generated and sent to your email.", {}, status.HTTP_200_OK

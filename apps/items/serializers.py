@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.items.models import Item, ItemCategory, ItemCondition, ItemImages
-from apps.common.s3.utils import S3ImageHandler
+from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import get_item_images_folder, IMAGE_FILE_TYPE, FILE_NAMES
 from django.db import transaction
 
@@ -48,19 +48,21 @@ class ItemCreateSerializer(serializers.ModelSerializer):
         image = validated_data.pop("image")
         order = 0
 
-        item = Item.objects.create(
-            owner=request.user, **validated_data, status="available"
-        )
+        try:
+            with transaction.atomic():
+                item = Item.objects.create(
+                    owner=request.user, **validated_data, status="available"
+                )
 
-        s3_handler = S3ImageHandler()
+                folder_name = get_item_images_folder(item.id)
+                key = f"{folder_name}/{FILE_NAMES['item_image']}_{order}.{IMAGE_FILE_TYPE}"
+                image_url = S3ImageHandler().upload_image(image, key)
 
-        folder_name = get_item_images_folder(item.id)
-        key = f"{folder_name}/{FILE_NAMES['item_image']}_{order}.{IMAGE_FILE_TYPE}"
-        image_url = s3_handler.upload_image(image, key)
+                ItemImages.objects.create(item=item, image_url=image_url, order=order)
 
-        ItemImages.objects.create(item=item, image_url=image_url, order=order)
-
-        return item
+                return item
+        except Exception as e:
+            raise serializers.ValidationError(f"Failed to create item: {e}")
 
 
 class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):

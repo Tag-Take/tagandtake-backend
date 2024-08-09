@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from apps.members.services import send_welcome_email
+from apps.emails.services.email_senders import MemberEmailSender
 
 
 User = get_user_model()
@@ -21,7 +21,7 @@ def create_member_profile(sender, instance, **kwargs):
 @receiver(post_save, sender=MemberProfile)
 def send_member_welcome_email(sender, instance, created, **kwargs):
     if created:
-        send_welcome_email(instance)
+        MemberEmailSender(instance).send_welcome_email()
 
 
 @receiver(pre_save, sender=User)

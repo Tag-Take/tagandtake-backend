@@ -1,5 +1,4 @@
-from django.contrib.auth import authenticate, get_user_model
-from django.db.models import Q
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -16,11 +15,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
-from apps.common.utils.email import send_email
-from apps.accounts.utils import (
-    generate_password_reset_email_context,
-    generate_activation_context,
-)
+from apps.emails.services.email_senders import AccountEmailSender
 
 
 User = get_user_model()
@@ -51,19 +46,8 @@ class SignUpSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
             role=role,
         )
-        self.send_activation_email(user)
+        AccountEmailSender(user).send_activation_email()
         return user
-
-    @staticmethod
-    def send_activation_email(user):
-        context = generate_activation_context(user)
-
-        send_email(
-            subject="Activate your account",
-            to=user.email,
-            template_name="./activation_email.html",
-            context=context,
-        )
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -138,15 +122,7 @@ class PasswordResetSerializer(serializers.Serializer):
     def save(self):
         email = self.validated_data["email"]
         user = User.objects.get(email=email)
-
-        context = generate_password_reset_email_context(user)
-
-        send_email(
-            subject="Password Reset Request",
-            to=email,
-            template_name="./password_reset_email.html",
-            context=context,
-        )
+        AccountEmailSender(user).send_password_reset_email()
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):

@@ -7,7 +7,7 @@ from apps.stores.models import (
 )
 from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
-from apps.common.s3.utils import S3ImageHandler
+from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import (
     get_store_profile_folder,
     FILE_NAMES,
@@ -47,14 +47,16 @@ class StoreProfileSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         instance = self.instance
-        stock_limit = data.get('stock_limit', instance.stock_limit)
+        stock_limit = data.get("stock_limit", instance.stock_limit)
 
         if stock_limit is not None and stock_limit < instance.active_listings_count:
-            raise serializers.ValidationError({
-                "stock_limit": "Stock limit cannot be less than the number of active tags."
-            })
+            raise serializers.ValidationError(
+                {
+                    "stock_limit": "Stock limit cannot be less than the number of active tags."
+                }
+            )
         return data
-    
+
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

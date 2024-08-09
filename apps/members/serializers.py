@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from apps.common.s3.utils import S3ImageHandler
+from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import (
     get_member_profile_folder,
     FILE_NAMES,

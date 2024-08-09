@@ -3,8 +3,6 @@ import environ
 from pathlib import Path
 from datetime import timedelta
 
-from celery import Celery
-
 from my_celery.schedules import CELERY_SCHEDULES
 
 env = environ.Env()
@@ -43,6 +41,7 @@ INSTALLED_APPS = [
     "apps.items",
     "apps.payments",
     "apps.marketplace",
+    "apps.emails",
 ]
 
 REST_FRAMEWORK = {
@@ -57,12 +56,12 @@ REST_FRAMEWORK = {
 }
 
 # Celery configuration
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
 
 CELERY_BEAT_SCHEDULE = CELERY_SCHEDULES
 
@@ -156,7 +155,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            'apps/items/emails/templates',
+            "apps/items/emails/templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -193,5 +192,3 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 LOGO_URL = "https://your-logo-url.com/logo.png"
 LOGIN_URL = "https://tagandtake.com/login"
 HOW_IT_WORKS_URL = "https://tagandtake.com/how-it-works"
-
-

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stores', '0002_remove_storeprofile_active_tags_count'),
+        ("stores", "0002_remove_storeprofile_active_tags_count"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='storeprofile',
-            name='shop_name',
+            model_name="storeprofile",
+            name="shop_name",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]
