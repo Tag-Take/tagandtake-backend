@@ -122,9 +122,11 @@ class ListingHandler:
                 self.listing.delete()
                 ItemEmailSender(self.listing).send_item_sold_email()
 
+
     @staticmethod
     def get_recall_reasons(id):
         try:
             return RecallReason.objects.get(id=id)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
+

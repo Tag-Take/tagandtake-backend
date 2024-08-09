@@ -50,6 +50,10 @@ def update_store_notification_preference(sender, instance: StoreProfile, **kwarg
 
 
 @receiver(tags_purchased)
-def create_tag_group_and_tags(sender, instance: StoreProfile, tag_count, **kwargs):
+def create_tag_group_and_tags(sender, instance: StoreProfile, **kwargs):
+    tag_count = kwargs.get('tag_count')
+    if not tag_count:
+        raise ValueError("tag_count is required")
+    
     tag_handler = TagHandler()
     tag_handler.create_tag_group_and_tags(instance, tag_count)

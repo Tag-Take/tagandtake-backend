@@ -82,7 +82,6 @@ class ItemEmailSender:
     def __init__(self, listing: Listing):
         self.listing = listing
 
-    @staticmethod
     def send_item_listed_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_listed_context()
@@ -94,7 +93,6 @@ class ItemEmailSender:
             context=context
         )
 
-    @staticmethod
     def send_item_sold_email(self, sale_price: str):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_sold_context(sale_price)
@@ -106,7 +104,6 @@ class ItemEmailSender:
             context=context
         )
 
-    @staticmethod
     def send_item_recalled_email(self, recall_reason: int):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_recalled_context(recall_reason)
@@ -118,7 +115,6 @@ class ItemEmailSender:
             context=context
         )
 
-    @staticmethod
     def send_item_delisted_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_delisted_context()
@@ -130,7 +126,6 @@ class ItemEmailSender:
             context=context
         )
 
-    @staticmethod
     def send_item_collected_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
         context = context_generator.generate_item_collected_context()
