@@ -22,7 +22,7 @@ from apps.stores.serializers import (
     StoreProfileImageDeleteSerializer,
     StoreProfileImageUploadSerializer,
 )
-from apps.emails.services.senders import StoreEmailSender
+from apps.emails.services.email_senders import StoreEmailSender
 
 
 class StoreProfileView(generics.RetrieveUpdateAPIView):

@@ -15,7 +15,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
-from apps.emails.services.senders import AccountEmailSender
+from apps.emails.services.email_senders import AccountEmailSender
 
 
 User = get_user_model()

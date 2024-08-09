@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from datetime import timedelta
+from django.utils.timezone import now
 from decimal import Decimal
 
 from apps.items.models import Item

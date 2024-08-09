@@ -1,7 +1,7 @@
 # emails/senders.py
-from apps.common.utils.constants import ACTION_TRIGGERED
+from apps.common.utils.constants import ACTION_TRIGGERED, NOTIFICATIONS
 from apps.emails.services.email_service import send_email
-from apps.emails.services.contexts import (
+from apps.emails.services.email_contexts import (
     AccountEmailContextGenerator,
     MemberEmailContextGenerator,
     StoreEmailContextGenerator,
@@ -136,4 +136,25 @@ class ItemEmailSender:
             template_name=f"{ACTION_TRIGGERED}/item_collected.html",
             context=context
         )
+
+    def send_storage_fee_charged_email(self): 
+        context_generator = ListingEmailContextGenerator(self.listing)
+        item = self.listing.item.name
+
+        if self.listing.fee_charged_count == 1:
+            context = context_generator.generate_initial_storage_fee_context()
+            send_email(
+                subject=f"Storage Fee Charged - {item}",
+                to=self.listing.item.owner.email,
+                template_name=f"{NOTIFICATIONS}/initial_storage_fee_charged.html",
+                context=context
+            )
+        elif self.listing.fee_charged_count > 1:
+            context = context_generator.generate_recurring_storage_fee_context()
+            send_email(
+                subject=f"Recurring Storage Fee Charged - {item}",
+                to=self.listing.item.owner.email,
+                template_name=f"{NOTIFICATIONS}/recurring_storage_fee_charged.html",
+                context=context
+            )
 

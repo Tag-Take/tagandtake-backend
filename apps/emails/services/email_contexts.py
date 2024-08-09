@@ -133,3 +133,26 @@ class ListingEmailContextGenerator:
             "store_name": self.store.shop_name,
         })
         return base_context
+    
+    def generate_initial_storage_fee_context(self):
+        next_charge_at = self.listing.next_fee_charge_at
+        base_context = self.get_base_context()
+        base_context.update({
+            "store_name": self.store.shop_name,
+            "storage_fee": f"{self.listing.last_fee_charge_amount}",
+            "next_charge_time": next_charge_at.strftime('%H:%M %p'),
+            "next_charge_date": next_charge_at.strftime('%B %d, %Y')
+        })
+        return base_context
+
+    def generate_recurring_storage_fee_context(self):
+        next_charge_at = self.listing.next_fee_charge_at
+        base_context = self.get_base_context()
+        base_context.update({
+            "store_name": self.store.shop_name,
+            "storage_fee": f"{self.listing.last_fee_charge_amount}",
+            "fee_count": self.listing.fee_charged_count,
+            "next_charge_time": next_charge_at.strftime('%H:%M %p'),
+            "next_charge_date": next_charge_at.strftime('%B %d, %Y')
+        })
+        return base_context

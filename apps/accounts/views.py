@@ -20,7 +20,7 @@ from apps.accounts.serializers import (
     CustomTokenRefreshSerializer,
 )
 from apps.accounts.signals import user_activated
-from apps.emails.services.senders import AccountEmailSender
+from apps.emails.services.email_senders import AccountEmailSender
 from apps.common.utils.responses import (
     create_success_response,
     create_error_response,
