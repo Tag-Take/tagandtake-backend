@@ -14,7 +14,7 @@ from apps.items.serializers import (
 )
 from apps.common.utils.responses import create_error_response, create_success_response
 from apps.members.permissions import IsMemberUser
-from apps.items.permissions import IsOwner, check_item_permissions
+from apps.items.permissions import IsItemOwner, check_item_permissions
 from apps.items.models import Item, ItemCategory, ItemCondition
 
 
@@ -118,7 +118,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class MemberItemListView(generics.ListAPIView):
     serializer_class = MemberItemListSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated, IsItemOwner]
 
     def get_queryset(self):
         return Item.objects.filter(owner=self.request.user)

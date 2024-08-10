@@ -2,6 +2,7 @@ from django.urls import path
 from apps.marketplace.views import (
     ListingCreateView,
     ListingRetrieveView,
+    ListingRoleCheckView,
     CreateItemAndListingView,
     RecallListingView,
     DelistListing,
@@ -16,6 +17,11 @@ urlpatterns = [
         name="item-listing-create",
     ),
     path("listings/<int:id>/", ListingRetrieveView.as_view(), name="listing-retrieve"),
+    path(
+        "listings/<int:id>/role-check/",
+        ListingRoleCheckView.as_view(),
+        name="listing-role-check",
+    ),
     path(
         "listings/<int:id>/recall/", RecallListingView.as_view(), name="listing-recall"
     ),
