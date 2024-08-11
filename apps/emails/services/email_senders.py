@@ -93,9 +93,9 @@ class ListingEmailSender:
             context=context,
         )
 
-    def send_listing_sold_email(self, sale_price: str):
+    def send_listing_sold_email(self):
         context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_item_sold_context(sale_price)
+        context = context_generator.generate_item_sold_context()
         item = self.listing.item.name
         send_email(
             subject=f"Congratulations! Your Item Sold - {item}",

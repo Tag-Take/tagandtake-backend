@@ -3,7 +3,7 @@ import environ
 from pathlib import Path
 from datetime import timedelta
 
-from my_celery.schedules import CELERY_SCHEDULES
+from async_tasks.schedules import CELERY_SCHEDULES
 
 env = environ.Env()
 environ.Env.read_env()

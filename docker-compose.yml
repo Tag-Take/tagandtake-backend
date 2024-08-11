@@ -63,7 +63,7 @@ services:
     build:
       context: .
       target: development
-    command: celery -A my_celery.celery worker --loglevel=info
+    command: celery -A async_tasks.celery worker --loglevel=info
     volumes:
       - .:/app
     environment:
@@ -81,7 +81,7 @@ services:
     build:
       context: .
       target: development
-    command: celery -A my_celery.celery beat --loglevel=info
+    command: celery -A async_tasks.celery beat --loglevel=info
     volumes:
       - .:/app
     environment:

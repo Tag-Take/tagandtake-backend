@@ -31,8 +31,6 @@ class Item(models.Model):
         "ItemCondition", on_delete=models.CASCADE, related_name="items"
     )
     status = models.CharField(max_length=255, choices=STATUSES, default="available")
-    listed_at = models.DateTimeField(null=True, blank=True)
-    sold_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

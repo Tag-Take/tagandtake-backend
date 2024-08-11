@@ -15,12 +15,15 @@ from apps.common.s3.s3_config import FILE_NAMES, get_tag_image_folder, IMAGE_FIL
 
 
 class TagHandler:
-    def create_tag_group_and_tags(self, store, tag_count):
+    def __init__(self, store) -> None:
+        self.store = store
+
+    def create_tag_group_and_tags(self, tag_count):
         tag_hashes = self._create_tag_hashes(tag_count)
         tag_images = self._create_tag_qr_codes(tag_hashes)
 
         with transaction.atomic():
-            tag_group = self.create_tag_group(store, tag_count)
+            tag_group = self.create_tag_group(tag_count)
             tags = self.create_tags(tag_group, tag_hashes)
 
             for i, tag in enumerate(tags):
@@ -29,9 +32,8 @@ class TagHandler:
                 tag_image = tag_images[tag.hash]
                 S3ImageHandler().upload_image(tag_image, key)
 
-    def create_tag_group(self, store, tag_count):
-        tag_group = TagGroup.objects.create(store=store, group_size=tag_count)
-
+    def create_tag_group(self, tag_count):
+        tag_group = TagGroup.objects.create(store=self.store, group_size=tag_count)
         return tag_group
 
     def create_tags(self, tag_group, tag_hashes):
@@ -39,21 +41,18 @@ class TagHandler:
         for i in range(len(tag_hashes)):
             tag = Tag.objects.create(tag_group=tag_group, hash=tag_hashes[i])
             tags.append(tag)
-
         return tags
 
     def _create_tag_hashes(self, tag_count):
         tag_hashes = []
         for _ in range(tag_count):
             tag_hashes.append(self._generate_hash())
-
         return tag_hashes
 
     def _create_tag_qr_codes(self, tag_hashes):
         tag_images = {}
         for tag_hash in tag_hashes:
             tag_images[tag_hash] = self._generate_qr_image(tag_hash)
-
         return tag_images
 
     @staticmethod

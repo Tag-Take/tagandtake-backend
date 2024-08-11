@@ -129,7 +129,7 @@ class ListingHandler:
             self.listing.delete()
             ListingEmailSender(self.listing).send_listing_collected_email()
 
-    def purchase_listing(self, buyer):
+    def purchase_listing(self, buyer=None):
         if self.listing:
             with transaction.atomic():
                 SoldListing.objects.create(
