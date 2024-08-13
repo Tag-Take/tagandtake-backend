@@ -121,7 +121,7 @@ class RecalledListing(BaseListing):
 
 
 class DelistedListing(BaseListing):
-    reason = models.CharField(max_length=255)
+    reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     delisted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

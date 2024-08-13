@@ -3,10 +3,13 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from apps.marketplace.serializers import CreateListingSerializer, ListingSerializer
+from apps.marketplace.serializers import CreateListingSerializer, ListingSerializer, RecallListingSerializer
 from apps.marketplace.models import Listing, RecalledListing
 from apps.stores.models import Tag
-from apps.marketplace.utils import get_listing_by_tag_id, get_listing_by_item_id
+from apps.marketplace.utils import (
+    get_listing_by_tag_id, 
+    get_listing_by_item_id,
+    )
 from apps.marketplace.services.listing_services import ListingHandler, get_listing_user_role
 from apps.marketplace.permissions import check_listing_store_permissions, IsTagOwner
 from apps.items.serializers import ItemCreateSerializer
@@ -105,7 +108,37 @@ class CreateItemAndListingView(generics.CreateAPIView):
             serializer.errors,
             status.HTTP_400_BAD_REQUEST,
         )
+    
+    
+class StoreRecalledListingListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    serializer_class = RecallListingSerializer
 
+    def get_queryset(self):
+        try:
+            return RecalledListing.objects.filter(tag__tag_group__store__user=self.request.user)
+        except serializers.ValidationError as e:
+            raise e  
+
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            if not queryset.exists():
+                return create_error_response(
+                    "No RecalledListings found.", {}, status.HTTP_404_NOT_FOUND
+                )
+            serializer = self.get_serializer(queryset, many=True)
+            return create_success_response(
+                "Recalled listings retrieved successfully", 
+                {"recalled_listings":serializer.data}, 
+                status_code=200
+            )
+        except serializers.ValidationError as e:
+            return create_error_response(e.detail[0], {}, status_code=404)
+        except Exception as e:
+            return create_error_response(
+                "Error retrieving recalled listings", str(e), status_code=400
+            )
 
 class RecallListingView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -137,6 +170,8 @@ class RecallListingView(generics.UpdateAPIView):
         return create_error_response(
             "Reason is required to recall a listing", {}, status_code=400
         )
+
+    
 
 
 class DelistListing(generics.UpdateAPIView):

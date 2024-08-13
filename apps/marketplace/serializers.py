@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.marketplace.models import Listing, RecallReason
+from apps.marketplace.models import Listing, RecallReason, RecalledListing
 from apps.items.models import Item
 from apps.stores.models import Tag
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
@@ -94,6 +94,13 @@ class ListingSerializer(serializers.ModelSerializer):
         ]
 
 
+class RecallReasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecallReason
+        fields = "__all__"
+
+
+
 class RecallListingSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
     transaction_fee = serializers.DecimalField(
@@ -106,9 +113,10 @@ class RecallListingSerializer(serializers.ModelSerializer):
         read_only=True, max_digits=10, decimal_places=2
     )
     item_details = ItemRetrieveUpdateDeleteSerializer(read_only=True)
+    reason = RecallReasonSerializer()
 
     class Meta:
-        model = Listing
+        model = RecalledListing
         fields = [
             "id",
             "item",
