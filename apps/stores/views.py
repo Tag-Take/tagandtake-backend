@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from apps.common.utils.responses import create_error_response, create_success_response
 from apps.stores.utils import generate_pin
@@ -191,8 +191,12 @@ class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
 
 class StoreProfileImageView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsStoreUser]
-    parser_classes = (MultiPartParser, FormParser)
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            self.parser_classes = [MultiPartParser, FormParser]
+        return super().dispatch(request, *args, **kwargs)
+    
     def post(self, request, *args, **kwargs):
         serializer = StoreProfileImageUploadSerializer(
             data=request.data, context={"request": request}

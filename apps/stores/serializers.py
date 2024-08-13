@@ -23,6 +23,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "shop_name",
             "phone",
             "store_bio",
+            "profile_photo_url",
             "google_profile_url",
             "website_url",
             "instagram_url",
@@ -42,7 +43,8 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "active_listings_count",
-            "accepting_listings" "profile_photo_url",
+            "accepting_listings",
+            "profile_photo_url",
         ]
 
     def validate(self, data):
@@ -206,7 +208,7 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
 
         s3_handler = S3ImageHandler()
         folder_name = get_store_profile_folder(profile.id)
-        key = f"{folder_name}/{FILE_NAMES.profile_photo}.{IMAGE_FILE_TYPE}"
+        key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
 
         try:
             image_url = s3_handler.upload_image(file, key)
@@ -243,7 +245,7 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
     def save(self):
         profile = self.validated_data["profile"]
         folder_name = get_store_profile_folder(profile.id)
-        key = f"{folder_name}/{FILE_NAMES.profile_photo}.{IMAGE_FILE_TYPE}"
+        key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
 
         s3_handler = S3ImageHandler()
         try:

@@ -35,3 +35,5 @@ urlpatterns = [
     ),
     path("", DeleteAccountView.as_view(), name="delete_account"),
 ]
+
+

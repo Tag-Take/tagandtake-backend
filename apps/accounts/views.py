@@ -56,7 +56,7 @@ class SignUpView(generics.CreateAPIView):
 class ActivateUserView(APIView):
     authentication_classes = []
 
-    def get(self, uidb64, token):
+    def get(self, request: Request, uidb64: str, token: str):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)

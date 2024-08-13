@@ -48,7 +48,7 @@ class MemberEmailSender:
         send_email(
             subject="Welcome to Tag&Take!",
             to=self.member.user.email,
-            template_name=f"{ACTION_TRIGGERED}/welcome_email.html",
+            template_name=f"{ACTION_TRIGGERED}/member_welcome.html",
             context=context,
         )
 
@@ -63,7 +63,7 @@ class StoreEmailSender:
         send_email(
             subject="Welcome to Tag&Take",
             to=self.store.user.email,
-            template_name=f"{ACTION_TRIGGERED}/send_pin.html",
+            template_name=f"{ACTION_TRIGGERED}/store_welcome.html",
             context=context,
         )
 
@@ -73,7 +73,7 @@ class StoreEmailSender:
         send_email(
             subject="New Tag&Take Store PIN",
             to=self.store.user.email,
-            template_name=f"{ACTION_TRIGGERED}/resend_pin.html",
+            template_name=f"{ACTION_TRIGGERED}/store_new_pin.html",
             context=context,
         )
 

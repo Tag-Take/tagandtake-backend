@@ -19,16 +19,25 @@
     },
     {
         "model": "marketplace.RecallReasons",
-        "pk": 2,
+        "pk": 3,    
         "fields": {
-            "reason": "Store Discrtion",
-            "type": "Store Discrtion",
-            "description": "Item has exceeded the store's listing period gaurantee and is being recalled"
+            "reason": "Unclean Item",
+            "type": "Issue",
+            "description": "Item is unclean or dirty"
         }
     },
     {
         "model": "marketplace.RecallReasons",
-        "pk": 3,
+        "pk": 4,
+        "fields": {
+            "reason": "Store Discretion",
+            "type": "Store Discretion",
+            "description": "Item has exceeded the store's listing period guarantee and is being recalled"
+        }
+    },
+    {
+        "model": "marketplace.RecallReasons",
+        "pk": 5,
         "fields": {
             "reason": "Owner Request",
             "type": "Owner Request",
