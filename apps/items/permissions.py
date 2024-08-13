@@ -1,6 +1,5 @@
 from rest_framework import permissions
 from rest_framework import status
-from apps.members.permissions import IsMemberUser
 from apps.common.utils.responses import create_error_response
 
 

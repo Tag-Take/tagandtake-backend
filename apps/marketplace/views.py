@@ -7,7 +7,7 @@ from apps.marketplace.serializers import CreateListingSerializer, ListingSeriali
 from apps.marketplace.models import Listing, RecalledListing
 from apps.stores.models import Tag
 from apps.marketplace.utils import get_listing_by_tag_id, get_listing_by_item_id
-from apps.marketplace.services.listing_services import ListingHandler
+from apps.marketplace.services.listing_services import ListingHandler, get_listing_user_role
 from apps.marketplace.permissions import check_listing_store_permissions, IsTagOwner
 from apps.items.serializers import ItemCreateSerializer
 from apps.items.permissions import IsItemOwner
@@ -49,14 +49,16 @@ class ListingRetrieveView(generics.RetrieveAPIView):
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
             serializer = self.get_serializer(listing)
+            role = get_listing_user_role(request, listing, self)  
+            data = serializer.data | role
             return create_success_response(
-                "Listing retrieved successfully", serializer.data, status_code=200
+                "Listing retrieved successfully", data, status_code=200
             )
         except Exception as e:
             return create_error_response(
                 "Error retrieving listing", str(e), status_code=400
             )
-        
+
 
 class ListingRoleCheckView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
@@ -66,15 +68,7 @@ class ListingRoleCheckView(generics.RetrieveAPIView):
         except serializers.ValidationError as e:
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
-            data = {}
-            if IsTagOwner().has_object_permission(request, self, listing):
-                data["role"] = "HOST_STORE"
-            elif IsItemOwner().has_object_permission(request, self, listing.item):
-                data["role"] = "ITEM_OWNER"
-            elif IsStoreUser().has_permission(request, self):
-                data["role"] = "NON_HOST_STORE"
-            else:
-                data["role"] = "GUEST"
+            data= get_listing_user_role(request, listing, self)  
             return create_success_response(
                 "Listing role check successful", data, status_code=200
             )
@@ -94,7 +88,7 @@ class CreateItemAndListingView(generics.CreateAPIView):
         if serializer.is_valid():
             try:
                 listing = ListingHandler.create_item_and_listing(serializer, request)
-                listing_data = ListingSerializer(listing).data
+                listing_data = ListingSerializer(listing).data        
                 return create_success_response(
                     "Item and listing created successfully",
                     listing_data,
@@ -202,7 +196,3 @@ class DelistRecalledListingView(generics.UpdateAPIView):
             return create_error_response(
                 "Error delisting recalled listing", str(e), status_code=400
             )
-
-
-class PurchaseListingView(generics.UpdateAPIView):
-    pass

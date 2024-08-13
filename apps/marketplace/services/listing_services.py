@@ -19,6 +19,9 @@ from apps.marketplace.services.pricing_services import (
     RECURRING_FEE_INTERVAL_DAYS,
 )
 from apps.emails.services.email_senders import ListingEmailSender
+from apps.marketplace.permissions import IsTagOwner
+from apps.items.permissions import IsItemOwner
+from apps.stores.permissions import IsStoreUser
 
 
 class ListingHandler:
@@ -200,3 +203,15 @@ class RecalledListingStorageFeeService:
             service = RecalledListingStorageFeeService(recalled_listing)
             if service.is_time_to_charge():
                 service.apply_storage_fee()
+
+def get_listing_user_role(request, listing, view): 
+    data = {}
+    if IsTagOwner().has_object_permission(request, view, listing):
+        data["role"] = "HOST_STORE"
+    elif IsItemOwner().has_object_permission(request, view, listing.item):
+        data["role"] = "ITEM_OWNER"
+    elif IsStoreUser().has_permission(request, view):
+        data["role"] = "NON_HOST_STORE"
+    else:
+        data["role"] = "GUEST"
+    return data
