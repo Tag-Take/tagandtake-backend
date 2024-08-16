@@ -20,7 +20,7 @@ urlpatterns = [
         name="item_detail",
     ),
     path(
-        "members/<int:pk>/",
+        "member/",
         MemberItemListView.as_view(),
         name="member_item_list",
     ),

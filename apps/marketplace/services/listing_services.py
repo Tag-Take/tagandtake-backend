@@ -66,6 +66,19 @@ class ListingHandler:
             item.save()
             ListingEmailSender(listing).send_listed_created_email()
             return listing
+        
+    def replace_tag(self, new_tag_id):
+        try:
+            with transaction.atomic():
+                new_tag = Tag.objects.get(id=new_tag_id)
+                
+                self.listing.tag = new_tag
+                self.listing.save()
+                return self.listing
+        except Tag.DoesNotExist:
+            raise serializers.ValidationError("New tag does not exist.")
+        except Exception as e:
+            raise serializers.ValidationError(f"Error updating tag: {str(e)}")
 
     def recall_listing(self, reason_id):
         try:

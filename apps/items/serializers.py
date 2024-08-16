@@ -153,15 +153,6 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
         return ItemConditionSerializer(condition).data
 
 
-class MemberItemListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Item
-        fields = ["id", "name", "price", "main_image"]
-
-    def get_main_image(self, obj):
-        return
-
-
 class ItemCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemCategory

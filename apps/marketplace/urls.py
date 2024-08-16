@@ -4,6 +4,7 @@ from apps.marketplace.views import (
     ListingRetrieveView,
     ListingRoleCheckView,
     CreateItemAndListingView,
+    ReplaceTagView,
     RecallListingView,
     DelistListing,
     DelistRecalledListingView,
@@ -22,6 +23,11 @@ urlpatterns = [
         "listings/<int:id>/role-check/",
         ListingRoleCheckView.as_view(),
         name="listing-role-check",
+    ),
+    path(
+        "listings/<int:id>/replace-tag/",
+        ReplaceTagView.as_view(),
+        name="listing-replace-tag",
     ),
     path(
         "listings/recalled/stores/",

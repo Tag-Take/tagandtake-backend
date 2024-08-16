@@ -11,7 +11,7 @@ class IsTagOwner(permissions.BasePermission):
 def check_listing_store_permissions(request, view, instance):
     if not IsTagOwner().has_object_permission(request, view, instance):
         return create_error_response(
-            "You do not have permission to modify this item.",
+            "You do not have permission to modify this listing.",
             {},
             status.HTTP_403_FORBIDDEN,
         )

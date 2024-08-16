@@ -8,6 +8,7 @@ __pycache__/
 
 # API Documentation
 schema.yml
+schema.yaml
 
 # Distribution / packaging
 .Python

@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from apps.items.serializers import (
     ItemCreateSerializer,
     ItemRetrieveUpdateDeleteSerializer,
-    MemberItemListSerializer,
     ItemCategorySerializer,
     ItemConditionSerializer,
 )
@@ -117,7 +116,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class MemberItemListView(generics.ListAPIView):
-    serializer_class = MemberItemListSerializer
+    serializer_class = ItemRetrieveUpdateDeleteSerializer
     permission_classes = [permissions.IsAuthenticated, IsItemOwner]
 
     def get_queryset(self):

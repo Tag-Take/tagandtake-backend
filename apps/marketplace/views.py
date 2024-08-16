@@ -139,6 +139,46 @@ class StoreRecalledListingListView(generics.ListAPIView):
             return create_error_response(
                 "Error retrieving recalled listings", str(e), status_code=400
             )
+        
+
+class ReplaceTagView(generics.UpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ListingSerializer
+
+    def update(self, request, *args, **kwargs):
+        item_id = self.kwargs.get("id")
+        
+        try:
+            listing = get_listing_by_item_id(item_id, Listing)
+        except serializers.ValidationError as e:
+            return create_error_response(
+                "Listing not found", {str(e.detail[0])}, status.HTTP_404_NOT_FOUND
+            )
+        
+        permission_error_response = check_listing_store_permissions(request, self, listing)
+        if permission_error_response:
+            return permission_error_response
+        
+        new_tag_id = request.data.get("new_tag_id")
+        if not new_tag_id:
+            return create_error_response(
+                "new_tag_id is required to update listing.", {}, status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            listing = ListingHandler(listing).replace_tag(new_tag_id)
+            serializer = self.get_serializer(listing)
+            return create_success_response(
+                "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
+            )
+        except serializers.ValidationError as e:
+            return create_error_response(
+                str(e.detail[0]), {}, status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return create_error_response(
+                "Error replacing tag", str(e), status.HTTP_400_BAD_REQUEST
+            )
 
 class RecallListingView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
