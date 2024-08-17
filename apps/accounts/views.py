@@ -30,12 +30,21 @@ from apps.common.utils.responses import (
 
 User = get_user_model()
 
+# TODO: Seperate out member and store signup and activation
+"""
+Requirements (^): 
+    - member signup requires adding username, email, password, store nanme, 
+      website (optional), address and payment details in one transaction
+    - member signup can continue as previously handled. 
+"""
+
+
 
 class SignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = SignUpSerializer
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Request, *args, **kwargs):
         signup_type = request.query_params.get("type")
         request.data["role"] = request.query_params.get("type")
         serializer = self.get_serializer(data=request.data)

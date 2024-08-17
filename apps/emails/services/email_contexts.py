@@ -50,8 +50,8 @@ class MemberEmailContextGenerator:
 
     def generate_memeber_welcome_context(self):
         context = {
-            "login_url": settings.LOGIN_URL,
-            "how_it_works_url": settings.HOW_IT_WORKS_URL,
+            "login_url": settings.FRONTEND_URL + settings.LOGIN_ROUTE,
+            "how_it_works_url": settings.FRONTEND_URL + settings.HOW_IT_WORKS_ROUTE,
         }
         return context
 

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from pytz import all_timezones  
 
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -26,7 +27,7 @@ class StoreProfile(models.Model):
         null=False,
     )
     # Store information
-    shop_name = models.CharField(max_length=255, blank=True, null=True)
+    store_name = models.CharField(max_length=255, unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     store_bio = models.CharField(max_length=255, blank=True, null=True)
     profile_photo_url = models.URLField(max_length=2048, blank=True, null=True)
@@ -94,6 +95,55 @@ class StoreProfile(models.Model):
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
+    
+
+class StoreAddress(models.Model):
+    store = models.OneToOneField(
+        StoreProfile, on_delete=models.CASCADE, related_name="store_address"
+    )
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, null=True, blank=True) 
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)  # Latitude for geocoding
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)  # Longitude for geocoding
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'store_addresses'
+
+    def __str__(self):
+        return f'{self.store_profile.store_name} - {self.street_address}, {self.city}, {self.country}'
+    
+
+class StoreOpeningHours(models.Model):
+    DAYS_OF_WEEK = [
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ]
+    store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name='opening_hours')
+    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
+    opening_time = models.TimeField(null=True, blank=True)
+    closing_time = models.TimeField(null=True, blank=True)
+    timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in all_timezones]) 
+    is_closed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.day_of_week}: {self.opening_time} - {self.closing_time} ({self.timezone})"
+
+    class Meta:
+        verbose_name_plural = "Store Opening Hours"
+        unique_together = ('store', 'day_of_week') 
+
 
 
 class StoreNotificationPreferences(models.Model):

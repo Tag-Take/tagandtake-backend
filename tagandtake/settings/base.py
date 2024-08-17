@@ -191,5 +191,5 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # APP URLS
 LOGO_URL = "https://your-logo-url.com/logo.png"
-LOGIN_URL = "https://tagandtake.com/login"
-HOW_IT_WORKS_URL = "https://tagandtake.com/how-it-works"
+LOGIN_ROUTE = "/login"
+HOW_IT_WORKS_ROUTE = "/how-it-works"

@@ -7,6 +7,6 @@ CELERY_SCHEDULES = {
     },
     "send-recalled-listing-collection-reminders-every-day": {
         "task": "apps.marketplace.tasks.reminders.run_storage_fee_reminder_checks",
-        "schedule": crontab(minute=0, hour=10),
+        "schedule": crontab(minute=0, hour=9),
     },
 }

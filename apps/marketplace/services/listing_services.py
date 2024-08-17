@@ -30,6 +30,10 @@ class ListingHandler:
 
     @staticmethod
     def create_listing(item, tag, store_commission, min_listing_days):
+        # TODO: create check_member_payment_details(user)
+        # elegantly handle instances where member
+        # hasn't added payment details - redirect to 
+        # add payment details 
         with transaction.atomic():
             listing = Listing.objects.create(
                 item=item,
@@ -44,6 +48,10 @@ class ListingHandler:
 
     @staticmethod
     def create_item_and_listing(serializer, request):
+        # TODO: create check_member_payment_details(user)
+        # elegantly handle instances where member
+        # hasn't added payment details - redirect to 
+        # add payment details 
         with transaction.atomic():
             item = serializer.save()
             tag_id = request.data.get("tag_id")
