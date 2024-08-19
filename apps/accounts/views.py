@@ -34,7 +34,7 @@ User = get_user_model()
 """
 Requirements (^): 
     - member signup requires adding username, email, password, store nanme, 
-      website (optional), address and payment details in one transaction
+      website (optional) and address in one transaction
     - member signup can continue as previously handled. 
 """
 

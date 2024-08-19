@@ -106,8 +106,8 @@ class StoreAddress(models.Model):
     state = models.CharField(max_length=100, null=True, blank=True) 
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)  # Latitude for geocoding
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)  # Longitude for geocoding
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True) 
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
