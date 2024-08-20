@@ -4,10 +4,12 @@ from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 
+
 from rest_framework import generics, status, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.request import Request
+from rest_framework.throttling import ScopedRateThrottle
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -28,10 +30,6 @@ from apps.common.utils.responses import (
     JWTCookieHandler,
 )
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 User = get_user_model()
 
@@ -39,6 +37,7 @@ User = get_user_model()
 class MemberSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = MemberSignUpSerializer
+    throttle_scope = "signup"
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -64,6 +63,7 @@ class MemberSignUpView(generics.CreateAPIView):
 class StoreSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = StoreSignUpSerializer
+    throttle_scope = "signup"
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -88,7 +88,8 @@ class StoreSignUpView(generics.CreateAPIView):
 
 class ActivateUserView(APIView):
     authentication_classes = []
-
+    throttle_scope = 'resend_activation' 
+    
     def get(self, request: Request, uidb64: str, token: str):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -122,6 +123,8 @@ class ActivateUserView(APIView):
 
 
 class ResendActivationEmailView(APIView):
+    throttle_scope = "resend_activation"
+
     def post(self, request: Request, *args, **kwargs):
         email = request.data.get("email")
         try:
@@ -165,8 +168,9 @@ class LogoutView(APIView):
             )
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
+class CustomTokenObtainPairView(TokenObtainPairView):   
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_scope = "login"
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -227,6 +231,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
+    throttle_scope = "password_reset"
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -247,6 +252,7 @@ class PasswordResetView(generics.GenericAPIView):
 
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
+    throttle_scope = 'password_reset'  
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

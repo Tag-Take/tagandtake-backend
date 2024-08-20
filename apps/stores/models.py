@@ -146,7 +146,7 @@ class StoreNotificationPreferences(models.Model):
         db_table = "store_notification_preferences"
 
     def __str__(self):
-        return f"{self.store.shop_name} notification preferences"
+        return f"{self.store.store_name} notification preferences"
 
 
 class StoreItemCategorie(models.Model):
@@ -163,7 +163,7 @@ class StoreItemCategorie(models.Model):
         db_table = "store_item_categories"
 
     def __str__(self):
-        return f"{self.store.shop_name} - {self.category.name}"
+        return f"{self.store.store_name} - {self.category.name}"
 
 
 class StoreItemConditions(models.Model):
@@ -180,7 +180,7 @@ class StoreItemConditions(models.Model):
         db_table = "store_item_conditions"
 
     def __str__(self):
-        return f"{self.store.shop_name} - {self.condition.condition}"
+        return f"{self.store.store_name} - {self.condition.condition}"
 
 
 class TagGroup(models.Model):
@@ -195,7 +195,7 @@ class TagGroup(models.Model):
         db_table = "tag_groups"
 
     def __str__(self):
-        return f"{self.store.shop_name} - Group of {self.group_size}"
+        return f"{self.store.store_name} - Group of {self.group_size}"
 
 
 class Tag(models.Model):
@@ -210,7 +210,7 @@ class Tag(models.Model):
         db_table = "tags"
 
     def __str__(self):
-        return f"Store: {self.store.shop_name} - Tag: {self.hash}"
+        return f"Store: {self.store.store_name} - Tag: {self.hash}"
 
     @property
     def store(self):

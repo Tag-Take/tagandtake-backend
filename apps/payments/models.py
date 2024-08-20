@@ -32,4 +32,4 @@ class StorePaymentDetails(models.Model):
         db_table = "store_payment_details"
 
     def __str__(self):
-        return f"{self.store.shop_name} payment details"
+        return f"{self.store.store_name} payment details"

@@ -93,7 +93,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
                 "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
             }
         )
@@ -114,7 +114,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
                 "recall_reason_title": recall_reason.reason,
                 "recall_reason_description": recall_reason.description,
                 "storage_fee": f"{RECALLED_LISTING_RECURRING_FEE}",
@@ -127,7 +127,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
             }
         )
         return base_context
@@ -136,7 +136,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
             }
         )
         return base_context
@@ -146,7 +146,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
                 "storage_fee": f"{self.listing.last_fee_charge_amount}",
                 "next_charge_time": next_charge_at.strftime("%H:%M %p"),
                 "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
@@ -159,7 +159,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
                 "storage_fee": f"{self.listing.last_fee_charge_amount}",
                 "fee_count": self.listing.fee_charged_count,
                 "next_charge_time": next_charge_at.strftime("%H:%M %p"),
@@ -173,7 +173,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context()
         base_context.update(
             {
-                "store_name": self.store.shop_name,
+                "store_name": self.store.store_name,
                 "recall_reason": self.listing.reason.reason,
                 "next_charge_time": next_charge_at.strftime("%H:%M %p"),
                 "next_charge_date": next_charge_at.strftime("%B %d, %Y"),

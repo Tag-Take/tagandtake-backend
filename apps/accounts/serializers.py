@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlsafe_base64_decode
@@ -17,7 +19,7 @@ from rest_framework_simplejwt.serializers import (
 )
 
 from apps.emails.services.email_senders import AccountEmailSender
-from apps.accounts.services.signup_services import SignupService
+from apps.accounts.services.signup_services import SignupService, UsernameValidator
 from apps.stores.serializers import (
     StoreProfileSerializer,
     StoreAddressSerializer,
@@ -28,6 +30,7 @@ User = get_user_model()
 
 
 class MemberSignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(validators=[UsernameValidator()])
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(
         write_only=True, required=True, label="Confirm Password"
@@ -41,6 +44,12 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError("Passwords do not match")
+        
+        try:
+            validate_password(data['password'])
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({"password": list(e.messages)})
+        
         return data
 
     def create(self, validated_data):
@@ -50,13 +59,14 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
 
 
 class StoreSignUpSerializer(serializers.ModelSerializer):
-    store = StoreProfileSerializer(required=True)
-    address = StoreAddressSerializer(required=True)
-    opening_hours = StoreOpeningHoursSerializer(many=True, required=True)
+    username = serializers.CharField(validators=[UsernameValidator()])
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(
         write_only=True, required=True, label="Confirm Password"
     )
+    store = StoreProfileSerializer(required=True)
+    address = StoreAddressSerializer(required=True)
+    opening_hours = StoreOpeningHoursSerializer(many=True, required=True)
 
     class Meta:
         model = User
@@ -74,6 +84,12 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError("Passwords do not match")
+
+        try:
+            validate_password(data['password'])
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({"password": list(e.messages)})
+        
         return data
 
     def create(self, validated_data):
@@ -197,6 +213,11 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "The new password cannot be the same as the old password."
             )
+        
+        try:
+            validate_password(data['new_password'])
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({"new_password": list(e.messages)})
 
         return data
 
