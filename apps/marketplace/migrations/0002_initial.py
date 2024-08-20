@@ -20,27 +20,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="delistedlisting",
             name="tag",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="stores.tag"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="stores.tag"
+            ),
         ),
         migrations.AddField(
             model_name="listing",
             name="item",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="items.item"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="items.item"
+            ),
         ),
         migrations.AddField(
             model_name="listing",
             name="tag",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="stores.tag"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="stores.tag"
+            ),
         ),
         migrations.AddField(
             model_name="recalledlisting",
             name="item",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="items.item"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="items.item"
+            ),
         ),
         migrations.AddField(
             model_name="recalledlisting",
             name="tag",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="stores.tag"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="stores.tag"
+            ),
         ),
         migrations.AddField(
             model_name="recalledlisting",
@@ -71,11 +81,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="soldlisting",
             name="item",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="items.item"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="items.item"
+            ),
         ),
         migrations.AddField(
             model_name="soldlisting",
             name="tag",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="stores.tag"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="stores.tag"
+            ),
         ),
     ]

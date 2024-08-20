@@ -42,7 +42,9 @@ class Migration(migrations.Migration):
                         max_digits=9,
                         null=True,
                         validators=[
-                            django.core.validators.MinValueValidator(Decimal("-180.00")),
+                            django.core.validators.MinValueValidator(
+                                Decimal("-180.00")
+                            ),
                             django.core.validators.MaxValueValidator(Decimal("180.00")),
                         ],
                     ),

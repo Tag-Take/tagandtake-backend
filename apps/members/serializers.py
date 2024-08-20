@@ -76,7 +76,9 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
         try:
             image_url = s3_handler.upload_image(file, key)
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to upload profile photo: {str(e)}")
+            raise serializers.ValidationError(
+                f"Failed to upload profile photo: {str(e)}"
+            )
 
         profile.profile_photo_url = image_url
         profile.save()
@@ -108,5 +110,7 @@ class MemberProfileImageDeleteSerializer(serializers.Serializer):
             profile.profile_photo_url = None
             profile.save()
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to delete profile photo: {str(e)}")
+            raise serializers.ValidationError(
+                f"Failed to delete profile photo: {str(e)}"
+            )
         return profile

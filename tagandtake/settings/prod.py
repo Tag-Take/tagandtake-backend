@@ -42,9 +42,13 @@ DEFAULT_FROM_EMAIL = "info@tagandtake.com"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.yourmailprovider.com"  # The host to use for sending email.
 EMAIL_PORT = 587  # Port to use for the SMTP server.
-EMAIL_USE_TLS = True  # Whether to use a TLS (secure) connection when talking to the SMTP server.
+EMAIL_USE_TLS = (
+    True  # Whether to use a TLS (secure) connection when talking to the SMTP server.
+)
 EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]  # Username to use for the SMTP server.
-EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]  # Password to use for the SMTP server.
+EMAIL_HOST_PASSWORD = os.environ[
+    "EMAIL_HOST_PASSWORD"
+]  # Password to use for the SMTP server.
 
 # Logging configuration to capture warnings and errors.
 LOGGING = {
@@ -67,16 +71,24 @@ LOGGING = {
 }
 
 # Security settings to enhance application security.
-SESSION_COOKIE_SECURE = True  # Marks the session cookie as secure (transmitted only over HTTPS).
-CSRF_COOKIE_SECURE = True  # Marks the CSRF cookie as secure.
-SECURE_BROWSER_XSS_FILTER = True  # Enables the browser's XSS filtering and forces it to be active.
-SECURE_CONTENT_TYPE_NOSNIFF = (
-    True  # Prevents the browser from MIME-sniffing a response away from the declared content-type.
+SESSION_COOKIE_SECURE = (
+    True  # Marks the session cookie as secure (transmitted only over HTTPS).
 )
+CSRF_COOKIE_SECURE = True  # Marks the CSRF cookie as secure.
+SECURE_BROWSER_XSS_FILTER = (
+    True  # Enables the browser's XSS filtering and forces it to be active.
+)
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevents the browser from MIME-sniffing a response away from the declared content-type.
 SECURE_SSL_REDIRECT = True  # Redirects all non-HTTPS requests to HTTPS.
 
 # HTTP Strict Transport Security: Tells browsers that the site should only be accessed using HTTPS, not HTTP.
-SECURE_HSTS_SECONDS = 31536000  # Number of seconds that the HSTS header should be set on responses.
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # If True, this rule applies to all subdomains as well.
-SECURE_HSTS_PRELOAD = True  # If True, the site will be included in the preload list for HSTS.
+SECURE_HSTS_SECONDS = (
+    31536000  # Number of seconds that the HSTS header should be set on responses.
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (
+    True  # If True, this rule applies to all subdomains as well.
+)
+SECURE_HSTS_PRELOAD = (
+    True  # If True, the site will be included in the preload list for HSTS.
+)
 SAME_SITE_COOKIE = "Strict"

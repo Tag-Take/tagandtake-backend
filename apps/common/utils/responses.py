@@ -51,7 +51,8 @@ class JWTCookieHandler:
             self.response.set_cookie(
                 "refresh_token",
                 refresh_token,
-                expires=datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
+                expires=datetime.utcnow()
+                + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
                 httponly=True,
                 secure=settings.SESSION_COOKIE_SECURE,
                 samesite=settings.SAME_SITE_COOKIE,

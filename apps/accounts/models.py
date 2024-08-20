@@ -11,7 +11,9 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, email, password=None, role="member", **extra_fields):
+    def create_user(
+        self, username, email, password=None, role="member", **extra_fields
+    ):
         if not email:
             raise ValueError("The Email field must be set")
         if not username:
@@ -28,7 +30,9 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
-        return self.create_user(username, email, password, role="member", **extra_fields)
+        return self.create_user(
+            username, email, password, role="member", **extra_fields
+        )
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -45,7 +49,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     activation_token = models.UUIDField(default=uuid.uuid4, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     groups = models.ManyToManyField(Group, related_name="custom_user_set")
-    user_permissions = models.ManyToManyField(Permission, related_name="custom_user_set")
+    user_permissions = models.ManyToManyField(
+        Permission, related_name="custom_user_set"
+    )
 
     objects = UserManager()
 

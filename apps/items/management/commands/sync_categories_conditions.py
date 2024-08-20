@@ -24,16 +24,24 @@ class Command(BaseCommand):
             categories_data = json.load(file)
             self.sync_categories(categories_data)
 
-        self.stdout.write(self.style.SUCCESS("Successfully synced item categories and conditions"))
+        self.stdout.write(
+            self.style.SUCCESS("Successfully synced item categories and conditions")
+        )
 
     def sync_conditions(self, conditions_data):
         existing_conditions = ItemCondition.objects.values_list("condition", flat=True)
-        new_conditions = [condition["fields"]["condition"] for condition in conditions_data]
+        new_conditions = [
+            condition["fields"]["condition"] for condition in conditions_data
+        ]
 
         # Add new conditions
         for condition in new_conditions:
             if condition not in existing_conditions:
-                condition_data = next(c["fields"] for c in conditions_data if c["fields"]["condition"] == condition)
+                condition_data = next(
+                    c["fields"]
+                    for c in conditions_data
+                    if c["fields"]["condition"] == condition
+                )
                 ItemCondition.objects.create(
                     condition=condition_data["condition"],
                     description=condition_data["description"],
@@ -51,8 +59,14 @@ class Command(BaseCommand):
         # Add new categories
         for category in new_categories:
             if category not in existing_categories:
-                category_data = next(c["fields"] for c in categories_data if c["fields"]["name"] == category)
-                ItemCategory.objects.create(name=category_data["name"], description=category_data["description"])
+                category_data = next(
+                    c["fields"]
+                    for c in categories_data
+                    if c["fields"]["name"] == category
+                )
+                ItemCategory.objects.create(
+                    name=category_data["name"], description=category_data["description"]
+                )
 
         # Remove old categories
         for category in existing_categories:

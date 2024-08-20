@@ -3,14 +3,21 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from apps.marketplace.serializers import CreateListingSerializer, ListingSerializer, RecallListingSerializer
+from apps.marketplace.serializers import (
+    CreateListingSerializer,
+    ListingSerializer,
+    RecallListingSerializer,
+)
 from apps.marketplace.models import Listing, RecalledListing
 from apps.stores.models import Tag
 from apps.marketplace.utils import (
     get_listing_by_tag_id,
     get_listing_by_item_id,
 )
-from apps.marketplace.services.listing_services import ListingHandler, get_listing_user_role
+from apps.marketplace.services.listing_services import (
+    ListingHandler,
+    get_listing_user_role,
+)
 from apps.marketplace.permissions import check_listing_store_permissions, IsTagOwner
 from apps.items.serializers import ItemCreateSerializer
 from apps.items.permissions import IsItemOwner
@@ -29,10 +36,16 @@ class ListingCreateView(generics.CreateAPIView):
             try:
                 listing = serializer.save()
                 listing_data = ListingSerializer(listing).data
-                return create_success_response("Listing created successfully", listing_data, status_code=201)
+                return create_success_response(
+                    "Listing created successfully", listing_data, status_code=201
+                )
             except Exception as e:
-                return create_error_response("Error creating listing", str(e), status_code=400)
-        return create_error_response("Error creating listing", serializer.errors, status_code=400)
+                return create_error_response(
+                    "Error creating listing", str(e), status_code=400
+                )
+        return create_error_response(
+            "Error creating listing", serializer.errors, status_code=400
+        )
 
 
 class ListingRetrieveView(generics.RetrieveAPIView):
@@ -48,9 +61,13 @@ class ListingRetrieveView(generics.RetrieveAPIView):
             serializer = self.get_serializer(listing)
             role = get_listing_user_role(request, listing, self)
             data = serializer.data | role
-            return create_success_response("Listing retrieved successfully", data, status_code=200)
+            return create_success_response(
+                "Listing retrieved successfully", data, status_code=200
+            )
         except Exception as e:
-            return create_error_response("Error retrieving listing", str(e), status_code=400)
+            return create_error_response(
+                "Error retrieving listing", str(e), status_code=400
+            )
 
 
 class ListingRoleCheckView(generics.RetrieveAPIView):
@@ -62,9 +79,13 @@ class ListingRoleCheckView(generics.RetrieveAPIView):
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
             data = get_listing_user_role(request, listing, self)
-            return create_success_response("Listing role check successful", data, status_code=200)
+            return create_success_response(
+                "Listing role check successful", data, status_code=200
+            )
         except Exception as e:
-            return create_error_response("Error checking listing role", str(e), status_code=400)
+            return create_error_response(
+                "Error checking listing role", str(e), status_code=400
+            )
 
 
 class CreateItemAndListingView(generics.CreateAPIView):
@@ -102,7 +123,9 @@ class StoreRecalledListingListView(generics.ListAPIView):
 
     def get_queryset(self):
         try:
-            return RecalledListing.objects.filter(tag__tag_group__store__user=self.request.user)
+            return RecalledListing.objects.filter(
+                tag__tag_group__store__user=self.request.user
+            )
         except serializers.ValidationError as e:
             raise e
 
@@ -110,15 +133,21 @@ class StoreRecalledListingListView(generics.ListAPIView):
         try:
             queryset = self.get_queryset()
             if not queryset.exists():
-                return create_error_response("No RecalledListings found.", {}, status.HTTP_404_NOT_FOUND)
+                return create_error_response(
+                    "No RecalledListings found.", {}, status.HTTP_404_NOT_FOUND
+                )
             serializer = self.get_serializer(queryset, many=True)
             return create_success_response(
-                "Recalled listings retrieved successfully", {"recalled_listings": serializer.data}, status_code=200
+                "Recalled listings retrieved successfully",
+                {"recalled_listings": serializer.data},
+                status_code=200,
             )
         except serializers.ValidationError as e:
             return create_error_response(e.detail[0], {}, status_code=404)
         except Exception as e:
-            return create_error_response("Error retrieving recalled listings", str(e), status_code=400)
+            return create_error_response(
+                "Error retrieving recalled listings", str(e), status_code=400
+            )
 
 
 class ReplaceTagView(generics.UpdateAPIView):
@@ -131,24 +160,38 @@ class ReplaceTagView(generics.UpdateAPIView):
         try:
             listing = get_listing_by_item_id(item_id, Listing)
         except serializers.ValidationError as e:
-            return create_error_response("Listing not found", {str(e.detail[0])}, status.HTTP_404_NOT_FOUND)
+            return create_error_response(
+                "Listing not found", {str(e.detail[0])}, status.HTTP_404_NOT_FOUND
+            )
 
-        permission_error_response = check_listing_store_permissions(request, self, listing)
+        permission_error_response = check_listing_store_permissions(
+            request, self, listing
+        )
         if permission_error_response:
             return permission_error_response
 
         new_tag_id = request.data.get("new_tag_id")
         if not new_tag_id:
-            return create_error_response("new_tag_id is required to update listing.", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "new_tag_id is required to update listing.",
+                {},
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             listing = ListingHandler(listing).replace_tag(new_tag_id)
             serializer = self.get_serializer(listing)
-            return create_success_response("Tag successfully replaced.", serializer.data, status.HTTP_200_OK)
+            return create_success_response(
+                "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
+            )
         except serializers.ValidationError as e:
-            return create_error_response(str(e.detail[0]), {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                str(e.detail[0]), {}, status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return create_error_response("Error replacing tag", str(e), status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Error replacing tag", str(e), status.HTTP_400_BAD_REQUEST
+            )
 
 
 class RecallListingView(generics.UpdateAPIView):
@@ -161,7 +204,9 @@ class RecallListingView(generics.UpdateAPIView):
             listing = get_listing_by_tag_id(tag_id, Listing)
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_store_permissions(request, self, listing)
+        permission_error_response = check_listing_store_permissions(
+            request, self, listing
+        )
         if permission_error_response:
             return permission_error_response
 
@@ -169,10 +214,16 @@ class RecallListingView(generics.UpdateAPIView):
         if reason:
             try:
                 ListingHandler(listing).recall_listing(reason)
-                return create_success_response("Listing successfully recalled", {}, status_code=200)
+                return create_success_response(
+                    "Listing successfully recalled", {}, status_code=200
+                )
             except Exception as e:
-                return create_error_response("Error recalling listing", str(e), status_code=400)
-        return create_error_response("Reason is required to recall a listing", {}, status_code=400)
+                return create_error_response(
+                    "Error recalling listing", str(e), status_code=400
+                )
+        return create_error_response(
+            "Reason is required to recall a listing", {}, status_code=400
+        )
 
 
 class DelistListing(generics.UpdateAPIView):
@@ -185,7 +236,9 @@ class DelistListing(generics.UpdateAPIView):
             listing = get_listing_by_tag_id(tag_id, Listing)
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_store_permissions(request, self, listing)
+        permission_error_response = check_listing_store_permissions(
+            request, self, listing
+        )
         if permission_error_response:
             return permission_error_response
 
@@ -193,10 +246,16 @@ class DelistListing(generics.UpdateAPIView):
         if reason:
             try:
                 ListingHandler(listing).delist_listing(reason)
-                return create_success_response("Listing successfully delisted", {}, status_code=200)
+                return create_success_response(
+                    "Listing successfully delisted", {}, status_code=200
+                )
             except Exception as e:
-                return create_error_response("Error delisting listing", str(e), status_code=400)
-        return create_error_response("Reason is required to delist a listing", {}, status_code=400)
+                return create_error_response(
+                    "Error delisting listing", str(e), status_code=400
+                )
+        return create_error_response(
+            "Reason is required to delist a listing", {}, status_code=400
+        )
 
 
 class DelistRecalledListingView(generics.UpdateAPIView):
@@ -209,12 +268,18 @@ class DelistRecalledListingView(generics.UpdateAPIView):
             listing = get_listing_by_item_id(item_id, RecalledListing)
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_store_permissions(request, self, listing)
+        permission_error_response = check_listing_store_permissions(
+            request, self, listing
+        )
         if permission_error_response:
             return permission_error_response
 
         try:
             ListingHandler(listing).delist_recalled_listing()
-            return create_success_response("Recalled listing successfully delisted", {}, status_code=200)
+            return create_success_response(
+                "Recalled listing successfully delisted", {}, status_code=200
+            )
         except Exception as e:
-            return create_error_response("Error delisting recalled listing", str(e), status_code=400)
+            return create_error_response(
+                "Error delisting recalled listing", str(e), status_code=400
+            )

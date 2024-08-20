@@ -21,9 +21,15 @@ class Item(models.Model):
     description = models.TextField(null=True, blank=True)
     size = models.CharField(max_length=255, null=True, blank=True)
     brand = models.CharField(max_length=255, null=True, blank=True)
-    price = models.DecimalField(max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))])
-    category = models.ForeignKey("ItemCategory", on_delete=models.CASCADE, related_name="items")
-    condition = models.ForeignKey("ItemCondition", on_delete=models.CASCADE, related_name="items")
+    price = models.DecimalField(
+        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    category = models.ForeignKey(
+        "ItemCategory", on_delete=models.CASCADE, related_name="items"
+    )
+    condition = models.ForeignKey(
+        "ItemCondition", on_delete=models.CASCADE, related_name="items"
+    )
     status = models.CharField(max_length=255, choices=STATUSES, default="available")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

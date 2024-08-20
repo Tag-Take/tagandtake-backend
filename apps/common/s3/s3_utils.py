@@ -51,7 +51,9 @@ class S3ImageHandler(S3BaseHandler):
     def delete_image(self, key):
         try:
             # TODO: use celery async delete task
-            self.s3_client.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key)
+            self.s3_client.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key
+            )
         except ClientError as e:
             raise Exception(f"Failed to delete file from S3: {e}") from e
         except Exception as e:

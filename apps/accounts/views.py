@@ -52,9 +52,13 @@ class MemberSignUpView(generics.CreateAPIView):
                     status.HTTP_201_CREATED,
                 )
             except serializers.ValidationError as e:
-                return create_error_response("User creation failed.", e.detail, status.HTTP_400_BAD_REQUEST)
+                return create_error_response(
+                    "User creation failed.", e.detail, status.HTTP_400_BAD_REQUEST
+                )
         else:
-            return create_error_response("User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class StoreSignUpView(generics.CreateAPIView):
@@ -73,9 +77,13 @@ class StoreSignUpView(generics.CreateAPIView):
                     status.HTTP_201_CREATED,
                 )
             except serializers.ValidationError as e:
-                return create_error_response("User creation failed.", e.detail, status.HTTP_400_BAD_REQUEST)
+                return create_error_response(
+                    "User creation failed.", e.detail, status.HTTP_400_BAD_REQUEST
+                )
         else:
-            return create_error_response("User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ActivateUserView(APIView):
@@ -94,14 +102,24 @@ class ActivateUserView(APIView):
                 user.save()
                 user_activated.send(sender=user.__class__, instance=user)
 
-                response = create_success_response("Account activated successfully", {}, status.HTTP_200_OK)
-                access_token, refresh_token = JWTCookieHandler(response)._generate_tokens(user)
-                return JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)
+                response = create_success_response(
+                    "Account activated successfully", {}, status.HTTP_200_OK
+                )
+                access_token, refresh_token = JWTCookieHandler(
+                    response
+                )._generate_tokens(user)
+                return JWTCookieHandler(response).set_jwt_cookies(
+                    access_token, refresh_token
+                )
 
-            return create_error_response("Account is already active", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Account is already active", {}, status.HTTP_400_BAD_REQUEST
+            )
 
         else:
-            return create_error_response("Activation link is invalid", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Activation link is invalid", {}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ResendActivationEmailView(APIView):
@@ -110,28 +128,42 @@ class ResendActivationEmailView(APIView):
         try:
             user = User.objects.get(email=email)
             if user.is_active:
-                return create_error_response("User is already active.", {}, status.HTTP_400_BAD_REQUEST)
+                return create_error_response(
+                    "User is already active.", {}, status.HTTP_400_BAD_REQUEST
+                )
             else:
                 AccountEmailSender(user).send_activation_email()
-                return create_success_response("Activation email sent.", {}, status.HTTP_200_OK)
+                return create_success_response(
+                    "Activation email sent.", {}, status.HTTP_200_OK
+                )
         except User.DoesNotExist:
-            return create_error_response("No user associated with this email.", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "No user associated with this email.", {}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class LogoutView(APIView):
     def post(self, request: Request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
-            return create_error_response("Refresh token is required", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            response = create_success_response("Successfully logged out", {}, status.HTTP_204_NO_CONTENT)
+            response = create_success_response(
+                "Successfully logged out", {}, status.HTTP_204_NO_CONTENT
+            )
             return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
 
         except TokenError as e:
-            return create_error_response("Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED)
+            return create_error_response(
+                "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
+            )
         except Exception as e:
-            return create_error_response("An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -143,13 +175,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return create_error_response("Authentication failed.", e.detail, status.HTTP_401_UNAUTHORIZED)
+            return create_error_response(
+                "Authentication failed.", e.detail, status.HTTP_401_UNAUTHORIZED
+            )
 
         user = serializer.validated_data["user"]
         access = serializer.validated_data["access"]
         refresh = serializer.validated_data["refresh"]
 
-        response = create_success_response("Authentication successful.", {"user": user}, status.HTTP_200_OK)
+        response = create_success_response(
+            "Authentication successful.", {"user": user}, status.HTTP_200_OK
+        )
 
         return JWTCookieHandler(response).set_jwt_cookies(access, refresh)
 
@@ -160,7 +196,9 @@ class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request: Request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
-            return create_error_response("Refresh token is required", {}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
+            )
 
         mutable_data = QueryDict("", mutable=True)
         mutable_data.update(request.data)
@@ -173,13 +211,19 @@ class CustomTokenRefreshView(TokenRefreshView):
             if response.status_code == 200:
                 access_token = response.data["access"]
 
-                response = create_success_response("Access token refreshed successfully", {}, status.HTTP_200_OK)
+                response = create_success_response(
+                    "Access token refreshed successfully", {}, status.HTTP_200_OK
+                )
                 return JWTCookieHandler(response).set_jwt_cookies(access_token)
 
         except TokenError as e:
-            return create_error_response("Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED)
+            return create_error_response(
+                "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
+            )
         except Exception as e:
-            return create_error_response("An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST)
+            return create_error_response(
+                "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
+            )
 
 
 class PasswordResetView(generics.GenericAPIView):
@@ -197,7 +241,9 @@ class PasswordResetView(generics.GenericAPIView):
             )
             return JWTCookieHandler(response).delete_jwt_cookies()
 
-        return create_error_response("Invalid email", serializer.errors, status.HTTP_400_BAD_REQUEST)
+        return create_error_response(
+            "Invalid email", serializer.errors, status.HTTP_400_BAD_REQUEST
+        )
 
 
 class PasswordResetConfirmView(generics.GenericAPIView):
@@ -217,7 +263,9 @@ class PasswordResetConfirmView(generics.GenericAPIView):
             )
             return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
 
-        return create_error_response("Error setting new password", serializer.errors, status.HTTP_400_BAD_REQUEST)
+        return create_error_response(
+            "Error setting new password", serializer.errors, status.HTTP_400_BAD_REQUEST
+        )
 
 
 class DeleteAccountView(APIView):
@@ -226,4 +274,6 @@ class DeleteAccountView(APIView):
     def delete(self, request: Request, *args, **kwargs):
         user = request.user
         user.delete()
-        return create_success_response("Account deleted successfully", {}, status.HTTP_204_NO_CONTENT)
+        return create_success_response(
+            "Account deleted successfully", {}, status.HTTP_204_NO_CONTENT
+        )

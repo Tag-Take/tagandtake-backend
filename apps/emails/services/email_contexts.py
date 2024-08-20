@@ -30,7 +30,9 @@ class AccountEmailContextGenerator:
     def generate_password_reset_context(self):
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        reset_url = f"{settings.FRONTEND_URL}/reset-password/confirm?uid={uid}&token={token}"
+        reset_url = (
+            f"{settings.FRONTEND_URL}/reset-password/confirm?uid={uid}&token={token}"
+        )
         context = {
             "username": self.user.username,
             "reset_url": reset_url,

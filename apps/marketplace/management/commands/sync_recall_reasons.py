@@ -22,12 +22,18 @@ class Command(BaseCommand):
 
     def sync_recall_reasons(self, conditions_data):
         existing_conditions = RecallReason.objects.values_list("reason", flat=True)
-        new_conditions = [condition["fields"]["reason"] for condition in conditions_data]
+        new_conditions = [
+            condition["fields"]["reason"] for condition in conditions_data
+        ]
 
         # Add new reason
         for condition in new_conditions:
             if condition not in existing_conditions:
-                condition_data = next(c["fields"] for c in conditions_data if c["fields"]["reason"] == condition)
+                condition_data = next(
+                    c["fields"]
+                    for c in conditions_data
+                    if c["fields"]["reason"] == condition
+                )
                 RecallReason.objects.create(
                     reason=condition_data["reason"],
                     type=condition_data["type"],

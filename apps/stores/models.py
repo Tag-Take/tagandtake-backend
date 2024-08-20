@@ -35,9 +35,15 @@ class StoreProfile(models.Model):
     website_url = models.URLField(blank=True, null=True)
     instagram_url = models.URLField(blank=True, null=True)
     # Store settings
-    commission = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(50)], default=10)
-    stock_limit = models.IntegerField(blank=False, default=50, null=False, validators=[MinValueValidator(1)])
-    min_listing_days = models.IntegerField(default=14, validators=[MinValueValidator(7)])
+    commission = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(50)], default=10
+    )
+    stock_limit = models.IntegerField(
+        blank=False, default=50, null=False, validators=[MinValueValidator(1)]
+    )
+    min_listing_days = models.IntegerField(
+        default=14, validators=[MinValueValidator(7)]
+    )
     min_price = models.DecimalField(
         default=0.00,
         max_digits=10,
@@ -70,14 +76,20 @@ class StoreProfile(models.Model):
 
 
 class StoreAddress(models.Model):
-    store = models.OneToOneField(StoreProfile, on_delete=models.CASCADE, related_name="store_address")
+    store = models.OneToOneField(
+        StoreProfile, on_delete=models.CASCADE, related_name="store_address"
+    )
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100, null=True, blank=True)
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    latitude = models.DecimalField(
+        max_digits=10, decimal_places=8, null=True, blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=11, decimal_places=8, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -98,11 +110,15 @@ class StoreOpeningHours(models.Model):
         ("Saturday", "Saturday"),
         ("Sunday", "Sunday"),
     ]
-    store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name="opening_hours")
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="opening_hours"
+    )
     day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
-    timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in all_timezones], default="UTC")
+    timezone = models.CharField(
+        max_length=50, choices=[(tz, tz) for tz in all_timezones], default="UTC"
+    )
     is_closed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -117,7 +133,9 @@ class StoreOpeningHours(models.Model):
 
 
 class StoreNotificationPreferences(models.Model):
-    store = models.OneToOneField(StoreProfile, on_delete=models.CASCADE, related_name="notification_preferences")
+    store = models.OneToOneField(
+        StoreProfile, on_delete=models.CASCADE, related_name="notification_preferences"
+    )
     secondary_email = models.EmailField(blank=True)
     new_listing_notifications = models.BooleanField(default=True)
     sale_notifications = models.BooleanField(default=True)
@@ -132,8 +150,12 @@ class StoreNotificationPreferences(models.Model):
 
 
 class StoreItemCategorie(models.Model):
-    store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name="preferred_categories")
-    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, related_name="store_preferences")
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="preferred_categories"
+    )
+    category = models.ForeignKey(
+        ItemCategory, on_delete=models.CASCADE, related_name="store_preferences"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -145,8 +167,12 @@ class StoreItemCategorie(models.Model):
 
 
 class StoreItemConditions(models.Model):
-    store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name="preferred_conditions")
-    condition = models.ForeignKey(ItemCondition, on_delete=models.CASCADE, related_name="store_preferences")
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="preferred_conditions"
+    )
+    condition = models.ForeignKey(
+        ItemCondition, on_delete=models.CASCADE, related_name="store_preferences"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -158,7 +184,9 @@ class StoreItemConditions(models.Model):
 
 
 class TagGroup(models.Model):
-    store = models.ForeignKey(StoreProfile, on_delete=models.CASCADE, related_name="tag_groups")
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="tag_groups"
+    )
     group_size = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     activated_at = models.DateTimeField(null=True, blank=True)
@@ -171,7 +199,9 @@ class TagGroup(models.Model):
 
 
 class Tag(models.Model):
-    tag_group = models.ForeignKey(TagGroup, on_delete=models.CASCADE, related_name="tags")
+    tag_group = models.ForeignKey(
+        TagGroup, on_delete=models.CASCADE, related_name="tags"
+    )
     hash = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

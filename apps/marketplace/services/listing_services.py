@@ -98,7 +98,8 @@ class ListingHandler:
                     store_commission=self.listing.store_commission,
                     min_listing_days=self.listing.min_listing_days,
                     reason=reason,
-                    next_fee_charge_at=now() + timedelta(days=self.get_grace_period_days()),
+                    next_fee_charge_at=now()
+                    + timedelta(days=self.get_grace_period_days()),
                 )
                 self.listing.item.status = "recalled"
                 self.listing.item.save()
@@ -114,7 +115,9 @@ class ListingHandler:
             self.listing.last_fee_charge_amount = (
                 self.listing.last_fee_charge_amount or Decimal("0.00")
             ) + RECALLED_LISTING_RECURRING_FEE
-            self.listing.next_fee_charge_at = now() + timedelta(days=self.get_recurring_fee_interval_days())
+            self.listing.next_fee_charge_at = now() + timedelta(
+                days=self.get_recurring_fee_interval_days()
+            )
             self.listing.save()
             ListingEmailSender(self.listing).send_storage_fee_charged_email()
 

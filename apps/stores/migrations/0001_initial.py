@@ -78,7 +78,9 @@ class Migration(migrations.Migration):
                         decimal_places=2,
                         default=0.0,
                         max_digits=10,
-                        validators=[django.core.validators.MinValueValidator(Decimal("0"))],
+                        validators=[
+                            django.core.validators.MinValueValidator(Decimal("0"))
+                        ],
                     ),
                 ),
                 ("currency", models.CharField(default="GBP", max_length=3)),
@@ -215,11 +217,15 @@ class Migration(migrations.Migration):
                 ("country", models.CharField(max_length=100)),
                 (
                     "latitude",
-                    models.DecimalField(blank=True, decimal_places=8, max_digits=10, null=True),
+                    models.DecimalField(
+                        blank=True, decimal_places=8, max_digits=10, null=True
+                    ),
                 ),
                 (
                     "longitude",
-                    models.DecimalField(blank=True, decimal_places=8, max_digits=11, null=True),
+                    models.DecimalField(
+                        blank=True, decimal_places=8, max_digits=11, null=True
+                    ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),

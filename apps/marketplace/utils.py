@@ -10,7 +10,9 @@ def get_listing_by_tag_id(tag_id: int, listing_model=Listing):
     except Tag.DoesNotExist:
         raise serializers.ValidationError("Tag not found")
     except listing_model.DoesNotExist:
-        raise serializers.ValidationError(f"{listing_model.__name__} not found for the provided tag ID")
+        raise serializers.ValidationError(
+            f"{listing_model.__name__} not found for the provided tag ID"
+        )
 
 
 def get_listing_by_item_id(item_id: int, listing_model=Listing):
@@ -18,4 +20,6 @@ def get_listing_by_item_id(item_id: int, listing_model=Listing):
         listing = listing_model.objects.get(item_id=item_id)
         return listing
     except listing_model.DoesNotExist:
-        raise serializers.ValidationError(f"{listing_model.__name__} not found for the provided item ID")
+        raise serializers.ValidationError(
+            f"{listing_model.__name__} not found for the provided item ID"
+        )

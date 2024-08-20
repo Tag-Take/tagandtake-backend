@@ -34,5 +34,7 @@ urlpatterns = [
         StoreNotificationPreferencesView.as_view(),
         name="store-notification-preferences",
     ),
-    path("profile/profile-photo/", StoreProfileImageView.as_view(), name="profile-photo"),
+    path(
+        "profile/profile-photo/", StoreProfileImageView.as_view(), name="profile-photo"
+    ),
 ]
