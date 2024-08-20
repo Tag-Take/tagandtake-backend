@@ -1,5 +1,5 @@
-from django.contrib.auth import get_user_model
-from django.db import transaction
+from django.contrib.auth import get_user_model, authenticate
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -93,31 +93,42 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         username_or_email = attrs.get("username")
         password = attrs.get("password")
 
-        user = User.objects.filter(username=username_or_email).first()
-        # user = User.objects.get(
-        #     Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
-        # )
-        # TODO - Make email verification work ^
-        if not user:
-            self.username_field = User.EMAIL_FIELD
-            user = User.objects.filter(email=username_or_email).first()
+        user = User.objects.filter(
+            Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
+        ).first()
 
-        if user and user.check_password(password):
-            if not user.is_active:
-                raise serializers.ValidationError(
-                    {
-                        "non_field_errors": [
-                            "User account is not activated. Please check your email."
-                        ]
-                    }
-                )
-        else:
+        if not user:
+            raise serializers.ValidationError(
+                {
+                    "non_field_errors": [
+                        "No account found with the given email or username."
+                    ]
+                }
+            )
+
+        if not user.check_password(password):
             raise serializers.ValidationError(
                 {"non_field_errors": ["Invalid credentials"]}
             )
 
+        if not user.is_active:
+            raise serializers.ValidationError(
+                {
+                    "non_field_errors": [
+                        "User account is not activated. Please check your email."
+                    ]
+                }
+            )
+
         self.user = user
-        data = super().validate(attrs)
+
+        refresh = self.get_token(self.user)
+
+        data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+
         data["user"] = {"id": user.id, "username": user.username, "role": user.role}
 
         return data

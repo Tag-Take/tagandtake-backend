@@ -25,7 +25,6 @@ def seend_wemcome_email(sender, instance: UserModel, **kwargs):
             StoreEmailSender(store_profile).send_welcome_email()
 
 
-
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance: UserModel, **kwargs):
     if instance.pk:
