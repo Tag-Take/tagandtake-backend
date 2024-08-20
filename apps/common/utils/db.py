@@ -23,7 +23,6 @@ def create_instance_with_related_models(model_class, instance_data, related_data
 
     try:
         with transaction.atomic():
-            # Step 1: Create the main instance (e.g., User)
             if model_class == User:
                 instances[model_class] = model_class.objects.create_user(
                     username=instance_data.get("username"),
@@ -34,17 +33,14 @@ def create_instance_with_related_models(model_class, instance_data, related_data
             else:
                 instances[model_class] = model_class.objects.create(**instance_data)
 
-            # Step 2: Create the related instances using the appropriate foreign key reference
             for related_model_class, related_info in related_data.items():
                 foreign_key_name = related_info["foreign_key_name"]
                 related_instances_data = related_info["data"]
 
-                # Ensure the related instances are created with the correct foreign key reference to the relevant instance
                 if not isinstance(related_instances_data, list):
                     related_instances_data = [related_instances_data]
 
                 for related_data_item in related_instances_data:
-                    # Use the appropriate instance for the foreign key reference
                     foreign_key_instance = instances[related_info["related_model"]]
 
                     related_instance = related_model_class.objects.create(

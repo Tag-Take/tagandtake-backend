@@ -3,11 +3,19 @@ from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
+from apps.accounts.models import User as UserModel
 from apps.members.models import MemberProfile, MemberNotificationPreferences
 from apps.emails.services.email_senders import MemberEmailSender
 
 
 User = get_user_model()
+
+
+@receiver(user_activated, sender=User)
+def seend_wemcome_email(sender, instance: UserModel, **kwargs):
+    if instance.is_active and instance.role == "member":
+        member_profile = MemberProfile.objects.get(user=instance)
+        MemberEmailSender(member_profile).send_welcome_email()
 
 
 @receiver(pre_save, sender=User)

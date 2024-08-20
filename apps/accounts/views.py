@@ -101,7 +101,6 @@ class ActivateUserView(APIView):
                 user.is_active = True
                 user.save()
                 user_activated.send(sender=user.__class__, instance=user)
-
                 response = create_success_response(
                     "Account activated successfully", {}, status.HTTP_200_OK
                 )

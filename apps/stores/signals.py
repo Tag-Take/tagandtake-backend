@@ -17,6 +17,13 @@ from apps.payments.signals import tags_purchased
 User = get_user_model()
 
 
+@receiver(user_activated, sender=User)
+def seend_wemcome_email(sender, instance: UserModel, **kwargs):
+    if instance.is_active and instance.role == "store":
+        store_profile = StoreProfile.objects.get(user=instance)
+        StoreEmailSender(store_profile).send_welcome_email()
+
+
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance: StoreProfile, **kwargs):
     if instance.pk:
