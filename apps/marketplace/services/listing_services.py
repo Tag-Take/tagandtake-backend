@@ -32,8 +32,8 @@ class ListingHandler:
     def create_listing(item, tag, store_commission, min_listing_days):
         # TODO: create check_member_payment_details(user)
         # elegantly handle instances where member
-        # hasn't added payment details - redirect to 
-        # add payment details 
+        # hasn't added payment details - redirect to
+        # add payment details
         with transaction.atomic():
             listing = Listing.objects.create(
                 item=item,
@@ -50,8 +50,8 @@ class ListingHandler:
     def create_item_and_listing(serializer, request):
         # TODO: create check_member_payment_details(user)
         # elegantly handle instances where member
-        # hasn't added payment details - redirect to 
-        # add payment details 
+        # hasn't added payment details - redirect to
+        # add payment details
         with transaction.atomic():
             item = serializer.save()
             tag_id = request.data.get("tag_id")
@@ -74,12 +74,12 @@ class ListingHandler:
             item.save()
             ListingEmailSender(listing).send_listed_created_email()
             return listing
-        
+
     def replace_tag(self, new_tag_id):
         try:
             with transaction.atomic():
                 new_tag = Tag.objects.get(id=new_tag_id)
-                
+
                 self.listing.tag = new_tag
                 self.listing.save()
                 return self.listing
@@ -98,8 +98,7 @@ class ListingHandler:
                     store_commission=self.listing.store_commission,
                     min_listing_days=self.listing.min_listing_days,
                     reason=reason,
-                    next_fee_charge_at=now()
-                    + timedelta(days=self.get_grace_period_days()),
+                    next_fee_charge_at=now() + timedelta(days=self.get_grace_period_days()),
                 )
                 self.listing.item.status = "recalled"
                 self.listing.item.save()
@@ -115,9 +114,7 @@ class ListingHandler:
             self.listing.last_fee_charge_amount = (
                 self.listing.last_fee_charge_amount or Decimal("0.00")
             ) + RECALLED_LISTING_RECURRING_FEE
-            self.listing.next_fee_charge_at = now() + timedelta(
-                days=self.get_recurring_fee_interval_days()
-            )
+            self.listing.next_fee_charge_at = now() + timedelta(days=self.get_recurring_fee_interval_days())
             self.listing.save()
             ListingEmailSender(self.listing).send_storage_fee_charged_email()
 
@@ -227,7 +224,8 @@ class RecalledListingStorageFeeService:
             if service.is_time_to_charge():
                 service.apply_storage_fee()
 
-def get_listing_user_role(request, listing, view): 
+
+def get_listing_user_role(request, listing, view):
     data = {}
     if IsTagOwner().has_object_permission(request, view, listing):
         data["role"] = "HOST_STORE"

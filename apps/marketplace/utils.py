@@ -12,6 +12,7 @@ def get_listing_by_tag_id(tag_id: int, listing_model=Listing):
     except listing_model.DoesNotExist:
         raise serializers.ValidationError(f"{listing_model.__name__} not found for the provided tag ID")
 
+
 def get_listing_by_item_id(item_id: int, listing_model=Listing):
     try:
         listing = listing_model.objects.get(item_id=item_id)

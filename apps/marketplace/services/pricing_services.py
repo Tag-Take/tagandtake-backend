@@ -23,9 +23,7 @@ class PricingEngine:
         Fee that tagandtake (on top of listing price).
         """
         price = self._to_decimal(price)
-        transaction_fee = (
-            price * self.tagandtake_commission
-        ) + self.tagandtake_flat_fee
+        transaction_fee = (price * self.tagandtake_commission) + self.tagandtake_flat_fee
         return self._round_decimal(transaction_fee) if round_result else transaction_fee
 
     def calculate_store_commission(self, price, commission):
@@ -50,9 +48,7 @@ class PricingEngine:
         try:
             return Decimal(str(value))
         except (ValueError, TypeError):
-            raise ValueError(
-                "Invalid format. Value must be a number or a string representing a number."
-            )
+            raise ValueError("Invalid format. Value must be a number or a string representing a number.")
 
     def _round_decimal(self, value):
         return float(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))

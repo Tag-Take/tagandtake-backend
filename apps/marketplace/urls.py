@@ -8,7 +8,7 @@ from apps.marketplace.views import (
     RecallListingView,
     DelistListing,
     DelistRecalledListingView,
-    StoreRecalledListingListView
+    StoreRecalledListingListView,
 )
 
 urlpatterns = [
@@ -34,9 +34,7 @@ urlpatterns = [
         StoreRecalledListingListView.as_view(),
         name="store-recalled-listing-retrieve",
     ),
-    path(
-        "listings/<int:id>/recall/", RecallListingView.as_view(), name="listing-recall"
-    ),
+    path("listings/<int:id>/recall/", RecallListingView.as_view(), name="listing-recall"),
     path("listings/<int:id>/delist/", DelistListing.as_view(), name="listing-delist"),
     path(
         "listings/recalled/<int:id>/delist/",

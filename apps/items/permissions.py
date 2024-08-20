@@ -10,9 +10,7 @@ class IsItemOwner(permissions.BasePermission):
 
 def check_item_permissions(request, view, instance):
     if not request.user.is_authenticated:
-        return create_error_response(
-            "Authentication required.", {}, status.HTTP_401_UNAUTHORIZED
-        )
+        return create_error_response("Authentication required.", {}, status.HTTP_401_UNAUTHORIZED)
     if not IsItemOwner().has_object_permission(request, view, instance):
         return create_error_response(
             "You do not have permission to modify this item.",

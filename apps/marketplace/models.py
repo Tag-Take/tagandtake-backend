@@ -36,15 +36,11 @@ class BaseListing(models.Model):
 
     @property
     def store_commission_amount(self):
-        return PricingEngine().calculate_store_commission(
-            self.item.price, self.store_commission
-        )
+        return PricingEngine().calculate_store_commission(self.item.price, self.store_commission)
 
     @property
     def member_earnings(self):
-        return PricingEngine().calculate_user_earnings(
-            self.item.price, self.store_commission
-        )
+        return PricingEngine().calculate_user_earnings(self.item.price, self.store_commission)
 
     @property
     def store(self):

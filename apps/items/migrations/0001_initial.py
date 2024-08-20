@@ -75,9 +75,7 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=9,
-                        validators=[
-                            django.core.validators.MinValueValidator(Decimal("0.00"))
-                        ],
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.00"))],
                     ),
                 ),
                 (

@@ -18,25 +18,19 @@ from rest_framework_simplejwt.serializers import (
 
 from apps.emails.services.email_senders import AccountEmailSender
 from apps.accounts.services.signup_services import SignupService
-from apps.stores.serializers import (
-    StoreProfileSerializer,
-    StoreAddressSerializer, 
-    StoreOpeningHoursSerializer
-)
+from apps.stores.serializers import StoreProfileSerializer, StoreAddressSerializer, StoreOpeningHoursSerializer
 
 User = get_user_model()
 
 
 class MemberSignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
-    password2 = serializers.CharField(
-        write_only=True, required=True, label="Confirm Password"
-    )
+    password2 = serializers.CharField(write_only=True, required=True, label="Confirm Password")
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'password2']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ["username", "email", "password", "password2"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, data):
         if data["password"] != data["password2"]:
@@ -44,10 +38,10 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data["role"] = 'member'
-        user = SignupService().create_member_user(validated_data)
-        return user
-    
+        validated_data["role"] = "member"
+
+        return SignupService().create_member_user(validated_data)
+
 
 class StoreSignUpSerializer(serializers.ModelSerializer):
     store = StoreProfileSerializer(required=True)
@@ -58,10 +52,8 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
-            'username', 'email', 'password', 'password2', 'store', 'address', 'opening_hours'
-        ]
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ["username", "email", "password", "password2", "store", "address", "opening_hours"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, data):
         if data["password"] != data["password2"]:
@@ -69,16 +61,13 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data["role"] = 'store'
+        validated_data["role"] = "store"
 
         address_data = self.initial_data.pop("address", None)
         opening_hours_data = self.initial_data.pop("opening_hours", [])
         store_profile_data = self.initial_data.pop("store", None)
 
-        return SignupService().create_store_user(
-            validated_data, store_profile_data, address_data, opening_hours_data
-            )
-
+        return SignupService().create_store_user(validated_data, store_profile_data, address_data, opening_hours_data)
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -98,16 +87,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if user and user.check_password(password):
             if not user.is_active:
                 raise serializers.ValidationError(
-                    {
-                        "non_field_errors": [
-                            "User account is not activated. Please check your email."
-                        ]
-                    }
+                    {"non_field_errors": ["User account is not activated. Please check your email."]}
                 )
         else:
-            raise serializers.ValidationError(
-                {"non_field_errors": ["Invalid credentials"]}
-            )
+            raise serializers.ValidationError({"non_field_errors": ["Invalid credentials"]})
 
         self.user = user
         data = super().validate(attrs)
@@ -145,9 +128,7 @@ class PasswordResetSerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=value)
         except User.DoesNotExist:
-            raise serializers.ValidationError(
-                "No user is associated with this email address"
-            )
+            raise serializers.ValidationError("No user is associated with this email address")
         return value
 
     def save(self):
@@ -176,9 +157,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match")
 
         if check_password(data["new_password"], self.user.password):
-            raise serializers.ValidationError(
-                "The new password cannot be the same as the old password."
-            )
+            raise serializers.ValidationError("The new password cannot be the same as the old password.")
 
         return data
 

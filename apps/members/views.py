@@ -28,9 +28,7 @@ class MemberProfileView(generics.RetrieveUpdateAPIView):
     def retrieve(self, request, *args, **kwargs):
         profile = self.get_object()
         serializer = MemberProfileSerializer(profile)
-        return create_success_response(
-            "Profile retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
+        return create_success_response("Profile retrieved successfully.", serializer.data, status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         profile = self.get_object()
@@ -38,12 +36,8 @@ class MemberProfileView(generics.RetrieveUpdateAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            return create_success_response(
-                "Profile updated successfully.", serializer.data, status.HTTP_200_OK
-            )
-        return create_error_response(
-            "Profile update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
+            return create_success_response("Profile updated successfully.", serializer.data, status.HTTP_200_OK)
+        return create_error_response("Profile update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 
 class MemberNotificationPreferencesView(generics.RetrieveUpdateAPIView):
@@ -68,9 +62,7 @@ class MemberNotificationPreferencesView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         preferences = self.get_object()
-        serializer = MemberNotificationPreferencesSerializer(
-            preferences, data=request.data, partial=True
-        )
+        serializer = MemberNotificationPreferencesSerializer(preferences, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return create_success_response(
@@ -89,14 +81,12 @@ class MemberProfileImageView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsMemberUser]
 
     def dispatch(self, request, *args, **kwargs):
-        if request.method == 'POST':
+        if request.method == "POST":
             self.parser_classes = [MultiPartParser, FormParser]
         return super().dispatch(request, *args, **kwargs)
-    
+
     def post(self, request, *args, **kwargs):
-        serializer = MemberProfileImageUploadSerializer(
-            data=request.data, context={"request": request}
-        )
+        serializer = MemberProfileImageUploadSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             profile = serializer.save()
             try:
@@ -118,14 +108,10 @@ class MemberProfileImageView(APIView):
         )
 
     def delete(self, request, *args, **kwargs):
-        serializer = MemberProfileImageDeleteSerializer(
-            data=request.data, context={"request": request}
-        )
+        serializer = MemberProfileImageDeleteSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             profile = serializer.save()
-            return create_success_response(
-                "Profile photo deleted successfully.", {}, status.HTTP_200_OK
-            )
+            return create_success_response("Profile photo deleted successfully.", {}, status.HTTP_200_OK)
         return create_error_response(
             "Profile photo delete failed.",
             serializer.errors,

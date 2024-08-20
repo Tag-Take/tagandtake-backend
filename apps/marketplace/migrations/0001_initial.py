@@ -32,16 +32,12 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=9,
-                        validators=[
-                            django.core.validators.MinValueValidator(Decimal("0.00"))
-                        ],
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.00"))],
                     ),
                 ),
                 (
                     "min_listing_days",
-                    models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(1)]
-                    ),
+                    models.IntegerField(validators=[django.core.validators.MinValueValidator(1)]),
                 ),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -67,16 +63,12 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=9,
-                        validators=[
-                            django.core.validators.MinValueValidator(Decimal("0.00"))
-                        ],
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.00"))],
                     ),
                 ),
                 (
                     "min_listing_days",
-                    models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(1)]
-                    ),
+                    models.IntegerField(validators=[django.core.validators.MinValueValidator(1)]),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("recalled_at", models.DateTimeField(auto_now_add=True)),
@@ -90,9 +82,7 @@ class Migration(migrations.Migration):
                         default=Decimal("0.00"),
                         max_digits=9,
                         null=True,
-                        validators=[
-                            django.core.validators.MinValueValidator(Decimal("0.00"))
-                        ],
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.00"))],
                     ),
                 ),
                 ("next_fee_charge_at", models.DateTimeField()),
@@ -151,16 +141,12 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=9,
-                        validators=[
-                            django.core.validators.MinValueValidator(Decimal("0.00"))
-                        ],
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.00"))],
                     ),
                 ),
                 (
                     "min_listing_days",
-                    models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(1)]
-                    ),
+                    models.IntegerField(validators=[django.core.validators.MinValueValidator(1)]),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("sold_at", models.DateTimeField(auto_now_add=True)),
@@ -187,25 +173,19 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=9,
-                        validators=[
-                            django.core.validators.MinValueValidator(Decimal("0.00"))
-                        ],
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.00"))],
                     ),
                 ),
                 (
                     "min_listing_days",
-                    models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(1)]
-                    ),
+                    models.IntegerField(validators=[django.core.validators.MinValueValidator(1)]),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("delisted_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "item",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="items.item"
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="items.item"),
                 ),
             ],
             options={

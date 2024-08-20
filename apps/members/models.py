@@ -46,9 +46,7 @@ class MemberProfile(models.Model):
 
 
 class MemberNotificationPreferences(models.Model):
-    member = models.OneToOneField(
-        MemberProfile, on_delete=models.CASCADE, related_name="notification_preferences"
-    )
+    member = models.OneToOneField(MemberProfile, on_delete=models.CASCADE, related_name="notification_preferences")
     secondary_email = models.EmailField(blank=True)
     mobile = models.CharField(max_length=15, blank=True)
     email_notifications = models.BooleanField(default=True)

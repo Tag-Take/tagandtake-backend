@@ -30,9 +30,7 @@ class AccountEmailContextGenerator:
     def generate_password_reset_context(self):
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        reset_url = (
-            f"{settings.FRONTEND_URL}/reset-password/confirm?uid={uid}&token={token}"
-        )
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/confirm?uid={uid}&token={token}"
         context = {
             "username": self.user.username,
             "reset_url": reset_url,
@@ -167,14 +165,16 @@ class ListingEmailContextGenerator:
             }
         )
         return base_context
-    
+
     def generate_collection_reminder_context(self):
         next_charge_at = self.listing.next_fee_charge_at
         base_context = self.get_base_context()
-        base_context.update({
-            "store_name": self.store.shop_name,
-            "recall_reason": self.listing.reason.reason,  
-            "next_charge_time": next_charge_at.strftime('%H:%M %p'),
-            "next_charge_date": next_charge_at.strftime('%B %d, %Y'),
-        })
+        base_context.update(
+            {
+                "store_name": self.store.shop_name,
+                "recall_reason": self.listing.reason.reason,
+                "next_charge_time": next_charge_at.strftime("%H:%M %p"),
+                "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
+            }
+        )
         return base_context

@@ -27,9 +27,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "last_login",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="last login"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="last login"),
                 ),
                 (
                     "is_superuser",
@@ -55,15 +53,11 @@ class Migration(migrations.Migration):
                 ("date_joined", models.DateTimeField(auto_now_add=True)),
                 (
                     "groups",
-                    models.ManyToManyField(
-                        related_name="custom_user_set", to="auth.group"
-                    ),
+                    models.ManyToManyField(related_name="custom_user_set", to="auth.group"),
                 ),
                 (
                     "user_permissions",
-                    models.ManyToManyField(
-                        related_name="custom_user_set", to="auth.permission"
-                    ),
+                    models.ManyToManyField(related_name="custom_user_set", to="auth.permission"),
                 ),
             ],
             options={

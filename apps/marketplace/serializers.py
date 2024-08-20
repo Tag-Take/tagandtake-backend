@@ -28,9 +28,7 @@ class CreateListingSerializer(serializers.ModelSerializer):
         try:
             item = Item.objects.get(id=item_id)
             if item.status != "available":
-                errors[
-                    "item_id"
-                ] = f"Item is not available for listing. Item is currelty {item.status}."
+                errors["item_id"] = f"Item is not available for listing. Item is currelty {item.status}."
         except Item.DoesNotExist:
             errors["item_id"] = "Item does not exist."
             item = None
@@ -65,15 +63,9 @@ class CreateListingSerializer(serializers.ModelSerializer):
 
 class ListingSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
-    transaction_fee = serializers.DecimalField(
-        read_only=True, max_digits=10, decimal_places=2
-    )
-    store_commission_amount = serializers.DecimalField(
-        read_only=True, max_digits=10, decimal_places=2
-    )
-    member_earnings = serializers.DecimalField(
-        read_only=True, max_digits=10, decimal_places=2
-    )
+    transaction_fee = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
+    store_commission_amount = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
+    member_earnings = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
     item_details = ItemRetrieveUpdateDeleteSerializer(read_only=True)
 
     class Meta:
@@ -100,18 +92,11 @@ class RecallReasonSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
 class RecallListingSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
-    transaction_fee = serializers.DecimalField(
-        read_only=True, max_digits=10, decimal_places=2
-    )
-    store_commission_amount = serializers.DecimalField(
-        read_only=True, max_digits=10, decimal_places=2
-    )
-    member_earnings = serializers.DecimalField(
-        read_only=True, max_digits=10, decimal_places=2
-    )
+    transaction_fee = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
+    store_commission_amount = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
+    member_earnings = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
     item_details = ItemRetrieveUpdateDeleteSerializer(read_only=True)
     reason = RecallReasonSerializer()
 

@@ -50,9 +50,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
 
         try:
             with transaction.atomic():
-                item = Item.objects.create(
-                    owner=request.user, **validated_data, status="available"
-                )
+                item = Item.objects.create(owner=request.user, **validated_data, status="available")
 
                 folder_name = get_item_images_folder(item.id)
                 key = f"{folder_name}/{FILE_NAMES['item_image']}_{order}.{IMAGE_FILE_TYPE}"

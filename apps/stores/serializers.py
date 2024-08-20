@@ -51,13 +51,11 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         instance = self.instance
         if instance is None:
             return data
-        
+
         stock_limit = data.get("stock_limit", instance.stock_limit)
         if stock_limit is not None and stock_limit < instance.active_listings_count:
             raise serializers.ValidationError(
-                {
-                    "stock_limit": "Stock limit cannot be less than the number of active tags."
-                }
+                {"stock_limit": "Stock limit cannot be less than the number of active tags."}
             )
         return data
 
@@ -66,36 +64,22 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-    
+
 
 class StoreAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreAddress
-        fields = [
-            'street_address', 
-            'city', 
-            'state', 
-            'postal_code', 
-            'country', 
-            'latitude', 
-            'longitude'
-            ]
-        
-    
+        fields = ["street_address", "city", "state", "postal_code", "country", "latitude", "longitude"]
+
+
 from rest_framework import serializers
 from apps.stores.models import StoreOpeningHours
+
 
 class StoreOpeningHoursSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOpeningHours
-        fields = [
-            'day_of_week', 
-            'opening_time', 
-            'closing_time', 
-            'timezone', 
-            'is_closed'
-            ]
-
+        fields = ["day_of_week", "opening_time", "closing_time", "timezone", "is_closed"]
 
 
 class StoreItemCategorySerializer(serializers.ModelSerializer):
@@ -108,9 +92,7 @@ class StoreItemCategorySerializer(serializers.ModelSerializer):
 
 class StoreItemCategoryUpdateSerializer(serializers.Serializer):
     pin = serializers.CharField(write_only=True)
-    categories = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True
-    )
+    categories = serializers.ListField(child=serializers.IntegerField(), write_only=True)
 
     def validate(self, data):
         store_id = self.context["store_id"]
@@ -119,9 +101,7 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
         try:
             store = StoreProfile.objects.get(id=store_id, user=user)
         except StoreProfile.DoesNotExist:
-            raise serializers.ValidationError(
-                "Store not found or you do not have permission."
-            )
+            raise serializers.ValidationError("Store not found or you do not have permission.")
 
         if not store.validate_pin(data["pin"]):
             raise serializers.ValidationError("Invalid PIN.")
@@ -130,9 +110,7 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
 
         category_ids = data["categories"]
         if not category_ids:
-            raise serializers.ValidationError(
-                "You must provide at least one category ID."
-            )
+            raise serializers.ValidationError("You must provide at least one category ID.")
 
         categories = ItemCategory.objects.filter(id__in=category_ids)
         invalid_ids = set(category_ids) - set(categories.values_list("id", flat=True))
@@ -164,9 +142,7 @@ class StoreItemConditionSerializer(serializers.ModelSerializer):
 
 class StoreItemConditionUpdateSerializer(serializers.Serializer):
     pin = serializers.CharField(write_only=True)
-    conditions = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True
-    )
+    conditions = serializers.ListField(child=serializers.IntegerField(), write_only=True)
 
     def validate(self, data):
         store_id = self.context["store_id"]
@@ -175,9 +151,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
         try:
             store = StoreProfile.objects.get(id=store_id, user=user)
         except StoreProfile.DoesNotExist:
-            raise serializers.ValidationError(
-                "Store not found or you do not have permission."
-            )
+            raise serializers.ValidationError("Store not found or you do not have permission.")
 
         if not store.validate_pin(data["pin"]):
             raise serializers.ValidationError("Invalid PIN.")
@@ -186,9 +160,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
 
         condition_ids = data["conditions"]
         if not condition_ids:
-            raise serializers.ValidationError(
-                "You must provide at least one condition ID."
-            )
+            raise serializers.ValidationError("You must provide at least one condition ID.")
 
         conditions = ItemCondition.objects.filter(id__in=condition_ids)
         invalid_ids = set(condition_ids) - set(conditions.values_list("id", flat=True))
@@ -247,9 +219,7 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
             profile.profile_photo_url = image_url
             profile.save()
         except Exception as e:
-            raise serializers.ValidationError(
-                f"Failed to upload profile photo: {str(e)}"
-            )
+            raise serializers.ValidationError(f"Failed to upload profile photo: {str(e)}")
 
         return profile
 
@@ -285,8 +255,6 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
             profile.profile_photo_url = None
             profile.save()
         except Exception as e:
-            raise serializers.ValidationError(
-                f"Failed to delete profile photo: {str(e)}"
-            )
+            raise serializers.ValidationError(f"Failed to delete profile photo: {str(e)}")
 
         return profile
