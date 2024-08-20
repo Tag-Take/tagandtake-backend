@@ -3,7 +3,6 @@ from pytz import all_timezones
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
@@ -35,27 +34,6 @@ class StoreProfile(models.Model):
     google_profile_url = models.URLField(null=True, blank=True)
     website_url = models.URLField(blank=True, null=True)
     instagram_url = models.URLField(blank=True, null=True)
-    # Location
-    longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        blank=True,
-        null=True,
-        validators=[
-            MinValueValidator(Decimal("-180.00")),
-            MaxValueValidator(Decimal("180.00")),
-        ],
-    )
-    latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        blank=True,
-        null=True,
-        validators=[
-            MinValueValidator(Decimal("-90.00")),
-            MaxValueValidator(Decimal("90.00")),
-        ],
-    )
     # Store settings
     commission = models.IntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(50)], default=10
@@ -70,7 +48,7 @@ class StoreProfile(models.Model):
         default=0.00,
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0.00)],
+        validators=[MinValueValidator(Decimal(0.00))],
     )
     currency = models.CharField(max_length=3, default="GBP", null=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -132,7 +110,7 @@ class StoreOpeningHours(models.Model):
     day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
-    timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in all_timezones]) 
+    timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in all_timezones], default='UTC') 
     is_closed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -141,6 +119,7 @@ class StoreOpeningHours(models.Model):
         return f"{self.day_of_week}: {self.opening_time} - {self.closing_time} ({self.timezone})"
 
     class Meta:
+        db_table = 'store_opening_hours'
         verbose_name_plural = "Store Opening Hours"
         unique_together = ('store', 'day_of_week') 
 

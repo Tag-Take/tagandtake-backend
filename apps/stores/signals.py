@@ -17,20 +17,6 @@ from apps.payments.signals import tags_purchased
 User = get_user_model()
 
 
-@receiver(user_activated, sender=User)
-def create_store_profile(sender, instance: UserModel, **kwargs):
-    if instance.is_active and instance.role == "store":
-        store_profile, created = StoreProfile.objects.get_or_create(user=instance)
-        if created:
-            StoreNotificationPreferences.objects.create(store=store_profile)
-
-
-@receiver(post_save, sender=StoreProfile)
-def send_pin_email_to_store(sender, instance: StoreProfile, created: bool, **kwargs):
-    if created:
-        StoreEmailSender(instance).send_welcome_email()
-
-
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance: StoreProfile, **kwargs):
     if instance.pk:

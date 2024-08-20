@@ -13,7 +13,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.accounts.serializers import (
-    SignUpSerializer,
+    MemberSignUpSerializer,
+    StoreSignUpSerializer,
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
@@ -27,35 +28,58 @@ from apps.common.utils.responses import (
     JWTCookieHandler,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 User = get_user_model()
 
-# TODO: Seperate out member and store signup and activation
-"""
-Requirements (^): 
-    - member signup requires adding username, email, password, store nanme, 
-      website (optional) and address in one transaction
-    - member signup can continue as previously handled. 
-"""
 
-
-
-class SignUpView(generics.CreateAPIView):
+class MemberSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = SignUpSerializer
+    serializer_class = MemberSignUpSerializer
 
     def create(self, request: Request, *args, **kwargs):
-        signup_type = request.query_params.get("type")
-        request.data["role"] = request.query_params.get("type")
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return create_success_response(
-                f"{signup_type.capitalize()} user created successfully.",
-                {"user": serializer.data},
-                status.HTTP_201_CREATED,
+            try:
+                user = serializer.save()
+                AccountEmailSender(user).send_activation_email()
+                return create_success_response(
+                    "Member created successfully.",
+                    {"user": user.username},
+                    status.HTTP_201_CREATED,
+                )
+            except serializers.ValidationError as e:
+                return create_error_response(
+                    "User creation failed.", e.detail, status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return create_error_response(
+                "User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
             )
+        
+
+class StoreSignUpView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = StoreSignUpSerializer
+
+    def create(self, request: Request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = serializer.save()
+                AccountEmailSender(user).send_activation_email()
+                return create_success_response(
+                    "Store created successfully.",
+                    {"user": user.username},
+                    status.HTTP_201_CREATED,
+                )
+            except serializers.ValidationError as e:
+                return create_error_response(
+                    "User creation failed.", e.detail, status.HTTP_400_BAD_REQUEST
+                )
         else:
             return create_error_response(
                 "User creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST

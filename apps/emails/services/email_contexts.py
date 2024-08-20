@@ -1,12 +1,12 @@
 from datetime import datetime
 
+from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
 from apps.marketplace.services.pricing_services import RECALLED_LISTING_RECURRING_FEE
-from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
 from apps.marketplace.models import Listing, RecallReason

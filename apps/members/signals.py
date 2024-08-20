@@ -10,20 +10,6 @@ from apps.emails.services.email_senders import MemberEmailSender
 User = get_user_model()
 
 
-@receiver(user_activated, sender=User)
-def create_member_profile(sender, instance, **kwargs):
-    if instance.is_active and instance.role == "member":
-        member_profile, created = MemberProfile.objects.get_or_create(user=instance)
-        if created:
-            MemberNotificationPreferences.objects.create(member=member_profile)
-
-
-@receiver(post_save, sender=MemberProfile)
-def send_member_welcome_email(sender, instance, created, **kwargs):
-    if created:
-        MemberEmailSender(instance).send_welcome_email()
-
-
 @receiver(pre_save, sender=User)
 def track_email_change(sender, instance, **kwargs):
     if instance.pk:

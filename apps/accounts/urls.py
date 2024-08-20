@@ -1,7 +1,8 @@
 from django.urls import path
 
 from apps.accounts.views import (
-    SignUpView,
+    MemberSignUpView,
+    StoreSignUpView,
     ActivateUserView,
     ResendActivationEmailView,
     LogoutView,
@@ -13,7 +14,8 @@ from apps.accounts.views import (
 )
 
 urlpatterns = [
-    path("signup/", SignUpView.as_view(), name="signup"),
+    path("signup/member/", MemberSignUpView.as_view(), name="member_signup"),
+    path("signup/store/", StoreSignUpView.as_view(), name="store_signup"),
     path(
         "activate/<str:uidb64>/<str:token>/",
         ActivateUserView.as_view(),

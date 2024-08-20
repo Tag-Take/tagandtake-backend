@@ -200,6 +200,7 @@ class RecalledListingCollectionReminderService:
 
     @staticmethod
     def run_storage_fee_reminder_checks():
+        # TODO: integrate store closing hours in reminder (EOD is the last collection time)
         recalled_listings = RecalledListing.objects.all()
         for recalled_listing in recalled_listings:
             service = RecalledListingCollectionReminderService(recalled_listing)
@@ -219,6 +220,7 @@ class RecalledListingStorageFeeService:
 
     @staticmethod
     def run_storage_fee_checks():
+        # TODO: integrate store closing hours in fee application (EOD is the last collection time)
         recalled_listings = RecalledListing.objects.all()
         for recalled_listing in recalled_listings:
             service = RecalledListingStorageFeeService(recalled_listing)

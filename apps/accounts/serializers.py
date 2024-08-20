@@ -17,22 +17,26 @@ from rest_framework_simplejwt.serializers import (
 )
 
 from apps.emails.services.email_senders import AccountEmailSender
-
+from apps.accounts.services.signup_services import SignupService
+from apps.stores.serializers import (
+    StoreProfileSerializer,
+    StoreAddressSerializer, 
+    StoreOpeningHoursSerializer
+)
 
 User = get_user_model()
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class MemberSignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(
         write_only=True, required=True, label="Confirm Password"
     )
-    role = serializers.ChoiceField(choices=User.ROLE_CHOICES)
 
     class Meta:
         model = User
-        fields = ("username", "email", "password", "password2", "role")
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = ['username', 'email', 'password', 'password2']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
         if data["password"] != data["password2"]:
@@ -40,15 +44,41 @@ class SignUpSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        role = validated_data.pop("role")
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"],
-            role=role,
-        )
-        AccountEmailSender(user).send_activation_email()
+        validated_data["role"] = 'member'
+        user = SignupService().create_member_user(validated_data)
         return user
+    
+
+class StoreSignUpSerializer(serializers.ModelSerializer):
+    store = StoreProfileSerializer(required=True)
+    address = StoreAddressSerializer(required=True)
+    opening_hours = StoreOpeningHoursSerializer(many=True, required=True)
+    password = serializers.CharField(write_only=True, required=True)
+    password2 = serializers.CharField(write_only=True, required=True, label="Confirm Password")
+
+    class Meta:
+        model = User
+        fields = [
+            'username', 'email', 'password', 'password2', 'store', 'address', 'opening_hours'
+        ]
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def validate(self, data):
+        if data["password"] != data["password2"]:
+            raise serializers.ValidationError("Passwords do not match")
+        return data
+
+    def create(self, validated_data):
+        validated_data["role"] = 'store'
+
+        address_data = self.initial_data.pop("address", None)
+        opening_hours_data = self.initial_data.pop("opening_hours", [])
+        store_profile_data = self.initial_data.pop("store", None)
+
+        return SignupService().create_store_user(
+            validated_data, store_profile_data, address_data, opening_hours_data
+            )
+
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

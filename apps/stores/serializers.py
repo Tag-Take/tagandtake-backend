@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from apps.stores.models import (
     StoreProfile,
+    StoreAddress,
+    StoreOpeningHours,
     StoreItemCategorie,
     StoreItemConditions,
     StoreNotificationPreferences,
@@ -20,15 +22,13 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         model = StoreProfile
         fields = [
             "user",
-            "shop_name",
+            "store_name",
             "phone",
             "store_bio",
             "profile_photo_url",
             "google_profile_url",
             "website_url",
             "instagram_url",
-            "longitude",
-            "latitude",
             "commission",
             "stock_limit",
             "active_listings_count",
@@ -49,8 +49,10 @@ class StoreProfileSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         instance = self.instance
+        if instance is None:
+            return data
+        
         stock_limit = data.get("stock_limit", instance.stock_limit)
-
         if stock_limit is not None and stock_limit < instance.active_listings_count:
             raise serializers.ValidationError(
                 {
@@ -64,6 +66,36 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+    
+
+class StoreAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreAddress
+        fields = [
+            'street_address', 
+            'city', 
+            'state', 
+            'postal_code', 
+            'country', 
+            'latitude', 
+            'longitude'
+            ]
+        
+    
+from rest_framework import serializers
+from apps.stores.models import StoreOpeningHours
+
+class StoreOpeningHoursSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreOpeningHours
+        fields = [
+            'day_of_week', 
+            'opening_time', 
+            'closing_time', 
+            'timezone', 
+            'is_closed'
+            ]
+
 
 
 class StoreItemCategorySerializer(serializers.ModelSerializer):
