@@ -21,18 +21,20 @@ User = get_user_model()
 def seend_wemcome_email(sender, instance: UserModel, **kwargs):
     if instance.is_active and instance.role == "store":
         store_profile = StoreProfile.objects.get(user=instance)
-        StoreEmailSender(store_profile).send_welcome_email()
+        if store_profile:
+            StoreEmailSender(store_profile).send_welcome_email()
+
 
 
 @receiver(pre_save, sender=User)
-def track_email_change(sender, instance: StoreProfile, **kwargs):
+def track_email_change(sender, instance: UserModel, **kwargs):
     if instance.pk:
         old_email = User.objects.get(pk=instance.pk).email
         instance._old_email = old_email
 
 
 @receiver(post_save, sender=User)
-def update_store_notification_preference(sender, instance: StoreProfile, **kwargs):
+def update_store_notification_preference(sender, instance: UserModel, **kwargs):
     if hasattr(instance, "_old_email") and instance.email != instance._old_email:
         store_profile = StoreProfile.objects.filter(user=instance).first()
         if store_profile:

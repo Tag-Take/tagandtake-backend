@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from apps.common.utils.db import create_instance_with_related_models
-from apps.stores.services.store_create_services import create_store_item_categories_and_conditions
+from apps.stores.services.store_create_services import (
+    create_default_store_item_categories_and_conditions,
+)
 from apps.stores.models import (
     StoreProfile,
     StoreAddress,
@@ -9,7 +11,6 @@ from apps.stores.models import (
     StoreOpeningHours,
 )
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from apps.emails.services.email_senders import StoreEmailSender, MemberEmailSender
 
 
 User = get_user_model()
@@ -47,10 +48,9 @@ class SignupService:
         user = create_instance_with_related_models(User, validated_data, related_data)
         store_profile = StoreProfile.objects.get(user=user)
 
-        create_store_item_categories_and_conditions(store_profile)
+        create_default_store_item_categories_and_conditions(store_profile)
 
         return user
-    
 
     @staticmethod
     def create_member_user(validated_data):

@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from apps.accounts.signals import user_activated
 from apps.accounts.models import User as UserModel
-from apps.members.models import MemberProfile, MemberNotificationPreferences
+from apps.members.models import MemberProfile
 from apps.emails.services.email_senders import MemberEmailSender
 
 
@@ -19,14 +19,14 @@ def seend_wemcome_email(sender, instance: UserModel, **kwargs):
 
 
 @receiver(pre_save, sender=User)
-def track_email_change(sender, instance, **kwargs):
+def track_email_change(sender, instance: UserModel, **kwargs):
     if instance.pk:
         old_email = User.objects.get(pk=instance.pk).email
         instance._old_email = old_email
 
 
 @receiver(post_save, sender=User)
-def update_store_notification_preference(sender, instance, **kwargs):
+def update_store_notification_preference(sender, instance: UserModel, **kwargs):
     if hasattr(instance, "_old_email") and instance.email != instance._old_email:
         member_profile = MemberProfile.objects.filter(user=instance).first()
         if member_profile:
