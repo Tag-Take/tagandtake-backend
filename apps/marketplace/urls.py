@@ -20,7 +20,7 @@ urlpatterns = [
     ),
     path("listings/<int:id>/", ListingRetrieveView.as_view(), name="listing-retrieve"),
     path(
-        "listings/<int:id>/role-check/",
+        "listings/<int:id>/check-role/",
         ListingRoleCheckView.as_view(),
         name="listing-role-check",
     ),
@@ -30,7 +30,7 @@ urlpatterns = [
         name="listing-replace-tag",
     ),
     path(
-        "listings/recalled/stores/",
+        "recalled-listings/stores/",
         StoreRecalledListingListView.as_view(),
         name="store-recalled-listing-retrieve",
     ),
@@ -39,7 +39,7 @@ urlpatterns = [
     ),
     path("listings/<int:id>/delist/", DelistListing.as_view(), name="listing-delist"),
     path(
-        "listings/recalled/<int:id>/delist/",
+        "recalled-listings/<int:id>/delist/",
         DelistRecalledListingView.as_view(),
         name="recalled-listing-delist",
     ),
