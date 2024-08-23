@@ -23,7 +23,7 @@ def create_error_response(message: str, errors: list, status_code: status):
     )
 
 
-def create_success_response(message: str, errors: list, status_code: status):
+def create_success_response(message: str, data: list[dict], status_code: status):
     return Response(
         {
             "status": "success",

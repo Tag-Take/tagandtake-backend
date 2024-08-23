@@ -1,8 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+# import scoped throttling 
+from rest_framework.throttling import ScopedRateThrottle
 
 
 from rest_framework import generics, status, serializers
@@ -13,6 +16,7 @@ from rest_framework.request import Request
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from apps.accounts.models import User as UserModel
 from apps.accounts.serializers import (
     MemberSignUpSerializer,
     StoreSignUpSerializer,
@@ -28,7 +32,7 @@ from apps.common.utils.responses import (
     create_success_response,
     create_error_response,
     JWTCookieHandler,
-)   
+)
 
 
 User = get_user_model()
@@ -37,13 +41,13 @@ User = get_user_model()
 class MemberSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = MemberSignUpSerializer
-    throttle_scope = "signup"
+    throttle_scope = 'signup'
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             try:
-                user = serializer.save()
+                user: UserModel = serializer.save()
                 AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Member created successfully.",
@@ -63,13 +67,13 @@ class MemberSignUpView(generics.CreateAPIView):
 class StoreSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = StoreSignUpSerializer
-    throttle_scope = "signup"
+    throttle_scope = 'signup'
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             try:
-                user = serializer.save()
+                user: UserModel = serializer.save()
                 AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Store created successfully.",
@@ -93,7 +97,7 @@ class ActivateUserView(APIView):
     def get(self, request: Request, uidb64: str, token: str):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
+            user: UserModel = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
@@ -128,7 +132,7 @@ class ResendActivationEmailView(APIView):
     def post(self, request: Request, *args, **kwargs):
         email = request.data.get("email")
         try:
-            user = User.objects.get(email=email)
+            user: UserModel = User.objects.get(email=email)
             if user.is_active:
                 return create_error_response(
                     "User is already active.", {}, status.HTTP_400_BAD_REQUEST
@@ -182,15 +186,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 "Authentication failed.", e.detail, status.HTTP_401_UNAUTHORIZED
             )
 
-        user = serializer.validated_data["user"]
-        access = serializer.validated_data["access"]
-        refresh = serializer.validated_data["refresh"]
+        user: UserModel = serializer.validated_data["user"]
+        access_token = serializer.validated_data["access"]
+        refresh_token = serializer.validated_data["refresh"]
 
         response = create_success_response(
             "Authentication successful.", {"user": user}, status.HTTP_200_OK
         )
 
-        return JWTCookieHandler(response).set_jwt_cookies(access, refresh)
+        return JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
