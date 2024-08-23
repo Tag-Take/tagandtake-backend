@@ -38,31 +38,29 @@ def extract_error_messages(exception):
     Extract error messages from different types of exceptions, ensuring JSON-serializable output.
     Handles DRF and Django ValidationErrors, as well as other exception types.
     """
-    # Handle DRF ValidationError
     if isinstance(exception, serializers.ValidationError):
-        detail = exception.detail  # DRF ValidationError uses `detail`
+        detail = exception.detail  
 
         if isinstance(detail, dict):
-            return detail  # Field-specific errors as dict
-
+            return detail 
+        
         if isinstance(detail, list):
-            return [str(error) for error in detail]  # Non-field-specific errors as list
-
-        return [str(detail)]  # Single error as string wrapped in list
-
-    # Handle Django ValidationError
+            return [str(error) for error in detail]  
+        
+        return [str(detail)]  
+    
+   
     if isinstance(exception, DjangoValidationError):
         if hasattr(
             exception, "message_dict"
-        ):  # Django ValidationError with field errors
-            return exception.message_dict  # Return the message dict as-is
-
+        ):  
+            return exception.message_dict  
+        
         if hasattr(
             exception, "messages"
-        ):  # Django ValidationError with non-field errors
-            return [str(msg) for msg in exception.messages]  # Return list of messages
+        ):  
+            return [str(msg) for msg in exception.messages] 
 
-    # For all other exceptions, return a single error message in a list
     return [str(exception)]
 
 
