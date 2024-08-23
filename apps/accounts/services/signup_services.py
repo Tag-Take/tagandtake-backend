@@ -26,7 +26,10 @@ class SignupService:
     @staticmethod
     @transaction.atomic
     def create_store_user(
-        validated_data, store_profile_data, address_data, opening_hours_data
+        validated_data: dict,
+        store_profile_data: dict,
+        address_data: dict,
+        opening_hours_data: dict,
     ):
         related_data = {
             StoreProfile: {
@@ -58,7 +61,7 @@ class SignupService:
         return user
 
     @staticmethod
-    def create_member_user(validated_data):
+    def create_member_user(validated_data: dict):
         related_data = {
             MemberProfile: {
                 "foreign_key_name": "user",
@@ -76,23 +79,21 @@ class SignupService:
 
 
 class UsernameValidator:
-    def __init__(self, min_length=3, max_length=30):
+    def __init__(self, min_length: int = 3, max_length: int = 30):
         self.min_length = min_length
         self.max_length = max_length
-        self.username_regex = re.compile(
-            r"^[a-z0-9_]+$"
-        )  # Allow letters, numbers, and underscores only
+        self.username_regex = re.compile(r"^[a-z0-9_]+$")
 
-    def __call__(self, value):
-        if len(value) < self.min_length or len(value) > self.max_length:
+    def __call__(self, username: str):
+        if len(username) <= self.min_length or len(username) >= self.max_length:
             raise ValidationError(
                 _(
-                    f"Username must be between {self.min_length} and {self.max_length} characters long."
+                    f"Username must be at least {self.min_length}, and no longer than {self.max_length} characters."
                 ),
                 code="invalid_length",
             )
 
-        if not self.username_regex.match(value):
+        if not self.username_regex.match(username):
             raise ValidationError(
                 _(
                     "Username can only contain lowercase letters, numbers, and underscores."
@@ -101,8 +102,8 @@ class UsernameValidator:
             )
 
         reserved_usernames = ["admin", "root", "system"]
-        if value.lower() in reserved_usernames:
+        if username.lower() in reserved_usernames:
             raise ValidationError(
-                _(f"The username '{value}' is reserved and cannot be used."),
+                _(f"The username '{username}' is reserved and cannot be used."),
                 code="reserved_username",
             )

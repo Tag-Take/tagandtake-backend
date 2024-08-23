@@ -5,11 +5,14 @@ from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework.response import Response
-from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import serializers, status
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+
+from apps.accounts.models import User
 
 
-def create_error_response(message, errors, status_code):
+
+def create_error_response(message: str, errors: list, status_code: status):
     return Response(
         {
             "status": "error",
@@ -21,7 +24,7 @@ def create_error_response(message, errors, status_code):
     )
 
 
-def create_success_response(message, data, status_code):
+def create_success_response(message: str, errors: list, status_code: status):
     return Response(
         {
             "status": "success",
@@ -33,38 +36,33 @@ def create_success_response(message, data, status_code):
     )
 
 
-def extract_error_messages(exception):
+def extract_error_messages(exception: any):
     """
     Extract error messages from different types of exceptions, ensuring JSON-serializable output.
     Handles DRF and Django ValidationErrors, as well as other exception types.
     """
     if isinstance(exception, serializers.ValidationError):
-        detail = exception.detail  
+        detail = exception.detail
 
         if isinstance(detail, dict):
-            return detail 
-        
+            return detail
+
         if isinstance(detail, list):
-            return [str(error) for error in detail]  
-        
-        return [str(detail)]  
-    
-   
+            return [str(error) for error in detail]
+
+        return [str(detail)]
+
     if isinstance(exception, DjangoValidationError):
-        if hasattr(
-            exception, "message_dict"
-        ):  
-            return exception.message_dict  
-        
-        if hasattr(
-            exception, "messages"
-        ):  
-            return [str(msg) for msg in exception.messages] 
+        if hasattr(exception, "message_dict"):
+            return exception.message_dict
+
+        if hasattr(exception, "messages"):
+            return [str(msg) for msg in exception.messages]
 
     return [str(exception)]
 
 
-def flatten_errors(detail):
+def flatten_errors(detail: any):
     """
     Recursively flatten error messages, ensuring JSON-serializable output.
     Handles nested lists and dictionaries and returns a flat list of error messages.
@@ -85,10 +83,10 @@ def flatten_errors(detail):
 
 
 class JWTCookieHandler:
-    def __init__(self, response):
+    def __init__(self, response: Response):
         self.response: Response = response
 
-    def set_jwt_cookies(self, access_token, refresh_token=None):
+    def set_jwt_cookies(self, access_token: AccessToken, refresh_token=None):
         self.response.set_cookie(
             "access_token",
             access_token,
@@ -122,7 +120,7 @@ class JWTCookieHandler:
         return self.response
 
     @staticmethod
-    def _generate_tokens(user):
+    def _generate_tokens(user: User):
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)

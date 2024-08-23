@@ -10,7 +10,7 @@ from apps.emails.services.email_contexts import (
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import Listing
+from apps.marketplace.models import Listing, RecalledListing
 
 
 class AccountEmailSender:
@@ -79,92 +79,88 @@ class StoreEmailSender:
 
 
 class ListingEmailSender:
-    def __init__(self, listing: Listing):
-        self.listing = listing
 
-    def send_listed_created_email(self):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_item_listed_context()
-        item = self.listing.item.name
+    def send_listing_created_email(listing: Listing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_item_listed_context(listing)
+        item = listing.item.name
         send_email(
             subject=f"Item Listed - {item}",
-            to=self.listing.item.owner.email,
+            to=listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_listed.html",
             context=context,
         )
 
-    def send_listing_sold_email(self):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_item_sold_context()
-        item = self.listing.item.name
+    def send_listing_sold_email(listing: Listing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_item_sold_context(listing)
+        item = listing.item.name
         send_email(
             subject=f"Congratulations! Your Item Sold - {item}",
-            to=self.listing.item.owner.email,
+            to=listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_sold.html",
             context=context,
         )
 
-    def send_listing_recalled_email(self, recall_reason: int):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_item_recalled_context(recall_reason)
-        item = self.listing.item.name
+    def send_listing_recalled_email(listing: Listing ,recall_reason: int):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_item_recalled_context(listing, recall_reason)
+        item = listing.item.name
         send_email(
             subject=f"Item Recalled - {item}",
-            to=self.listing.item.owner.email,
+            to=listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_recalled.html",
             context=context,
         )
 
-    def send_listing_delisted_email(self):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_item_delisted_context()
-        item = self.listing.item.name
+    def send_listing_delisted_email(listing: Listing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_item_delisted_context(listing)
+        item = listing.item.name
         send_email(
             subject=f"Item Delisted - {item}",
-            to=self.listing.item.owner.email,
+            to=listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_delisted.html",
             context=context,
         )
 
-    def send_listing_collected_email(self):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_item_collected_context()
-        item = self.listing.item.name
+    def send_recalled_listing_collected_email(recalled_listing: RecalledListing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_item_collected_context(recalled_listing)
+        item = recalled_listing.item.name
         send_email(
             subject=f"Collection Confirmation - {item}",
-            to=self.listing.item.owner.email,
+            to=recalled_listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/item_collected.html",
             context=context,
         )
 
-    def send_storage_fee_charged_email(self):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        item = self.listing.item.name
+    def send_storage_fee_charged_email(recalled_listing: RecalledListing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_initial_storage_fee_context(recalled_listing)
+        item = recalled_listing.item.name
 
-        if self.listing.fee_charged_count == 1:
-            context = context_generator.generate_initial_storage_fee_context()
-            send_email(
-                subject=f"Storage Fee Charged - {item}",
-                to=self.listing.item.owner.email,
-                template_name=f"{NOTIFICATIONS}/initial_storage_fee_charged.html",
-                context=context,
-            )
-        elif self.listing.fee_charged_count > 1:
-            context = context_generator.generate_recurring_storage_fee_context()
-            send_email(
-                subject=f"Recurring Storage Fee Charged - {item}",
-                to=self.listing.item.owner.email,
-                template_name=f"{NOTIFICATIONS}/recurring_storage_fee_charged.html",
-                context=context,
-            )
+        if recalled_listing.fee_charged_count == 1:
+            subject = f"Storage Fee Charged - {item}"
+            template_name = f"{NOTIFICATIONS}/initial_storage_fee_charged.html"
+        elif recalled_listing.fee_charged_count > 1:
+            subject = f"Recurring Storage Fee Charged - {item}"
+            template_name = f"{NOTIFICATIONS}/recurring_storage_fee_charged.html"
 
-    def send_collection_reminder_email(self):
-        context_generator = ListingEmailContextGenerator(self.listing)
-        context = context_generator.generate_collection_reminder_context()
-        item = self.listing.item.name
+        send_email(
+            subject=subject,
+            to=recalled_listing.item.owner.email,
+            template_name=template_name,
+            context=context,
+        )
+
+    def send_collection_reminder_email(recalled_listing: RecalledListing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_collection_reminder_context(recalled_listing)
+        item = recalled_listing.item.name
         send_email(
             subject=f"Collection Reminder - {item}",
-            to=self.listing.item.owner.email,
+            to=recalled_listing.item.owner.email,
             template_name=f"{REMINDERS}/collect_item.html",
             context=context,
         )

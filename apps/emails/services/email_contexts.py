@@ -9,7 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from apps.marketplace.services.pricing_services import RECALLED_LISTING_RECURRING_FEE
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import Listing, RecallReason
+from apps.marketplace.models import BaseListing, Listing, RecallReason, RecalledListing
 
 
 class AccountEmailContextGenerator:
@@ -76,21 +76,18 @@ class StoreEmailContextGenerator:
 
 
 class ListingEmailContextGenerator:
-    def __init__(self, listing: Listing):
-        self.listing = listing
+    def get_base_context(self, listing: BaseListing):
         self.item = listing.item
         self.store = listing.store
         self.user = self.item.owner
-
-    def get_base_context(self):
         return {
             "username": self.user.username,
             "item_name": self.item.name,
             "current_year": datetime.now().year,
         }
 
-    def generate_item_listed_context(self):
-        base_context = self.get_base_context()
+    def generate_item_listed_context(self, listing: Listing):
+        base_context = self.get_base_context(listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -99,19 +96,19 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_sold_context(self):
-        base_context = self.get_base_context()
-        sale_price = self.listing.price
+    def generate_item_sold_context(self, listing: Listing):
+        base_context = self.get_base_context(listing)
+        sale_price = listing.price
         base_context.update(
             {
                 "sale_price": sale_price,
-                "earnings": self.listing.member_earnings,
+                "earnings": listing.member_earnings,
             }
         )
         return base_context
 
-    def generate_item_recalled_context(self, recall_reason: RecallReason):
-        base_context = self.get_base_context()
+    def generate_item_recalled_context(self, listing: Listing, recall_reason: RecallReason):
+        base_context = self.get_base_context(listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -123,8 +120,8 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_delisted_context(self):
-        base_context = self.get_base_context()
+    def generate_item_delisted_context(self, Listing: Listing):
+        base_context = self.get_base_context(Listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -132,8 +129,8 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_collected_context(self):
-        base_context = self.get_base_context()
+    def generate_item_collected_context(self, recalled_listing: RecalledListing):
+        base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -141,40 +138,40 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_initial_storage_fee_context(self):
-        next_charge_at = self.listing.next_fee_charge_at
+    def generate_initial_storage_fee_context(self, recalled_listing: RecalledListing):
+        next_charge_at = recalled_listing.next_fee_charge_at
         base_context = self.get_base_context()
         base_context.update(
             {
                 "store_name": self.store.store_name,
-                "storage_fee": f"{self.listing.last_fee_charge_amount}",
+                "storage_fee": f"{recalled_listing.last_fee_charge_amount}",
                 "next_charge_time": next_charge_at.strftime("%H:%M %p"),
                 "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
             }
         )
         return base_context
 
-    def generate_recurring_storage_fee_context(self):
-        next_charge_at = self.listing.next_fee_charge_at
-        base_context = self.get_base_context()
+    def generate_recurring_storage_fee_context(self, recalled_listing: RecalledListing):
+        next_charge_at = recalled_listing.next_fee_charge_at
+        base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
-                "storage_fee": f"{self.listing.last_fee_charge_amount}",
-                "fee_count": self.listing.fee_charged_count,
+                "storage_fee": f"{recalled_listing.last_fee_charge_amount}",
+                "fee_count": recalled_listing.fee_charged_count,
                 "next_charge_time": next_charge_at.strftime("%H:%M %p"),
                 "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
             }
         )
         return base_context
 
-    def generate_collection_reminder_context(self):
-        next_charge_at = self.listing.next_fee_charge_at
+    def generate_collection_reminder_context(self, recalled_listing: RecalledListing):
+        next_charge_at = recalled_listing.next_fee_charge_at
         base_context = self.get_base_context()
         base_context.update(
             {
                 "store_name": self.store.store_name,
-                "recall_reason": self.listing.reason.reason,
+                "recall_reason": recalled_listing.reason.reason,
                 "next_charge_time": next_charge_at.strftime("%H:%M %p"),
                 "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
             }

@@ -9,7 +9,6 @@ from rest_framework import generics, status, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.request import Request
-from rest_framework.throttling import ScopedRateThrottle
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -22,13 +21,14 @@ from apps.accounts.serializers import (
     PasswordResetConfirmSerializer,
     CustomTokenRefreshSerializer,
 )
+from apps.stores.models import StoreProfile as Store
 from apps.accounts.signals import user_activated
 from apps.emails.services.email_senders import AccountEmailSender
 from apps.common.utils.responses import (
     create_success_response,
     create_error_response,
     JWTCookieHandler,
-)
+)   
 
 
 User = get_user_model()
@@ -278,6 +278,25 @@ class DeleteAccountView(APIView):
 
     def delete(self, request: Request, *args, **kwargs):
         user = request.user
+        if user.role == "store":
+            pin = request.data.get("pin")
+            if not pin:
+                return create_error_response(
+                    "PIN is required.",
+                    {"pin": ["PIN is required"]},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+            profile = Store.objects.get(user=user)
+            if not profile:
+                return create_error_response(
+                    "Store profile not found.", {}, status.HTTP_400_BAD_REQUEST
+                )
+            if not profile.validate_pin(pin):
+                return create_error_response(
+                    "Invalid PIN.",
+                    {"pin": ["Invalid PIN"]},
+                    status.HTTP_400_BAD_REQUEST,
+                )
         user.delete()
         return create_success_response(
             "Account deleted successfully", {}, status.HTTP_204_NO_CONTENT

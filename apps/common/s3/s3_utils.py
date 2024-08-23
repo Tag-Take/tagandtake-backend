@@ -1,3 +1,5 @@
+from typing import BinaryIO
+
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError, ClientError
 from django.conf import settings
@@ -20,10 +22,10 @@ class S3BaseHandler:
         except Exception as e:
             raise Exception(f"Error creating S3 client: {e}") from e
 
-    def generate_s3_url(self, key):
+    def generate_s3_url(self, key: str):
         return f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{key}"
 
-    def generate_presigned_url(self, key, expiration=3600):
+    def generate_presigned_url(self, key: str, expiration: int = 3600):
         try:
             url = self.s3_client.generate_presigned_url(
                 "get_object",
@@ -38,7 +40,7 @@ class S3BaseHandler:
 
 
 class S3ImageHandler(S3BaseHandler):
-    def upload_image(self, file, key):
+    def upload_image(self, file: BinaryIO, key: str):
         try:
             # TODO: use celery async upload task
             self.s3_client.upload_fileobj(file, settings.AWS_STORAGE_BUCKET_NAME, key)
@@ -48,7 +50,7 @@ class S3ImageHandler(S3BaseHandler):
         except Exception as e:
             raise Exception(f"Error uploading file to S3: {e}") from e
 
-    def delete_image(self, key):
+    def delete_image(self, key: str):
         try:
             # TODO: use celery async delete task
             self.s3_client.delete_object(

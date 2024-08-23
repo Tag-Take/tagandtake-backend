@@ -46,7 +46,7 @@ class ListingHandler:
             )
             item.status = "Listed"
             item.save()
-            ListingEmailSender(listing).send_listed_created_email()
+            ListingEmailSender.send_listing_created_email(listing)
         return listing
 
     def recall_listing(self, listing: Listing, reason_id: int):
@@ -64,8 +64,8 @@ class ListingHandler:
                 )
                 listing.item.status = "recalled"
                 listing.item.save()
+                ListingEmailSender.send_listing_recalled_email(listing, reason)
                 listing.delete()
-                ListingEmailSender(listing).send_listing_recalled_email(reason)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
@@ -82,8 +82,8 @@ class ListingHandler:
                 )
                 listing.item.status = "available"
                 listing.item.save()
+                ListingEmailSender().send_listing_delisted_email(listing)
                 listing.delete()
-                ListingEmailSender(self.listing).send_listing_delisted_email()
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
@@ -99,8 +99,8 @@ class ListingHandler:
             )
             recalled_listing.item.status = "available"
             recalled_listing.item.save()
+            ListingEmailSender.send_recalled_listing_collected_email(recalled_listing)
             recalled_listing.delete()
-            ListingEmailSender(recalled_listing).send_listing_collected_email()
 
     @staticmethod
     def purchase_listing(listing: Listing, buyer: Member = None):
@@ -115,8 +115,8 @@ class ListingHandler:
                 )
                 listing.item.status = "sold"
                 listing.item.save()
+                ListingEmailSender.send_listing_sold_email(listing)
                 listing.delete()
-                ListingEmailSender(listing).send_listing_sold_email()
 
     def replace_listing_tag(self, listing: Listing, new_tag_id: int):
         new_tag = self.get_tag(new_tag_id)
@@ -136,7 +136,7 @@ class ListingHandler:
                 days=self.get_recurring_fee_interval_days()
             )
             recalled_listing.save()
-            ListingEmailSender(recalled_listing).send_storage_fee_charged_email()
+            ListingEmailSender.send_storage_fee_charged_email(recalled_listing)
 
     @staticmethod
     def item_meets_store_requirements(item: Item, tag: Tag):
@@ -213,7 +213,7 @@ class RecalledListingCollectionReminderService:
             return True
 
     def send_listing_collection_reminder(self):
-        ListingEmailSender(self.recalled_listing).send_collection_reminder_email()
+        ListingEmailSender.send_collection_reminder_email(self.recalled_listing)
 
     @staticmethod
     def run_storage_fee_reminder_checks():

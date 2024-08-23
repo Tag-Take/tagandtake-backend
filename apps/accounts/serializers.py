@@ -41,7 +41,7 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
         fields = ["username", "email", "password", "password2"]
         extra_kwargs = {"password": {"write_only": True}}
 
-    def validate(self, data):
+    def validate(self, data: dict):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError("Passwords do not match")
 
@@ -81,7 +81,7 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
-    def validate(self, data):
+    def validate(self, data: dict):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError("Passwords do not match")
 
@@ -105,7 +105,7 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
+    def validate(self, attrs: dict):
         username_or_email = attrs.get("username")
         password = attrs.get("password")
 
@@ -151,7 +151,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
-    def validate(self, attrs):
+    def validate(self, attrs: dict):
         refresh = RefreshToken(attrs["refresh"])
 
         decoded_refresh_token = refresh.payload
@@ -175,7 +175,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
-    def validate_email(self, value):
+    def validate_email(self, value: str):
         try:
             user = User.objects.get(email=value)
         except User.DoesNotExist:
@@ -196,7 +196,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
     confirm_new_password = serializers.CharField(write_only=True)
 
-    def validate(self, data):
+    def validate(self, data: dict):
         try:
             uid = force_str(urlsafe_base64_decode(data["uid"]))
             self.user = User.objects.get(pk=uid)

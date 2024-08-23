@@ -1,6 +1,7 @@
 # authentication.py
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.request import Request
 from django.conf import settings
 import jwt
 
@@ -10,7 +11,7 @@ User = get_user_model()
 
 
 class CustomJWTAuthentication(BaseAuthentication):
-    def authenticate(self, request):
+    def authenticate(self, request: Request):
         if getattr(request, "skip_authentication", False):
             return None
 

@@ -1,11 +1,12 @@
 from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.db.models import Model
 
 User = get_user_model()
 
 
-def create_instance_with_related_models(model_class, instance_data, related_data):
+def create_instance_with_related_models(model_class: Model, instance_data: dict, related_data: dict[Model, dict]) -> Model:
     """
     Creates an instance of the specified model_class and related models in a transactional manner.
 

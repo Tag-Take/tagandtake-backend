@@ -19,17 +19,17 @@ FILE_NAMES = {
 }
 
 
-def get_member_profile_folder(instance_id):
+def get_member_profile_folder(instance_id: int):
     return f"{BASE_PATHS['members']}/{BASE_PATHS['profiles']}/{instance_id}"
 
 
-def get_store_profile_folder(instance_id):
+def get_store_profile_folder(instance_id: int):
     return f"{BASE_PATHS['stores']}/{BASE_PATHS['profiles']}/{instance_id}"
 
 
-def get_item_images_folder(item_id):
+def get_item_images_folder(item_id: int):
     return f"{BASE_PATHS['items']}/{item_id}/{BASE_PATHS['images']}"
 
 
-def get_tag_image_folder(tag_group_id, tag_id):
+def get_tag_image_folder(tag_group_id: int, tag_id: int):
     return f"{BASE_PATHS['tags']}/{BASE_PATHS['groups']}/{tag_group_id}/{tag_id}"
