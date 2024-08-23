@@ -28,6 +28,10 @@ class BaseListing(models.Model):
 
     @property
     def price(self):
+        return Decimal(self.item.price)
+
+    @property
+    def total_price(self):
         return PricingEngine().calculate_list_price(self.item.price)
 
     @property

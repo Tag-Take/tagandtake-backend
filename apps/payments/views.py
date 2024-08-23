@@ -62,7 +62,7 @@ class PurchaseListingView(APIView):
             tag_id = request.data.get("tag_id")
             listing = get_listing_by_tag_id(tag_id)
 
-            ListingHandler(listing).purchase_listing()
+            ListingHandler.purchase_listing(listing)
 
             return create_success_response(
                 "Listing purchased successfully.", {}, status.HTTP_200_OK

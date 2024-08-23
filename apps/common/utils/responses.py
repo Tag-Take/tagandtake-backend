@@ -2,11 +2,11 @@ import datetime
 from datetime import datetime
 
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework.response import Response
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 def create_error_response(message, errors, status_code):
@@ -31,6 +31,59 @@ def create_success_response(message, data, status_code):
         },
         status=status_code,
     )
+
+
+def extract_error_messages(exception):
+    """
+    Extract error messages from different types of exceptions, ensuring JSON-serializable output.
+    Handles DRF and Django ValidationErrors, as well as other exception types.
+    """
+    # Handle DRF ValidationError
+    if isinstance(exception, serializers.ValidationError):
+        detail = exception.detail  # DRF ValidationError uses `detail`
+
+        if isinstance(detail, dict):
+            return detail  # Field-specific errors as dict
+
+        if isinstance(detail, list):
+            return [str(error) for error in detail]  # Non-field-specific errors as list
+
+        return [str(detail)]  # Single error as string wrapped in list
+
+    # Handle Django ValidationError
+    if isinstance(exception, DjangoValidationError):
+        if hasattr(
+            exception, "message_dict"
+        ):  # Django ValidationError with field errors
+            return exception.message_dict  # Return the message dict as-is
+
+        if hasattr(
+            exception, "messages"
+        ):  # Django ValidationError with non-field errors
+            return [str(msg) for msg in exception.messages]  # Return list of messages
+
+    # For all other exceptions, return a single error message in a list
+    return [str(exception)]
+
+
+def flatten_errors(detail):
+    """
+    Recursively flatten error messages, ensuring JSON-serializable output.
+    Handles nested lists and dictionaries and returns a flat list of error messages.
+    """
+    if isinstance(detail, list):
+        errors = []
+        for item in detail:
+            errors.extend(flatten_errors(item))
+        return errors
+
+    if isinstance(detail, dict):
+        errors = []
+        for key, value in detail.items():
+            errors.extend(flatten_errors(value))
+        return errors
+
+    return [str(detail)]
 
 
 class JWTCookieHandler:

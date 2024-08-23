@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import PermissionDenied
 
 from apps.common.utils.responses import create_error_response, create_success_response

@@ -86,7 +86,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
             except serializers.ValidationError as e:
                 return create_error_response(
                     "Item update failed.",
-                    {"exception": str(e)},
+                    {"exception": e.detail},
                     status.HTTP_400_BAD_REQUEST,
                 )
         return create_error_response(

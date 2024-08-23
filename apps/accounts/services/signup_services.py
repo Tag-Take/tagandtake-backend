@@ -74,28 +74,35 @@ class SignupService:
 
         return create_instance_with_related_models(User, validated_data, related_data)
 
+
 class UsernameValidator:
     def __init__(self, min_length=3, max_length=30):
         self.min_length = min_length
         self.max_length = max_length
-        self.username_regex = re.compile(r'^[a-z0-9_]+$')  # Allow letters, numbers, and underscores only
+        self.username_regex = re.compile(
+            r"^[a-z0-9_]+$"
+        )  # Allow letters, numbers, and underscores only
 
     def __call__(self, value):
         if len(value) < self.min_length or len(value) > self.max_length:
             raise ValidationError(
-                _(f"Username must be between {self.min_length} and {self.max_length} characters long."),
-                code='invalid_length'
+                _(
+                    f"Username must be between {self.min_length} and {self.max_length} characters long."
+                ),
+                code="invalid_length",
             )
 
         if not self.username_regex.match(value):
             raise ValidationError(
-                _("Username can only contain lowercase letters, numbers, and underscores."),
-                code='invalid_characters'
+                _(
+                    "Username can only contain lowercase letters, numbers, and underscores."
+                ),
+                code="invalid_characters",
             )
 
-        reserved_usernames = ['admin', 'root', 'system']
+        reserved_usernames = ["admin", "root", "system"]
         if value.lower() in reserved_usernames:
             raise ValidationError(
                 _(f"The username '{value}' is reserved and cannot be used."),
-                code='reserved_username'
+                code="reserved_username",
             )

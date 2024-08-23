@@ -44,12 +44,12 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError("Passwords do not match")
-        
+
         try:
-            validate_password(data['password'])
+            validate_password(data["password"])
         except DjangoValidationError as e:
             raise serializers.ValidationError({"password": list(e.messages)})
-        
+
         return data
 
     def create(self, validated_data):
@@ -86,10 +86,10 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Passwords do not match")
 
         try:
-            validate_password(data['password'])
+            validate_password(data["password"])
         except DjangoValidationError as e:
             raise serializers.ValidationError({"password": list(e.messages)})
-        
+
         return data
 
     def create(self, validated_data):
@@ -213,9 +213,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "The new password cannot be the same as the old password."
             )
-        
+
         try:
-            validate_password(data['new_password'])
+            validate_password(data["new_password"])
         except DjangoValidationError as e:
             raise serializers.ValidationError({"new_password": list(e.messages)})
 

@@ -4,6 +4,7 @@ from django.utils.timezone import now
 from decimal import Decimal
 
 from rest_framework import serializers
+from rest_framework.request import Request
 
 from apps.stores.models import Tag
 from apps.marketplace.models import (
@@ -13,6 +14,9 @@ from apps.marketplace.models import (
     SoldListing,
     RecallReason,
 )
+from apps.items.models import Item
+from apps.stores.models import StoreItemCategorie, StoreItemConditions
+from apps.members.models import MemberProfile as Member
 from apps.marketplace.services.pricing_services import (
     RECALLED_LISTING_RECURRING_FEE,
     GRACE_PERIOD_DAYS,
@@ -25,148 +29,161 @@ from apps.stores.permissions import IsStoreUser
 
 
 class ListingHandler:
-    def __init__(self, listing=None):
-        self.listing = listing
-
-    @staticmethod
-    def create_listing(item, tag, store_commission, min_listing_days):
+    def create_listing(self, item_id: int, tag_id: int):
         # TODO: create check_member_payment_details(user)
         # elegantly handle instances where member
         # hasn't added payment details - redirect to
         # add payment details
+        item = self.get_item(item_id)
+        tag = self.get_tag(tag_id)
+        self.item_meets_store_requirements(item, tag)
         with transaction.atomic():
             listing = Listing.objects.create(
                 item=item,
                 tag=tag,
-                store_commission=store_commission,
-                min_listing_days=min_listing_days,
+                store_commission=tag.store.commission,
+                min_listing_days=tag.store.min_listing_days,
             )
             item.status = "Listed"
             item.save()
             ListingEmailSender(listing).send_listed_created_email()
         return listing
 
-    @staticmethod
-    def create_item_and_listing(serializer, request):
-        # TODO: create check_member_payment_details(user)
-        # elegantly handle instances where member
-        # hasn't added payment details - redirect to
-        # add payment details
-        with transaction.atomic():
-            item = serializer.save()
-            tag_id = request.data.get("tag_id")
-
-            try:
-                tag = Tag.objects.get(id=tag_id)
-            except Tag.DoesNotExist:
-                raise serializers.ValidationError("Tag does not exist.")
-
-            store_commission = tag.store.commission
-            min_listing_days = tag.store.min_listing_days
-
-            listing = ListingHandler.create_listing(
-                item=item,
-                tag=tag,
-                store_commission=store_commission,
-                min_listing_days=min_listing_days,
-            )
-            item.status = "listed"
-            item.save()
-            ListingEmailSender(listing).send_listed_created_email()
-            return listing
-
-    def replace_tag(self, new_tag_id):
-        try:
-            with transaction.atomic():
-                new_tag = Tag.objects.get(id=new_tag_id)
-
-                self.listing.tag = new_tag
-                self.listing.save()
-                return self.listing
-        except Tag.DoesNotExist:
-            raise serializers.ValidationError("New tag does not exist.")
-        except Exception as e:
-            raise serializers.ValidationError(f"Error updating tag: {str(e)}")
-
-    def recall_listing(self, reason_id):
+    def recall_listing(self, listing: Listing, reason_id: int):
         try:
             reason = self.get_recall_reasons(reason_id)
             with transaction.atomic():
                 RecalledListing.objects.create(
-                    tag=self.listing.tag,
-                    item=self.listing.item,
-                    store_commission=self.listing.store_commission,
-                    min_listing_days=self.listing.min_listing_days,
+                    tag=listing.tag,
+                    item=listing.item,
+                    store_commission=listing.store_commission,
+                    min_listing_days=listing.min_listing_days,
                     reason=reason,
                     next_fee_charge_at=now()
                     + timedelta(days=self.get_grace_period_days()),
                 )
-                self.listing.item.status = "recalled"
-                self.listing.item.save()
-                self.listing.delete()
-                ListingEmailSender(self.listing).send_listing_recalled_email(reason)
+                listing.item.status = "recalled"
+                listing.item.save()
+                listing.delete()
+                ListingEmailSender(listing).send_listing_recalled_email(reason)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
-    def apply_recurring_storage_fee(self):
-        with transaction.atomic():
-            self.listing.fee_charged_count += 1
-            self.listing.last_fee_charge_at = now()
-            self.listing.last_fee_charge_amount = (
-                self.listing.last_fee_charge_amount or Decimal("0.00")
-            ) + RECALLED_LISTING_RECURRING_FEE
-            self.listing.next_fee_charge_at = now() + timedelta(
-                days=self.get_recurring_fee_interval_days()
-            )
-            self.listing.save()
-            ListingEmailSender(self.listing).send_storage_fee_charged_email()
-
-    def delist_listing(self, reason_id):
+    def delist_listing(self, listing: Listing, reason_id: int):
         try:
             reason = self.get_recall_reasons(reason_id)
             with transaction.atomic():
                 DelistedListing.objects.create(
-                    tag=self.listing.tag,
-                    item=self.listing.item,
-                    store_commission=self.listing.store_commission,
-                    min_listing_days=self.listing.min_listing_days,
+                    tag=listing.tag,
+                    item=listing.item,
+                    store_commission=listing.store_commission,
+                    min_listing_days=listing.min_listing_days,
                     reason=reason,
                 )
-                self.listing.item.status = "available"
-                self.listing.item.save()
-                self.listing.delete()
+                listing.item.status = "available"
+                listing.item.save()
+                listing.delete()
                 ListingEmailSender(self.listing).send_listing_delisted_email()
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
-    def delist_recalled_listing(self):
+    @staticmethod
+    def delist_recalled_listing(recalled_listing: RecalledListing):
         with transaction.atomic():
             DelistedListing.objects.create(
-                tag=self.listing.tag,
-                item=self.listing.item,
-                store_commission=self.listing.store_commission,
-                min_listing_days=self.listing.min_listing_days,
-                reason=self.listing.reason,
+                tag=recalled_listing.tag,
+                item=recalled_listing.item,
+                store_commission=recalled_listing.store_commission,
+                min_listing_days=recalled_listing.min_listing_days,
+                reason=recalled_listing.reason,
             )
-            self.listing.item.status = "available"
-            self.listing.item.save()
-            self.listing.delete()
-            ListingEmailSender(self.listing).send_listing_collected_email()
+            recalled_listing.item.status = "available"
+            recalled_listing.item.save()
+            recalled_listing.delete()
+            ListingEmailSender(recalled_listing).send_listing_collected_email()
 
-    def purchase_listing(self, buyer=None):
-        if self.listing:
+    @staticmethod
+    def purchase_listing(listing: Listing, buyer: Member = None):
+        if listing:
             with transaction.atomic():
                 SoldListing.objects.create(
-                    tag=self.listing.tag,
-                    item=self.listing.item,
-                    store_commission=self.listing.store_commission,
-                    min_listing_days=self.listing.min_listing_days,
+                    tag=listing.tag,
+                    item=listing.item,
+                    store_commission=listing.store_commission,
+                    min_listing_days=listing.min_listing_days,
                     buyer=buyer,
                 )
-                self.listing.item.status = "sold"
-                self.listing.item.save()
-                self.listing.delete()
-                ListingEmailSender(self.listing).send_listing_sold_email()
+                listing.item.status = "sold"
+                listing.item.save()
+                listing.delete()
+                ListingEmailSender(listing).send_listing_sold_email()
+
+    def replace_listing_tag(self, listing: Listing, new_tag_id: int):
+        new_tag = self.get_tag(new_tag_id)
+        with transaction.atomic():
+            listing.tag = new_tag
+            listing.save()
+            return listing
+
+    def apply_recurring_storage_fee(self, recalled_listing: RecalledListing):
+        with transaction.atomic():
+            recalled_listing.fee_charged_count += 1
+            recalled_listing.last_fee_charge_at = now()
+            recalled_listing.last_fee_charge_amount = (
+                recalled_listing.last_fee_charge_amount or Decimal("0.00")
+            ) + RECALLED_LISTING_RECURRING_FEE
+            recalled_listing.next_fee_charge_at = now() + timedelta(
+                days=self.get_recurring_fee_interval_days()
+            )
+            recalled_listing.save()
+            ListingEmailSender(recalled_listing).send_storage_fee_charged_email()
+
+    @staticmethod
+    def item_meets_store_requirements(item: Item, tag: Tag):
+        store_conditions = StoreItemConditions.objects.filter(store=tag.store)
+        categories = StoreItemCategorie.objects.filter(store=tag.store)
+
+        errors = {}
+
+        if item.condition not in [
+            condition.condition for condition in store_conditions
+        ]:
+            errors["condition"] = (
+                f"'{item.condition}' does not meet store condition requirements."
+            )
+
+        if item.category not in [category.category for category in categories]:
+            errors["category"] = (
+                f"{tag.store.store_name} does not accept '{item.category}' items."
+            )
+
+        if item.price < tag.store.min_price:
+            errors["price"] = (
+                f"Item price is below {tag.store.store_name}'s minimum price requirement."
+            )
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+    @staticmethod
+    def get_tag(tag_id):
+        try:
+            tag = Tag.objects.get(id=tag_id)
+            return tag
+        except Tag.DoesNotExist:
+            raise serializers.ValidationError("Tag does not exist.")
+
+    @staticmethod
+    def get_item(item_id):
+        try:
+            item = Item.objects.get(id=item_id)
+            if item.status != "available":
+                raise serializers.ValidationError(
+                    f"Item is not available for listing. Item is currelty {item.status}."
+                )
+            return item
+        except Item.DoesNotExist:
+            raise serializers.ValidationError("Item does not exist.")
 
     @staticmethod
     def get_recall_reasons(id):
@@ -216,7 +233,7 @@ class RecalledListingStorageFeeService:
         return now() >= self.recalled_listing.next_fee_charge_at
 
     def apply_storage_fee(self):
-        ListingHandler(self.recalled_listing).apply_recurring_storage_fee()
+        ListingHandler.apply_recurring_storage_fee(self.recalled_listing)
 
     @staticmethod
     def run_storage_fee_checks():
@@ -228,7 +245,7 @@ class RecalledListingStorageFeeService:
                 service.apply_storage_fee()
 
 
-def get_listing_user_role(request, listing, view):
+def get_listing_user_role(request: Request, listing: Listing, view: object):
     data = {}
     if IsTagOwner().has_object_permission(request, view, listing):
         data["role"] = "HOST_STORE"

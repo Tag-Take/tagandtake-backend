@@ -88,8 +88,8 @@ class StoreSignUpView(generics.CreateAPIView):
 
 class ActivateUserView(APIView):
     authentication_classes = []
-    throttle_scope = 'resend_activation' 
-    
+    throttle_scope = "resend_activation"
+
     def get(self, request: Request, uidb64: str, token: str):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -168,7 +168,7 @@ class LogoutView(APIView):
             )
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):   
+class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     throttle_scope = "login"
 
@@ -252,7 +252,7 @@ class PasswordResetView(generics.GenericAPIView):
 
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
-    throttle_scope = 'password_reset'  
+    throttle_scope = "password_reset"
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
