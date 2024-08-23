@@ -273,7 +273,9 @@ class DelistRecalledListingView(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             item_id = self.kwargs.get("id")
-            recalled_listing: RecalledListing = get_listing_by_item_id(item_id, RecalledListing)
+            recalled_listing: RecalledListing = get_listing_by_item_id(
+                item_id, RecalledListing
+            )
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
         permission_error_response = check_listing_store_permissions(

@@ -20,7 +20,36 @@ from apps.common.s3.s3_config import (
 )
 
 
+class StoreAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreAddress
+        fields = [
+            "street_address",
+            "city",
+            "state",
+            "postal_code",
+            "country",
+            "latitude",
+            "longitude",
+        ]
+
+
+class StoreOpeningHoursSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreOpeningHours
+        fields = [
+            "day_of_week",
+            "opening_time",
+            "closing_time",
+            "timezone",
+            "is_closed",
+        ]
+
+
 class StoreProfileSerializer(serializers.ModelSerializer):
+    opening_hours = StoreOpeningHoursSerializer(many=True)
+    address = StoreAddressSerializer()
+
     class Meta:
         model = StoreProfile
         fields = [
@@ -38,6 +67,8 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "remaining_stock",
             "min_listing_days",
             "min_price",
+            "opening_hours",
+            "address",
             "created_at",
             "updated_at",
         ]
@@ -45,10 +76,21 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "user",
             "created_at",
             "updated_at",
+            "opening_hours",
+            "address",
             "active_listings_count",
             "accepting_listings",
             "profile_photo_url",
+            "remaining_stock",
         ]
+
+    def __init__(self, *args, **kwargs):
+        exclude = kwargs.pop("exclude", [])
+
+        super().__init__(*args, **kwargs)
+
+        for field in exclude:
+            self.fields.pop(field, None)
 
     def validate(self, data: dict):
         store: StoreProfile = self.instance
@@ -65,35 +107,22 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, store: StoreProfile, validated_data: dict):
+        address_data = validated_data.pop("address", None)
+        opening_hours_data = validated_data.pop("opening_hours", None)
+
         for attr, value in validated_data.items():
             setattr(store, attr, value)
         store.save()
+
+        if address_data:
+            StoreAddress.objects.update_or_create(store=store, defaults=address_data)
+
+        if opening_hours_data:
+            store.opening_hours.all().delete()
+            for day_opening_hours in opening_hours_data:
+                StoreOpeningHours.objects.create(store=store, **day_opening_hours)
+
         return store
-
-
-class StoreAddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StoreAddress
-        fields = [
-            "street_address",
-            "city",
-            "state",
-            "postal_code",
-            "country",
-            "latitude",
-            "longitude",
-        ]
-
-class StoreOpeningHoursSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StoreOpeningHours
-        fields = [
-            "day_of_week",
-            "opening_time",
-            "closing_time",
-            "timezone",
-            "is_closed",
-        ]
 
 
 class StoreItemCategorySerializer(serializers.ModelSerializer):
@@ -132,7 +161,9 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
                 "You must provide at least one category ID."
             )
 
-        categories: list[ItemCategory] = ItemCategory.objects.filter(id__in=category_ids)
+        categories: list[ItemCategory] = ItemCategory.objects.filter(
+            id__in=category_ids
+        )
         invalid_ids = set(category_ids) - set(categories.values_list("id", flat=True))
 
         if invalid_ids:
@@ -255,7 +286,7 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
 class StoreProfileImageDeleteSerializer(serializers.Serializer):
     pin = serializers.CharField(max_length=4)
 
-    def validate(self, attrs: dict):    
+    def validate(self, attrs: dict):
         request: Request = self.context.get("request")
         try:
             profile = StoreProfile.objects.get(user=request.user)

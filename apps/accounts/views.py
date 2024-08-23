@@ -4,7 +4,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
-# import scoped throttling 
+
+# import scoped throttling
 from rest_framework.throttling import ScopedRateThrottle
 
 
@@ -41,7 +42,7 @@ User = get_user_model()
 class MemberSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = MemberSignUpSerializer
-    throttle_scope = 'signup'
+    throttle_scope = "signup"
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -67,7 +68,7 @@ class MemberSignUpView(generics.CreateAPIView):
 class StoreSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = StoreSignUpSerializer
-    throttle_scope = 'signup'
+    throttle_scope = "signup"
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

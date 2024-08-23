@@ -74,6 +74,14 @@ class StoreProfile(models.Model):
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
 
+    @property
+    def address(self):
+        return self.store_address
+
+    @property
+    def opening_hours(self):
+        return self.opening_hours.all()
+
 
 class StoreAddress(models.Model):
     store = models.OneToOneField(
@@ -202,7 +210,6 @@ class Tag(models.Model):
     tag_group = models.ForeignKey(
         TagGroup, on_delete=models.CASCADE, related_name="tags"
     )
-    hash = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -210,7 +217,7 @@ class Tag(models.Model):
         db_table = "tags"
 
     def __str__(self):
-        return f"Store: {self.store.store_name} - Tag: {self.hash}"
+        return f"Store: {self.store.store_name} - Tag: {self.id}"
 
     @property
     def store(self):

@@ -36,9 +36,21 @@ class StoreProfileView(generics.RetrieveUpdateAPIView):
         except StoreProfile.DoesNotExist:
             raise PermissionDenied("Profile not found.")
 
+    def get_serializer(self, *args, **kwargs):
+        include_related = self.request.query_params.get("include", "").split(",")
+
+        exclude = []
+        if "address" not in include_related:
+            exclude.append("address")
+        if "opening_hours" not in include_related:
+            exclude.append("opening_hours")
+
+        kwargs["exclude"] = exclude
+        return super().get_serializer(*args, **kwargs)
+
     def retrieve(self, request, *args, **kwargs):
         profile = self.get_object()
-        serializer = StoreProfileSerializer(profile)
+        serializer = self.get_serializer(profile)
         return create_success_response(
             "Profile retrieved successfully.", serializer.data, status.HTTP_200_OK
         )
@@ -51,7 +63,7 @@ class StoreProfileView(generics.RetrieveUpdateAPIView):
                 "Invalid PIN.", {"pin": ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = StoreProfileSerializer(profile, data=request.data, partial=True)
+        serializer = self.get_serializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return create_success_response(

@@ -15,7 +15,12 @@ from apps.marketplace.models import (
     RecallReason,
 )
 from apps.items.models import Item
-from apps.stores.models import StoreItemCategorie, StoreItemConditions
+from apps.stores.models import (
+    StoreItemCategorie,
+    StoreItemConditions,
+    StoreProfile,
+    StoreOpeningHours,
+)
 from apps.members.models import MemberProfile as Member
 from apps.marketplace.services.pricing_services import (
     RECALLED_LISTING_RECURRING_FEE,
@@ -59,8 +64,9 @@ class ListingHandler:
                     store_commission=listing.store_commission,
                     min_listing_days=listing.min_listing_days,
                     reason=reason,
-                    next_fee_charge_at=now()
-                    + timedelta(days=self.get_grace_period_days()),
+                    next_fee_charge_at=self.get_next_fee_charge_date(
+                        listing.tag.store, inital_charge=True
+                    ),
                 )
                 listing.item.status = "recalled"
                 listing.item.save()
@@ -132,8 +138,8 @@ class ListingHandler:
             recalled_listing.last_fee_charge_amount = (
                 recalled_listing.last_fee_charge_amount or Decimal("0.00")
             ) + RECALLED_LISTING_RECURRING_FEE
-            recalled_listing.next_fee_charge_at = now() + timedelta(
-                days=self.get_recurring_fee_interval_days()
+            recalled_listing.next_fee_charge_at = self.get_next_fee_charge_date(
+                recalled_listing.tag.store
             )
             recalled_listing.save()
             ListingEmailSender.send_storage_fee_charged_email(recalled_listing)
@@ -192,13 +198,44 @@ class ListingHandler:
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 
-    @staticmethod
-    def get_grace_period_days():
-        return GRACE_PERIOD_DAYS
+    def get_next_fee_charge_date(
+        self, store: StoreProfile, inital_charge: bool = False
+    ):
+        opening_hours: list[StoreOpeningHours] = store.opening_hours
 
-    @staticmethod
-    def get_recurring_fee_interval_days():
-        return RECURRING_FEE_INTERVAL_DAYS
+        current_time = now()
+        if inital_charge:
+            collection_date = current_time + timedelta(days=GRACE_PERIOD_DAYS)
+        else:
+            collection_date = current_time + timedelta(days=RECURRING_FEE_INTERVAL_DAYS)
+
+        day_offset = 0
+        while day_offset < 7:  # Traverse up to a full week
+            check_date = collection_date + timedelta(days=day_offset)
+            check_day_name = check_date.strftime("%A")
+
+            day_opening_hours = next(
+                (
+                    day
+                    for day in opening_hours
+                    if day.day_of_week.lower() == check_day_name.lower()
+                ),
+                None,
+            )
+
+            if day_opening_hours and not day_opening_hours.is_closed:
+                closing_time = day_opening_hours.closing_time
+                collection_date = collection_date.replace(
+                    hour=closing_time.hour,
+                    minute=closing_time.minute,
+                    second=0,
+                    microsecond=0,
+                )
+                return collection_date
+
+            day_offset += 1
+
+        return collection_date.replace(hour=17, minute=0, second=0, microsecond=0)
 
 
 class RecalledListingCollectionReminderService:
@@ -217,7 +254,6 @@ class RecalledListingCollectionReminderService:
 
     @staticmethod
     def run_storage_fee_reminder_checks():
-        # TODO: integrate store closing hours in reminder (EOD is the last collection time)
         recalled_listings = RecalledListing.objects.all()
         for recalled_listing in recalled_listings:
             service = RecalledListingCollectionReminderService(recalled_listing)
@@ -237,7 +273,6 @@ class RecalledListingStorageFeeService:
 
     @staticmethod
     def run_storage_fee_checks():
-        # TODO: integrate store closing hours in fee application (EOD is the last collection time)
         recalled_listings = RecalledListing.objects.all()
         for recalled_listing in recalled_listings:
             service = RecalledListingStorageFeeService(recalled_listing)
