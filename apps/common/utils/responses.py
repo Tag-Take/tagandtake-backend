@@ -11,7 +11,6 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from apps.accounts.models import User
 
 
-
 def create_error_response(message: str, errors: list, status_code: status):
     return Response(
         {

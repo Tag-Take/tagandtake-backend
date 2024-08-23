@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from rest_framework.request import Request
+
+from apps.accounts.models import User
 from apps.stores.models import (
     StoreProfile,
     StoreAddress,
@@ -47,13 +50,13 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "profile_photo_url",
         ]
 
-    def validate(self, data):
-        instance = self.instance
-        if instance is None:
+    def validate(self, data: dict):
+        store: StoreProfile = self.instance
+        if store is None:
             return data
 
-        stock_limit = data.get("stock_limit", instance.stock_limit)
-        if stock_limit is not None and stock_limit < instance.active_listings_count:
+        stock_limit = data.get("stock_limit", store.stock_limit)
+        if stock_limit is not None and stock_limit < store.active_listings_count:
             raise serializers.ValidationError(
                 {
                     "stock_limit": "Stock limit cannot be less than the number of active tags."
@@ -61,11 +64,11 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def update(self, instance, validated_data):
+    def update(self, store: StoreProfile, validated_data: dict):
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+            setattr(store, attr, value)
+        store.save()
+        return store
 
 
 class StoreAddressSerializer(serializers.ModelSerializer):
@@ -80,11 +83,6 @@ class StoreAddressSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
         ]
-
-
-from rest_framework import serializers
-from apps.stores.models import StoreOpeningHours
-
 
 class StoreOpeningHoursSerializer(serializers.ModelSerializer):
     class Meta:
@@ -112,12 +110,12 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
         child=serializers.IntegerField(), write_only=True
     )
 
-    def validate(self, data):
+    def validate(self, data: dict):
         store_id = self.context["store_id"]
-        user = self.context["request"].user
+        user: User = self.context["request"].user
 
         try:
-            store = StoreProfile.objects.get(id=store_id, user=user)
+            store: StoreProfile = StoreProfile.objects.get(id=store_id, user=user)
         except StoreProfile.DoesNotExist:
             raise serializers.ValidationError(
                 "Store not found or you do not have permission."
@@ -128,13 +126,13 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
 
         data["store"] = store
 
-        category_ids = data["categories"]
+        category_ids: list[int] = data["categories"]
         if not category_ids:
             raise serializers.ValidationError(
                 "You must provide at least one category ID."
             )
 
-        categories = ItemCategory.objects.filter(id__in=category_ids)
+        categories: list[ItemCategory] = ItemCategory.objects.filter(id__in=category_ids)
         invalid_ids = set(category_ids) - set(categories.values_list("id", flat=True))
 
         if invalid_ids:
@@ -146,7 +144,7 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
         return data
 
     def update_categories(self):
-        store = self.validated_data["store"]
+        store: StoreProfile = self.validated_data["store"]
         categories = self.validated_data["categories"]
 
         StoreItemCategorie.objects.filter(store=store).delete()
@@ -168,7 +166,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
         child=serializers.IntegerField(), write_only=True
     )
 
-    def validate(self, data):
+    def validate(self, data: dict):
         store_id = self.context["store_id"]
         user = self.context["request"].user
 
@@ -220,8 +218,8 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
     profile_photo = serializers.ImageField()
     pin = serializers.CharField(max_length=4)
 
-    def validate(self, attrs):
-        request = self.context.get("request")
+    def validate(self, attrs: dict):
+        request: Request = self.context.get("request")
         try:
             profile = StoreProfile.objects.get(user=request.user)
         except StoreProfile.DoesNotExist:
@@ -235,30 +233,30 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
         return attrs
 
     def save(self):
-        profile = self.validated_data["profile"]
+        store: StoreProfile = self.validated_data["profile"]
         file = self.validated_data["profile_photo"]
 
         s3_handler = S3ImageHandler()
-        folder_name = get_store_profile_folder(profile.id)
+        folder_name = get_store_profile_folder(store.id)
         key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
 
         try:
             image_url = s3_handler.upload_image(file, key)
-            profile.profile_photo_url = image_url
-            profile.save()
+            store.profile_photo_url = image_url
+            store.save()
         except Exception as e:
             raise serializers.ValidationError(
                 f"Failed to upload profile photo: {str(e)}"
             )
 
-        return profile
+        return store
 
 
 class StoreProfileImageDeleteSerializer(serializers.Serializer):
     pin = serializers.CharField(max_length=4)
 
-    def validate(self, attrs):
-        request = self.context.get("request")
+    def validate(self, attrs: dict):    
+        request: Request = self.context.get("request")
         try:
             profile = StoreProfile.objects.get(user=request.user)
         except StoreProfile.DoesNotExist:
@@ -275,18 +273,18 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
         return attrs
 
     def save(self):
-        profile = self.validated_data["profile"]
-        folder_name = get_store_profile_folder(profile.id)
+        store: StoreProfile = self.validated_data["profile"]
+        folder_name = get_store_profile_folder(store.id)
         key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
 
         s3_handler = S3ImageHandler()
         try:
             s3_handler.delete_image(key)
-            profile.profile_photo_url = None
-            profile.save()
+            store.profile_photo_url = None
+            store.save()
         except Exception as e:
             raise serializers.ValidationError(
                 f"Failed to delete profile photo: {str(e)}"
             )
 
-        return profile
+        return store

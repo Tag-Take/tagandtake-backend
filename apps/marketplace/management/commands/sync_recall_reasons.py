@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from apps.marketplace.models import RecallReason
 
 
+# TODO: Review and refine recall reasons
 class Command(BaseCommand):
     help = "Sync recall_reasons from fixtures (JSON files)"
 
@@ -20,10 +21,10 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Successfully synced recall reasons"))
 
-    def sync_recall_reasons(self, conditions_data):
+    def sync_recall_reasons(self, recall_reasons_data: dict):
         existing_conditions = RecallReason.objects.values_list("reason", flat=True)
         new_conditions = [
-            condition["fields"]["reason"] for condition in conditions_data
+            condition["fields"]["reason"] for condition in recall_reasons_data
         ]
 
         # Add new reason
@@ -31,7 +32,7 @@ class Command(BaseCommand):
             if condition not in existing_conditions:
                 condition_data = next(
                     c["fields"]
-                    for c in conditions_data
+                    for c in recall_reasons_data
                     if c["fields"]["reason"] == condition
                 )
                 RecallReason.objects.create(

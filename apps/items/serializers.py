@@ -30,7 +30,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
             "images",
         ]
 
-    def validate(self, data):
+    def validate(self, data: dict):
         category = data.get("category")
         valid_category = ItemCategory.objects.filter(id=category.id).exists()
         if not valid_category:
@@ -43,7 +43,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
 
         return data
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict):
         request = self.context.get("request")
         image = validated_data.pop("image")
         order = 0
@@ -92,7 +92,7 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["status", "created_at", "updated_at"]
 
-    def validate(self, data):
+    def validate(self, data: dict):
         category = data.get("category")
         valid_category = ItemCategory.objects.filter(id=category.id).exists()
         if not valid_category:
@@ -105,52 +105,52 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
 
         return data
 
-    def update(self, instance, validated_data):
+    def update(self, item: Item, validated_data: dict):
         image = validated_data.pop("image", None)
 
         for key, value in validated_data.items():
-            setattr(instance, key, value)
+            setattr(item, key, value)
 
         if image:
             s3_handler = S3ImageHandler()
             order = 0
 
             try:
-                folder_name = get_item_images_folder(instance.id)
+                folder_name = get_item_images_folder(item.id)
                 key = f"{folder_name}/{FILE_NAMES['item_image']}_{order}.{IMAGE_FILE_TYPE}"
                 image_url = s3_handler.upload_image(image, key)
 
                 item_image, created = ItemImages.objects.update_or_create(
-                    item=instance, order=order, defaults={"image_url": image_url}
+                    item=item, order=order, defaults={"image_url": image_url}
                 )
             except Exception as e:
                 raise serializers.ValidationError(f"Failed to upload image: {e}")
 
-        instance.save()
-        return instance
+        item.save()
+        return item
 
-    def destroy(self, instance):
+    def destroy(self, item: Item):
         s3_handler = S3ImageHandler()
-        folder_name = get_item_images_folder(instance.id)
+        folder_name = get_item_images_folder(item.id)
 
         try:
-            for image in instance.images.all():
+            for image in item.images.all():
                 key = f"{folder_name}/{FILE_NAMES['item_image']}_{image.order}.{IMAGE_FILE_TYPE}"
                 s3_handler.delete_image(key)
 
-            instance.delete()
+            item.delete()
         except Exception as e:
             raise serializers.ValidationError(f"Failed to delete item: {e}")
 
-    def get_main_image(self, obj):
-        return obj.main_image
+    def get_main_image(self, item: Item):
+        return item.main_image
 
-    def get_category_details(self, obj):
-        category = obj.category
+    def get_category_details(self, item: Item):
+        category = item.category
         return ItemCategorySerializer(category).data
 
-    def get_condition_details(self, obj):
-        condition = obj.condition
+    def get_condition_details(self, item: Item):
+        condition = item.condition
         return ItemConditionSerializer(condition).data
 
 

@@ -8,7 +8,9 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 
-def send_email(subject: str, to: str, template_name: str, context=None, from_email=None):
+def send_email(
+    subject: str, to: str, template_name: str, context=None, from_email=None
+):
     """
     Generic function to send emails using Django's built-in email backend.
     This function now sends the email asynchronously using a Celery task.
@@ -23,7 +25,9 @@ def send_email(subject: str, to: str, template_name: str, context=None, from_ema
 
 
 @shared_task
-def send_email_task(subject: str, to: str, template_name: str, context=None, from_email=None):
+def send_email_task(
+    subject: str, to: str, template_name: str, context=None, from_email=None
+):
     """
     Celery task to send emails using Django's built-in email backend.
 

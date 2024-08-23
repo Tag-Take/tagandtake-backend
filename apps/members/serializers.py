@@ -27,11 +27,11 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
+    def update(self, member: MemberProfile, validated_data: dict):
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+            setattr(member, attr, value)
+        member.save()
+        return member
 
 
 class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
@@ -45,17 +45,19 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["user"]
 
-    def update(self, instance, validated_data):
+    def update(
+        self, member_notifications: MemberNotificationPreferences, validated_data: dict
+    ):
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+            setattr(member_notifications, attr, value)
+        member_notifications.save()
+        return member_notifications
 
 
 class MemberProfileImageUploadSerializer(serializers.Serializer):
     profile_photo = serializers.ImageField()
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict):
         request = self.context.get("request")
         try:
             profile = MemberProfile.objects.get(user=request.user)
@@ -66,11 +68,11 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
         return attrs
 
     def save(self):
-        profile = self.validated_data["profile"]
+        memeber: MemberProfile = self.validated_data["profile"]
         file = self.validated_data["profile_photo"]
 
         s3_handler = S3ImageHandler()
-        folder_name = get_member_profile_folder(profile.id)
+        folder_name = get_member_profile_folder(memeber.id)
         key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
 
         try:
@@ -80,13 +82,13 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
                 f"Failed to upload profile photo: {str(e)}"
             )
 
-        profile.profile_photo_url = image_url
-        profile.save()
-        return profile
+        memeber.profile_photo_url = image_url
+        memeber.save()
+        return memeber
 
 
 class MemberProfileImageDeleteSerializer(serializers.Serializer):
-    def validate(self, attrs):
+    def validate(self, attrs: dict):
         request = self.context.get("request")
         try:
             profile = MemberProfile.objects.get(user=request.user)
@@ -100,17 +102,17 @@ class MemberProfileImageDeleteSerializer(serializers.Serializer):
         return attrs
 
     def save(self):
-        profile = self.validated_data["profile"]
-        folder_name = get_member_profile_folder(profile.id)
+        member: MemberProfile = self.validated_data["profile"]
+        folder_name = get_member_profile_folder(member.id)
         key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
 
         s3_handler = S3ImageHandler()
         try:
             s3_handler.delete_image(key)
-            profile.profile_photo_url = None
-            profile.save()
+            member.profile_photo_url = None
+            member.save()
         except Exception as e:
             raise serializers.ValidationError(
                 f"Failed to delete profile photo: {str(e)}"
             )
-        return profile
+        return member

@@ -166,7 +166,7 @@ class ListingHandler:
             raise serializers.ValidationError(errors)
 
     @staticmethod
-    def get_tag(tag_id):
+    def get_tag(tag_id: int):
         try:
             tag = Tag.objects.get(id=tag_id)
             return tag
@@ -174,7 +174,7 @@ class ListingHandler:
             raise serializers.ValidationError("Tag does not exist.")
 
     @staticmethod
-    def get_item(item_id):
+    def get_item(item_id: int):
         try:
             item = Item.objects.get(id=item_id)
             if item.status != "available":
@@ -186,9 +186,9 @@ class ListingHandler:
             raise serializers.ValidationError("Item does not exist.")
 
     @staticmethod
-    def get_recall_reasons(id):
+    def get_recall_reasons(reacll_reason_id: int):
         try:
-            return RecallReason.objects.get(id=id)
+            return RecallReason.objects.get(id=reacll_reason_id)
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
 

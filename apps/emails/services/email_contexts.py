@@ -107,7 +107,9 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_recalled_context(self, listing: Listing, recall_reason: RecallReason):
+    def generate_item_recalled_context(
+        self, listing: Listing, recall_reason: RecallReason
+    ):
         base_context = self.get_base_context(listing)
         base_context.update(
             {

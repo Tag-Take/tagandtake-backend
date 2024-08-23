@@ -1,9 +1,9 @@
-from django.db import transaction
 from django.http import Http404
 
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
+from rest_framework.request import Request
 
 from apps.items.serializers import (
     ItemCreateSerializer,
@@ -22,12 +22,12 @@ class ItemCreateView(generics.CreateAPIView):
     serializer_class = ItemCreateSerializer
     parser_classes = (MultiPartParser, FormParser)
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
-            item = serializer.save()
+            item: Item = serializer.save()
             return create_success_response(
                 "Item created successfully.",
                 {"item": self.get_serializer(item).data},
@@ -51,22 +51,24 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
                 "Item not found.", {}, status.HTTP_404_NOT_FOUND
             )
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request: Request, *args, **kwargs):
         instance = self.get_object()
         if isinstance(instance, Response):
             return instance
-        serializer = self.get_serializer(instance)
+        item: Item = instance
+        serializer = self.get_serializer(item)
         return create_success_response(
             "Item retrieved successfully.",
             {"item": serializer.data},
             status.HTTP_200_OK,
         )
 
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args, **kwargs):
         instance = self.get_object()
         if isinstance(instance, Response):
             return instance
-        permission_error_response = check_item_permissions(request, self, instance)
+        item: Item = instance
+        permission_error_response = check_item_permissions(request, self, item)
         if permission_error_response:
             return permission_error_response
 
@@ -77,7 +79,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         if serializer.is_valid():
             try:
-                item = serializer.save()
+                serializer.save()
                 return create_success_response(
                     "Item updated successfully.",
                     {"item": serializer.data},
@@ -93,11 +95,12 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
             "Item update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
         )
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args, **kwargs):
         instance = self.get_object()
         if isinstance(instance, Response):
             return instance
-        permission_response = check_item_permissions(request, self, instance)
+        item: Item = instance
+        permission_response = check_item_permissions(request, self, item)
         if permission_response:
             return permission_response
 
@@ -122,13 +125,13 @@ class MemberItemListView(generics.ListAPIView):
     def get_queryset(self):
         return Item.objects.filter(owner=self.request.user)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if not queryset.exists():
+    def list(self, request: Request, *args, **kwargs):
+        items: list[Item] = self.get_queryset()
+        if not items.exists():
             return create_error_response(
                 "No items found for this user.", {}, status.HTTP_404_NOT_FOUND
             )
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(items, many=True)
         return create_success_response(
             "Items retrieved successfully.",
             {"items": serializer.data},
@@ -140,8 +143,13 @@ class ItemCategoryListView(generics.ListAPIView):
     serializer_class = ItemCategorySerializer
     queryset = ItemCategory.objects.all()
 
-    def list(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+    def list(self, request: Request, *args, **kwargs):
+        item_categories: list[ItemCategory] = self.get_queryset()
+        if not item_categories.exists():
+            return create_error_response(
+                "No item categories found.", {}, status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(item_categories, many=True)
         return create_success_response(
             "Item categories retrieved successfully.",
             {"categories": serializer.data},
@@ -153,8 +161,13 @@ class ItemConditionListView(generics.ListAPIView):
     serializer_class = ItemConditionSerializer
     queryset = ItemCondition.objects.all()
 
-    def list(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+    def list(self, request: Request, *args, **kwargs):
+        item_conditions: list[ItemCondition] = self.get_queryset()
+        if not item_conditions.exists():
+            return create_error_response(
+                "No item conditions found.", {}, status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(item_conditions, many=True)
         return create_success_response(
             "Item conditions retrieved successfully.",
             {"conditions": serializer.data},

@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from apps.items.models import ItemCategory, ItemCondition
 
 
+# TODO: Review and refine item categories and conditions
 class Command(BaseCommand):
     help = "Sync item categories and conditions from fixtures (JSON files)"
 
@@ -28,7 +29,7 @@ class Command(BaseCommand):
             self.style.SUCCESS("Successfully synced item categories and conditions")
         )
 
-    def sync_conditions(self, conditions_data):
+    def sync_conditions(self, conditions_data: dict):
         existing_conditions = ItemCondition.objects.values_list("condition", flat=True)
         new_conditions = [
             condition["fields"]["condition"] for condition in conditions_data
@@ -52,7 +53,7 @@ class Command(BaseCommand):
             if condition not in new_conditions:
                 ItemCondition.objects.filter(condition=condition).delete()
 
-    def sync_categories(self, categories_data):
+    def sync_categories(self, categories_data: dict):
         existing_categories = ItemCategory.objects.values_list("name", flat=True)
         new_categories = [category["fields"]["name"] for category in categories_data]
 

@@ -102,9 +102,11 @@ class ListingEmailSender:
             context=context,
         )
 
-    def send_listing_recalled_email(listing: Listing ,recall_reason: int):
+    def send_listing_recalled_email(listing: Listing, recall_reason: int):
         context_generator = ListingEmailContextGenerator()
-        context = context_generator.generate_item_recalled_context(listing, recall_reason)
+        context = context_generator.generate_item_recalled_context(
+            listing, recall_reason
+        )
         item = listing.item.name
         send_email(
             subject=f"Item Recalled - {item}",
@@ -137,7 +139,9 @@ class ListingEmailSender:
 
     def send_storage_fee_charged_email(recalled_listing: RecalledListing):
         context_generator = ListingEmailContextGenerator()
-        context = context_generator.generate_initial_storage_fee_context(recalled_listing)
+        context = context_generator.generate_initial_storage_fee_context(
+            recalled_listing
+        )
         item = recalled_listing.item.name
 
         if recalled_listing.fee_charged_count == 1:
@@ -156,7 +160,9 @@ class ListingEmailSender:
 
     def send_collection_reminder_email(recalled_listing: RecalledListing):
         context_generator = ListingEmailContextGenerator()
-        context = context_generator.generate_collection_reminder_context(recalled_listing)
+        context = context_generator.generate_collection_reminder_context(
+            recalled_listing
+        )
         item = recalled_listing.item.name
         send_email(
             subject=f"Collection Reminder - {item}",

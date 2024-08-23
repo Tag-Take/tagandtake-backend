@@ -10,7 +10,7 @@ class PricingEngine:
         self.tagandtake_commission = Decimal("0.05")
         self.tagandtake_flat_fee = Decimal("1")
 
-    def calculate_list_price(self, price):
+    def calculate_list_price(self, price: Decimal):
         """
         Price that the buyer sees.
         """
@@ -18,7 +18,7 @@ class PricingEngine:
         new_price = price + self.calculate_transaction_fee(price, round_result=False)
         return self._round_decimal(new_price)
 
-    def calculate_transaction_fee(self, price, round_result=True):
+    def calculate_transaction_fee(self, price: Decimal, round_result=True):
         """
         Fee that tagandtake (on top of listing price).
         """
@@ -28,7 +28,7 @@ class PricingEngine:
         ) + self.tagandtake_flat_fee
         return self._round_decimal(transaction_fee) if round_result else transaction_fee
 
-    def calculate_store_commission(self, price, commission):
+    def calculate_store_commission(self, price: Decimal, commission: Decimal):
         """
         Commission that the store earns.
         """
@@ -37,7 +37,7 @@ class PricingEngine:
         store_commission = price * commission
         return self._round_decimal(store_commission)
 
-    def calculate_user_earnings(self, price, commission):
+    def calculate_user_earnings(self, price: Decimal, commission: Decimal):
         """
         Earnings that the seller takes home.
         """
@@ -46,7 +46,7 @@ class PricingEngine:
         user_earnings = price - (price * commission)
         return self._round_decimal(user_earnings)
 
-    def _to_decimal(self, value):
+    def _to_decimal(self, value: float):
         try:
             return Decimal(str(value))
         except (ValueError, TypeError):
@@ -54,8 +54,8 @@ class PricingEngine:
                 "Invalid format. Value must be a number or a string representing a number."
             )
 
-    def _round_decimal(self, value):
+    def _round_decimal(self, value: Decimal):
         return float(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-    def _rebase_commission(self, commission):
+    def _rebase_commission(self, commission: Decimal):
         return Decimal(str(commission)) / Decimal("100")

@@ -1,15 +1,18 @@
 from rest_framework import permissions
 from rest_framework import status
+from rest_framework.views import APIView
+
 from apps.common.utils.responses import create_error_response
+from apps.marketplace.models import Listing
 
 
 class IsTagOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, listing):
+    def has_object_permission(self, request, view: APIView, listing: Listing):
         return listing.tag.tag_group.store.user == request.user
 
 
-def check_listing_store_permissions(request, view, instance):
-    if not IsTagOwner().has_object_permission(request, view, instance):
+def check_listing_store_permissions(request, view: APIView, listing: Listing):
+    if not IsTagOwner().has_object_permission(request, view, listing):
         return create_error_response(
             "You do not have permission to modify this listing.",
             {},

@@ -1,8 +1,6 @@
 from rest_framework import serializers
 
 from apps.marketplace.models import Listing, RecallReason, RecalledListing
-from apps.items.models import Item
-from apps.stores.models import Tag
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
 from apps.marketplace.services.listing_services import ListingHandler
 
