@@ -47,8 +47,8 @@ class StoreOpeningHoursSerializer(serializers.ModelSerializer):
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
-    opening_hours = StoreOpeningHoursSerializer(many=True)
-    address = StoreAddressSerializer()
+    opening_hours = StoreOpeningHoursSerializer(many=True, required=False)
+    address = StoreAddressSerializer(required=False)
 
     class Meta:
         model = StoreProfile

@@ -5,9 +5,7 @@ from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 
-# import scoped throttling
 from rest_framework.throttling import ScopedRateThrottle
-
 
 from rest_framework import generics, status, serializers
 from rest_framework.permissions import IsAuthenticated
@@ -108,7 +106,7 @@ class ActivateUserView(APIView):
                 user.save()
                 user_activated.send(sender=user.__class__, instance=user)
                 response = create_success_response(
-                    "Account activated successfully", {}, status.HTTP_200_OK
+                    "Account activated successfully", {"role": user.role}, status.HTTP_200_OK
                 )
                 access_token, refresh_token = JWTCookieHandler(
                     response

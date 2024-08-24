@@ -20,10 +20,15 @@ class AccountEmailSender:
     def send_activation_email(self):
         context_generator = AccountEmailContextGenerator(self.user)
         context = context_generator.generate_account_activation_context()
+        if self.user.role == 'member':
+            template_name = f"{ACTION_TRIGGERED}/member_activate.html"
+        elif self.user.role == 'store':
+            template_name = f"{ACTION_TRIGGERED}/store_activate.html"
+
         send_email(
             subject="Activate your account",
             to=self.user.email,
-            template_name=f"{ACTION_TRIGGERED}/account_activate.html",
+            template_name=template_name,
             context=context,
         )
 

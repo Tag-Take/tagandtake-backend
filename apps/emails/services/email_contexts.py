@@ -19,7 +19,7 @@ class AccountEmailContextGenerator:
     def generate_account_activation_context(self):
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        activation_url = f"{settings.FRONTEND_URL}/activate-user/{uid}/{token}/"
+        activation_url = f"{settings.FRONTEND_URL}/activate?uuid={uid}&token={token}"
         context = {
             "username": self.user.username,
             "activation_url": activation_url,
