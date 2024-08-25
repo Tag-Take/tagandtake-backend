@@ -9,11 +9,16 @@ User = get_user_model()
 
 
 class Item(models.Model):
+    AVAILABLE = "available"
+    LISTED = "listed"
+    RECALLED = "recalled"
+    SOLD = "sold"
+
     STATUSES = (
-        ("available", "Available"),
-        ("listed", "Listed"),
-        ("recalled", "Recalled"),
-        ("sold", "Sold"),
+        (AVAILABLE, "Available"),
+        (LISTED, "Listed"),
+        (RECALLED, "Recalled"),
+        (SOLD, "Sold"),
     )
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")

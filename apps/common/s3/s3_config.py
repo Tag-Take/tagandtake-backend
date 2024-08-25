@@ -1,4 +1,5 @@
 # Define the base paths for different entities
+PRSIGNED_URL_EXPIRATION: int = 3600
 BASE_PATHS = {
     "members": "members",
     "stores": "stores",

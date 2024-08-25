@@ -9,6 +9,7 @@ from django.core.validators import (
     MinLengthValidator,
 )
 from django.utils.translation import gettext_lazy as _
+from django.apps import apps
 
 from apps.items.models import ItemCategory, ItemCondition
 from apps.stores.utils import generate_pin
@@ -81,6 +82,14 @@ class StoreProfile(models.Model):
     @property
     def opening_hours(self):
         return self.opening_hours.all()
+    
+    @property
+    def stripe_account(self):
+        StripeAccount = apps.get_model('payments', 'StripeAccount')
+        try:
+            return StripeAccount.objects.get(user=self.user)
+        except StripeAccount.DoesNotExist:
+            return None
 
 
 class StoreAddress(models.Model):
@@ -109,15 +118,24 @@ class StoreAddress(models.Model):
 
 
 class StoreOpeningHours(models.Model):
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"
+
     DAYS_OF_WEEK = [
-        ("Monday", "Monday"),
-        ("Tuesday", "Tuesday"),
-        ("Wednesday", "Wednesday"),
-        ("Thursday", "Thursday"),
-        ("Friday", "Friday"),
-        ("Saturday", "Saturday"),
-        ("Sunday", "Sunday"),
+        (MONDAY, "Monday"),
+        (TUESDAY, "Tuesday"),
+        (WEDNESDAY, "Wednesday"),
+        (THURSDAY, "Thursday"),
+        (FRIDAY, "Friday"),
+        (SATURDAY, "Saturday"), 
+        (SUNDAY, "Sunday"),
     ]
+
     store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="opening_hours"
     )

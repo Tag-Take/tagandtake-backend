@@ -82,10 +82,15 @@ class Listing(BaseListing):
 
 
 class RecallReason(models.Model):
+    ISSUE = "issue"
+    STORE_DISCRESSION = "store discretion"
+    OWNER_REQUEST = "owner request"
+
+
     RECALL_REASONS_TYPES = [
-        ("ISSUE", "Issue"),
-        ("STORE DISCRESSION", "Store Discretion"),
-        ("OWNER REQUEST", "Owner Request"),
+        (ISSUE, "Issue"),
+        (STORE_DISCRESSION, "Store Discretion"),
+        (OWNER_REQUEST, "Owner Request"),
     ]
 
     reason = models.CharField(max_length=255)

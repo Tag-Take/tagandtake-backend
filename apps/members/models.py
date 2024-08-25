@@ -1,10 +1,12 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
 )
-from decimal import Decimal
+from django.apps import apps
 
 User = get_user_model()
 
@@ -43,6 +45,14 @@ class MemberProfile(models.Model):
     @property
     def username(self):
         return self.user.username
+    
+    @property
+    def stripe_account(self):
+        StripeAccount = apps.get_model('payments', 'StripeAccount')
+        try:
+            return StripeAccount.objects.get(user=self.user)
+        except StripeAccount.DoesNotExist:
+            return None
 
 
 class MemberNotificationPreferences(models.Model):

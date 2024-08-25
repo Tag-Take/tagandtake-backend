@@ -4,7 +4,7 @@
         "pk": 1,
         "fields": {
             "reason": "Item Condition",
-            "type": "Issue",
+            "type": "issue",
             "description": "Item does not meet store's condition standards"
         }
     },
@@ -13,7 +13,7 @@
         "pk": 2,
         "fields": {
             "reason": "Item Category",
-            "type": "Issue",
+            "type": "issue",
             "description": "Item categegoy is not one of the store's approved categories"
         }
     },
@@ -22,7 +22,7 @@
         "pk": 3,    
         "fields": {
             "reason": "Unclean Item",
-            "type": "Issue",
+            "type": "issue",
             "description": "Item is unclean or dirty"
         }
     },
@@ -31,7 +31,7 @@
         "pk": 4,
         "fields": {
             "reason": "Store Discretion",
-            "type": "Store Discretion",
+            "type": "store discretion",
             "description": "Item has exceeded the store's listing period guarantee and is being recalled"
         }
     },
@@ -40,7 +40,7 @@
         "pk": 5,
         "fields": {
             "reason": "Owner Request",
-            "type": "Owner Request",
+            "type": "owner oequest",
             "description": "Owner has requested to recall their item"
         }
     }
