@@ -1,3 +1,5 @@
+
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -8,13 +10,10 @@ from apps.common.utils.responses import create_success_response, create_error_re
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import StoreProfile
 from apps.stores.services.tags_services import TagHandler
-from apps.payments.signals import tags_purchased
 from apps.stores.models import StoreProfile
 from apps.common.utils.responses import create_success_response
 from apps.marketplace.utils import get_listing_by_tag_id
 from apps.marketplace.services.listing_services import ListingHandler
-
-# create dummy view for now to send signal to create tag group and tags for a store (to be handled elsewhere)
 
 
 class PurchaseTagsView(APIView):
@@ -53,7 +52,6 @@ class PurchaseTagsView(APIView):
         return create_success_response(
             "Tags purchased successfully.", {}, status.HTTP_200_OK
         )
-
 
 class PurchaseListingView(APIView):
 

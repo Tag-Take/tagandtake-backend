@@ -83,13 +83,6 @@ class StoreProfile(models.Model):
     def opening_hours(self):
         return self.opening_hours.all()
     
-    @property
-    def stripe_account(self):
-        StripeAccount = apps.get_model('payments', 'StripeAccount')
-        try:
-            return StripeAccount.objects.get(user=self.user)
-        except StripeAccount.DoesNotExist:
-            return None
 
 
 class StoreAddress(models.Model):

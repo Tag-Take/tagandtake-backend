@@ -142,7 +142,15 @@ class ListingHandler:
                 recalled_listing.tag.store
             )
             recalled_listing.save()
+            ListingEmailSender.seld_new_collection_pin_email(recalled_listing)
+
+
+    def generate_new_collection_pin(self, recalled_listing: RecalledListing):
+        with transaction.atomic():
+            recalled_listing.collection_pin = RecalledListing.generate_collection_pin()
+            recalled_listing.save()
             ListingEmailSender.send_storage_fee_charged_email(recalled_listing)
+
 
     @staticmethod
     def item_meets_store_requirements(item: Item, tag: Tag):

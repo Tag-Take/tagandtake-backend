@@ -83,7 +83,7 @@ class StoreEmailSender:
         )
 
 
-class ListingEmailSender:
+class ListingEmailSender(ListingEmailContextGenerator):
 
     def send_listing_created_email(listing: Listing):
         context_generator = ListingEmailContextGenerator()
@@ -173,5 +173,18 @@ class ListingEmailSender:
             subject=f"Collection Reminder - {item}",
             to=recalled_listing.item.owner.email,
             template_name=f"{REMINDERS}/collect_item.html",
+            context=context,
+        )
+
+    def seld_new_collection_pin_email(recalled_listing): 
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_collection_reminder_context(
+            recalled_listing
+        )
+        item = recalled_listing.item.name
+        send_email(
+            subject=f"New Collection PIN - {item}",
+            to=recalled_listing.item.owner.email,
+            template_name=f"{ACTION_TRIGGERED}/new_collection_pin.html",
             context=context,
         )

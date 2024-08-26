@@ -1513,18 +1513,17 @@ doc = ["sphinx"]
 
 [[package]]
 name = "stripe"
-version = "10.4.0"
+version = "4.2.0b1"
 description = "Python bindings for the Stripe API"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
-    {file = "stripe-10.4.0-py2.py3-none-any.whl", hash = "sha256:b37ca0d23fabb4bc3533761051b5b27187819e346c7550007d3be25ae2272780"},
-    {file = "stripe-10.4.0.tar.gz", hash = "sha256:59155dbd5916227c9dedebafaebe92b950dd32f05ddba615b3bc52479a977070"},
+    {file = "stripe-4.2.0b1-py2.py3-none-any.whl", hash = "sha256:b22fb77392fb41d7932ea540df4c991ae20f7a54c675c92485fa0ce1a4cd677a"},
+    {file = "stripe-4.2.0b1.tar.gz", hash = "sha256:769f701aff00ebb384a69529185fbcef47e5f60f76af638d3db4c2b96c3db1d8"},
 ]
 
 [package.dependencies]
 requests = {version = ">=2.20", markers = "python_version >= \"3.0\""}
-typing-extensions = {version = ">=4.5.0", markers = "python_version >= \"3.7\""}
 
 [[package]]
 name = "typing-extensions"
@@ -1601,4 +1600,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ec3e315239b1eba02c57a8463e156d9267d60f1b5bd268c659578f97940f9773"
+content-hash = "c6fa4b32cb93ee234c90461008ce1ef74bd6e06aed6a8b5e6567544f93aa24d4"

@@ -1,10 +1,11 @@
+from decimal import Decimal
+import random 
+import string
+
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
-from datetime import timedelta
-from django.utils.timezone import now
-from decimal import Decimal
 
 from apps.items.models import Item
 from apps.stores.models import Tag
@@ -57,6 +58,10 @@ class BaseListing(models.Model):
     @property
     def item_details(self):
         return self.item
+    
+    @staticmethod
+    def generate_collection_pin(): 
+        return "".join(random.choices(string.digits,k=2))
 
 
 class Listing(BaseListing):
@@ -109,6 +114,12 @@ class RecallReason(models.Model):
 class RecalledListing(BaseListing):
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     recalled_at = models.DateTimeField(auto_now_add=True)
+    collection_pin = models.CharField(
+        max_length=2,
+        validators=[MinLengthValidator(4)],
+        default=BaseListing.generate_collection_pin,
+        null=False,
+    )
     fee_charged_count = models.PositiveIntegerField(default=0)
     last_fee_charge_at = models.DateTimeField(null=True, blank=True)
     last_fee_charge_amount = models.DecimalField(

@@ -179,3 +179,12 @@ class ListingEmailContextGenerator:
             }
         )
         return base_context
+    
+    def generate_new_collection_pin_context(self, recalled_listing: RecalledListing):
+        collection_pin = recalled_listing.collection_pin
+        base_context = self.get_base_context()
+        base_context.update(
+            {
+                "collection_pin": collection_pin
+            }
+        )

@@ -232,7 +232,31 @@ class RecallListingView(generics.UpdateAPIView):
         return create_error_response(
             "Reason is required to recall a listing", {}, status_code=400
         )
+    
 
+class GenerateNewCollectionPinView(generics.UpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def update(self, request: Request, *args, **kwargs):
+        try:
+            tag_id = self.kwargs.get("id")
+            recalled_listing: Listing = get_listing_by_tag_id(tag_id, RecalledListing)
+        except serializers.ValidationError as e:
+            return create_error_response(str(e.detail[0]), {}, status_code=404)
+        permission_error_response = check_listing_store_permissions(
+            request, self, recalled_listing
+        )
+        if permission_error_response:
+            return permission_error_response
+        try:
+            ListingHandler().generate_new_collection_pin(recalled_listing)
+            return create_success_response(
+                "New collection PIN successfully generated", {}, status_code=200
+            )
+        except Exception as e:
+            return create_error_response(
+                "Error generating new collection PIN", str(e), status_code=400
+            )
 
 class DelistListing(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
