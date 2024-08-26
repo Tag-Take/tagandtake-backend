@@ -176,9 +176,9 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def seld_new_collection_pin_email(recalled_listing): 
+    def send_new_collection_pin_email(recalled_listing): 
         context_generator = ListingEmailContextGenerator()
-        context = context_generator.generate_collection_reminder_context(
+        context = context_generator.generate_new_collection_pin_context(
             recalled_listing
         )
         item = recalled_listing.item.name

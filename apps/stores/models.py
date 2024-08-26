@@ -74,16 +74,7 @@ class StoreProfile(models.Model):
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
-
-    @property
-    def address(self):
-        return self.store_address
-
-    @property
-    def opening_hours(self):
-        return self.opening_hours.all()
     
-
 
 class StoreAddress(models.Model):
     store = models.OneToOneField(

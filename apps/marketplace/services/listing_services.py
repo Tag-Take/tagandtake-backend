@@ -56,24 +56,57 @@ class ListingHandler:
 
     def recall_listing(self, listing: Listing, reason_id: int):
         try:
+            # Print the listing and reason_id being passed
+            print(f"Listing: {listing}")
+            print(f"Reason ID: {reason_id}")
+
             reason = self.get_recall_reasons(reason_id)
+            print(f"Recall Reason: {reason}")
+
             with transaction.atomic():
-                RecalledListing.objects.create(
+                # Print out attributes of listing.tag and listing.item before creating RecalledListing
+                print(f"Listing Tag: {listing.tag}")
+                print(f"Listing Item: {listing.item}")
+                print(f"Listing Store Commission: {listing.store_commission}")
+                print(f"Listing Min Listing Days: {listing.min_listing_days}")
+                print(f"Listing store: {listing.tag.store}")
+
+                next_fee_charge_at = self.get_next_fee_charge_date(listing.tag.store, inital_charge=True)
+                print(f"Next Fee Charge At: {next_fee_charge_at}")
+
+                # Create RecalledListing
+                recalled_listing = RecalledListing.objects.create(
                     tag=listing.tag,
                     item=listing.item,
                     store_commission=listing.store_commission,
                     min_listing_days=listing.min_listing_days,
                     reason=reason,
-                    next_fee_charge_at=self.get_next_fee_charge_date(
-                        listing.tag.store, inital_charge=True
-                    ),
+                    next_fee_charge_at=next_fee_charge_at,
                 )
+                print(f"Recalled Listing Created: {recalled_listing}")
+
+                # Print the item status before and after updating
+                print(f"Item Status Before: {listing.item.status}")
                 listing.item.status = "recalled"
                 listing.item.save()
+                print(f"Item Status After: {listing.item.status}")
+
+                # Print email sending status
+                print(f"Sending recall email for listing: {listing}")
                 ListingEmailSender.send_listing_recalled_email(listing, reason)
+                print("Recall email sent.")
+
+                # Print before deleting listing
+                print(f"Deleting listing: {listing}")
                 listing.delete()
+                print("Listing deleted.")
+
         except RecallReason.DoesNotExist:
             raise serializers.ValidationError("Invalid reason provided")
+        except Exception as e:
+            # Catch any other exceptions and print them for debugging
+            print(f"An unexpected error occurred: {e}")
+            raise e
 
     def delist_listing(self, listing: Listing, reason_id: int):
         try:
@@ -149,7 +182,7 @@ class ListingHandler:
         with transaction.atomic():
             recalled_listing.collection_pin = RecalledListing.generate_collection_pin()
             recalled_listing.save()
-            ListingEmailSender.send_storage_fee_charged_email(recalled_listing)
+            ListingEmailSender.send_new_collection_pin_email(recalled_listing)
 
 
     @staticmethod
@@ -209,7 +242,9 @@ class ListingHandler:
     def get_next_fee_charge_date(
         self, store: StoreProfile, inital_charge: bool = False
     ):
-        opening_hours: list[StoreOpeningHours] = store.opening_hours
+        opening_hours: list[StoreOpeningHours] = list(store.opening_hours.all())
+
+        print(f"Opening Hours: {opening_hours}")
 
         current_time = now()
         if inital_charge:

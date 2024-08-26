@@ -187,7 +187,7 @@ class ReplaceTagView(generics.UpdateAPIView):
             )
 
         try:
-            listing = ListingHandler.replace_listing_tag(listing, new_tag_id)
+            listing = ListingHandler().replace_listing_tag(listing, new_tag_id)
             serializer = self.get_serializer(listing)
             return create_success_response(
                 "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
@@ -239,8 +239,8 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
 
     def update(self, request: Request, *args, **kwargs):
         try:
-            tag_id = self.kwargs.get("id")
-            recalled_listing: Listing = get_listing_by_tag_id(tag_id, RecalledListing)
+            item_id = self.kwargs.get("id")
+            recalled_listing: Listing = get_listing_by_item_id(item_id, RecalledListing)
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
         permission_error_response = check_listing_store_permissions(

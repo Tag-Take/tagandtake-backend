@@ -142,7 +142,7 @@ class ListingEmailContextGenerator:
 
     def generate_initial_storage_fee_context(self, recalled_listing: RecalledListing):
         next_charge_at = recalled_listing.next_fee_charge_at
-        base_context = self.get_base_context()
+        base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -169,7 +169,7 @@ class ListingEmailContextGenerator:
 
     def generate_collection_reminder_context(self, recalled_listing: RecalledListing):
         next_charge_at = recalled_listing.next_fee_charge_at
-        base_context = self.get_base_context()
+        base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -182,9 +182,10 @@ class ListingEmailContextGenerator:
     
     def generate_new_collection_pin_context(self, recalled_listing: RecalledListing):
         collection_pin = recalled_listing.collection_pin
-        base_context = self.get_base_context()
+        base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
                 "collection_pin": collection_pin
             }
         )
+        return base_context

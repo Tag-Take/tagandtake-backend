@@ -10,6 +10,10 @@ __pycache__/
 schema.yml
 schema.yaml
 
+# Jupyter Notebook for Stripe Testing
+.ipynb_checkpoints/
+testing_stripe.ipynb
+
 # Distribution / packaging
 .Python
 build/
