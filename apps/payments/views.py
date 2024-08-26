@@ -1,10 +1,14 @@
+import stripe
 
+from django.http import JsonResponse
+from django.conf import settings
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework import serializers
+from rest_framework.decorators import api_view
 
 from apps.common.utils.responses import create_success_response, create_error_response
 from apps.stores.permissions import IsStoreUser
@@ -15,6 +19,48 @@ from apps.common.utils.responses import create_success_response
 from apps.marketplace.utils import get_listing_by_tag_id
 from apps.marketplace.services.listing_services import ListingHandler
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+@api_view(["POST"])
+def create_stripe_account(request):
+    try:
+        account = stripe.Account.create(
+          controller={
+            "fees": {
+                "payer": "application"
+            },
+            "losses": {
+                "payments": "application"
+            },
+          },
+        )
+        return JsonResponse({
+          'account': account.id,
+        })
+    except Exception as e:
+        print('An error occurred when calling the Stripe API to create an account: ', e)
+        return JsonResponse(error=str(e)), 500
+    
+
+@api_view(["POST"])
+def create_stripe_account_session(request):
+    try:
+        connected_account_id = request.data.get('account')
+
+        account_session = stripe.AccountSession.create(
+          account=connected_account_id,
+          components={
+            "account_onboarding": {"enabled": True},
+          },
+        )
+
+        return JsonResponse({
+          'client_secret': account_session.client_secret,
+        })
+    except Exception as e:
+        print('An error occurred when calling the Stripe API to create an account session: ', e)
+        return JsonResponse(error=str(e)), 500
 
 class PurchaseTagsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreUser]
