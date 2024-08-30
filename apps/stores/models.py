@@ -74,7 +74,7 @@ class StoreProfile(models.Model):
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
-    
+
 
 class StoreAddress(models.Model):
     store = models.OneToOneField(
@@ -116,7 +116,7 @@ class StoreOpeningHours(models.Model):
         (WEDNESDAY, "Wednesday"),
         (THURSDAY, "Thursday"),
         (FRIDAY, "Friday"),
-        (SATURDAY, "Saturday"), 
+        (SATURDAY, "Saturday"),
         (SUNDAY, "Sunday"),
     ]
 

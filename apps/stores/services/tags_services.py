@@ -24,7 +24,6 @@ class TagHandler:
             tags = self.create_tags(tag_group)
             self.generate_tag_images(tags, tag_group)
 
-
     def create_tag_group(self, tag_count):
         tag_group = TagGroup.objects.create(store=self.store, group_size=tag_count)
         return tag_group
@@ -35,7 +34,7 @@ class TagHandler:
             tag = Tag.objects.create(tag_group=tag_group)
             tags.append(tag)
         return tags
-    
+
     def generate_tag_images(self, tags, tag_group):
         for i, tag in enumerate(tags):
             folder_namne = get_tag_image_folder(tag_group.id, tag.id)

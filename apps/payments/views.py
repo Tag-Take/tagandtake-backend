@@ -26,41 +26,49 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 def create_stripe_account(request):
     try:
         account = stripe.Account.create(
-          controller={
-            "fees": {
-                "payer": "application"
+            business_type="individual",
+            controller={
+                "stripe_dashboard": {
+                    "type": "express",
+                },
+                "fees": {"payer": "application"},
+                "losses": {"payments": "application"},
             },
-            "losses": {
-                "payments": "application"
-            },
-          },
         )
-        return JsonResponse({
-          'account': account.id,
-        })
+        return JsonResponse(
+            {
+                "account": account.id,
+            }
+        )
     except Exception as e:
-        print('An error occurred when calling the Stripe API to create an account: ', e)
-        return JsonResponse(error=str(e)), 500
-    
+        print("An error occurred when calling the Stripe API to create an account: ", e)
+        return JsonResponse({"error": str(e)}), 500
+
 
 @api_view(["POST"])
 def create_stripe_account_session(request):
     try:
-        connected_account_id = request.data.get('account')
+        connected_account_id = request.data.get("account")
 
         account_session = stripe.AccountSession.create(
-          account=connected_account_id,
-          components={
-            "account_onboarding": {"enabled": True},
-          },
+            account=connected_account_id,
+            components={
+                "account_onboarding": {"enabled": True},
+            },
         )
 
-        return JsonResponse({
-          'client_secret': account_session.client_secret,
-        })
+        return JsonResponse(
+            {
+                "client_secret": account_session.client_secret,
+            }
+        )
     except Exception as e:
-        print('An error occurred when calling the Stripe API to create an account session: ', e)
-        return JsonResponse(error=str(e)), 500
+        print(
+            "An error occurred when calling the Stripe API to create an account session: ",
+            e,
+        )
+        return JsonResponse({"error": str(e)}), 500
+
 
 class PurchaseTagsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreUser]
@@ -98,6 +106,7 @@ class PurchaseTagsView(APIView):
         return create_success_response(
             "Tags purchased successfully.", {}, status.HTTP_200_OK
         )
+
 
 class PurchaseListingView(APIView):
 

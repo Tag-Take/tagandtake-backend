@@ -49,7 +49,9 @@ class S3ImageHandler(S3BaseHandler):
         except Exception as e:
             raise Exception(f"Error deleting file from S3: {e}") from e
 
-    def generate_presigned_url(self, key: str, expiration: int = PRSIGNED_URL_EXPIRATION):
+    def generate_presigned_url(
+        self, key: str, expiration: int = PRSIGNED_URL_EXPIRATION
+    ):
         try:
             url = self.s3_client.generate_presigned_url(
                 "get_object",
@@ -61,6 +63,7 @@ class S3ImageHandler(S3BaseHandler):
             raise Exception(f"Failed to generate pre-signed URL: {e}") from e
         except Exception as e:
             raise Exception(f"Error generating pre-signed URL: {e}") from e
+
 
 # @shared_task
 # def upload_image_task(file_data, key):

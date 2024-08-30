@@ -20,9 +20,9 @@ class AccountEmailSender:
     def send_activation_email(self):
         context_generator = AccountEmailContextGenerator(self.user)
         context = context_generator.generate_account_activation_context()
-        if self.user.role == 'member':
+        if self.user.role == "member":
             template_name = f"{ACTION_TRIGGERED}/member_activate.html"
-        elif self.user.role == 'store':
+        elif self.user.role == "store":
             template_name = f"{ACTION_TRIGGERED}/store_activate.html"
 
         send_email(
@@ -176,7 +176,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_new_collection_pin_email(recalled_listing): 
+    def send_new_collection_pin_email(recalled_listing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_new_collection_pin_context(
             recalled_listing

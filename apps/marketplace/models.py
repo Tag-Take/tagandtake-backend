@@ -1,5 +1,5 @@
 from decimal import Decimal
-import random 
+import random
 import string
 
 from django.db import models
@@ -58,10 +58,10 @@ class BaseListing(models.Model):
     @property
     def item_details(self):
         return self.item
-    
+
     @staticmethod
-    def generate_collection_pin(): 
-        return "".join(random.choices(string.digits,k=2))
+    def generate_collection_pin():
+        return "".join(random.choices(string.digits, k=2))
 
 
 class Listing(BaseListing):
@@ -90,7 +90,6 @@ class RecallReason(models.Model):
     ISSUE = "issue"
     STORE_DISCRESSION = "store discretion"
     OWNER_REQUEST = "owner request"
-
 
     RECALL_REASONS_TYPES = [
         (ISSUE, "Issue"),

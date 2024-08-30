@@ -36,10 +36,12 @@ urlpatterns = [
         name="store-recalled-listing-retrieve",
     ),
     path(
-        "listings/<int:id>/recall/", RecallListingView.as_view(), name="listing-recall",
+        "listings/<int:id>/recall/",
+        RecallListingView.as_view(),
+        name="listing-recall",
     ),
     path(
-        "recalled-listing/<int:id>/generate-new-collection-pin/", 
+        "recalled-listing/<int:id>/generate-new-collection-pin/",
         GenerateNewCollectionPinView.as_view(),
         name="new-collection-pin",
     ),

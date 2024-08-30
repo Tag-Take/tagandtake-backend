@@ -232,7 +232,7 @@ class RecallListingView(generics.UpdateAPIView):
         return create_error_response(
             "Reason is required to recall a listing", {}, status_code=400
         )
-    
+
 
 class GenerateNewCollectionPinView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -257,6 +257,7 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
             return create_error_response(
                 "Error generating new collection PIN", str(e), status_code=400
             )
+
 
 class DelistListing(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]

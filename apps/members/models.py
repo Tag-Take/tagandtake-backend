@@ -45,10 +45,10 @@ class MemberProfile(models.Model):
     @property
     def username(self):
         return self.user.username
-    
+
     @property
     def stripe_account(self):
-        StripeAccount = apps.get_model('payments', 'StripeAccount')
+        StripeAccount = apps.get_model("payments", "StripeAccount")
         try:
             return StripeAccount.objects.get(user=self.user)
         except StripeAccount.DoesNotExist:

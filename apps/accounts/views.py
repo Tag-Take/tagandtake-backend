@@ -106,7 +106,9 @@ class ActivateUserView(APIView):
                 user.save()
                 user_activated.send(sender=user.__class__, instance=user)
                 response = create_success_response(
-                    "Account activated successfully", {"role": user.role}, status.HTTP_200_OK
+                    "Account activated successfully",
+                    {"role": user.role},
+                    status.HTTP_200_OK,
                 )
                 access_token, refresh_token = JWTCookieHandler(
                     response
