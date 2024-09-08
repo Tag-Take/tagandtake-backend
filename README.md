@@ -1,8 +1,6 @@
 # tagandtake-backend
 
-# Project Name
-
-This repository contains the backend of our website, built using Django and containerized with Docker. The backend is powered by Python 3.11, and we use PostgreSQL and Redis, which are also containerized. Below is a step-by-step guide to setting up the project locally.
+This repository contains the tagandtake.com backend application, built using Django and containerized with Docker. The backend is run in Python 3.11, using a PostgreSQL database, Redis, celery and celery-beat, all of which are also containerized. Below is a step-by-step guide to setting up the project locally.
 
 ## Prerequisites
 
