@@ -73,7 +73,7 @@ class MemberFailedPayout(FailedPayoutBase):
         MemberPayout, on_delete=models.CASCADE, related_name="failed_member_payout"
     )
     member = models.ForeignKey(
-        Member, on_delete=models.CASCADE, related_name="failed_member_payout"
+        Member, on_delete=models.CASCADE, related_name="failed_payouts"
     )
 
     def __str__(self):
@@ -90,7 +90,7 @@ class StoreFailedPayout(FailedPayoutBase):
         StorePayout, on_delete=models.CASCADE, related_name="failed_store_payout"
     )
     store = models.ForeignKey(
-        Store, on_delete=models.CASCADE, related_name="failed_store_payout"
+        Store, on_delete=models.CASCADE, related_name="failed_payouts"
     )
 
     def __str__(self):
