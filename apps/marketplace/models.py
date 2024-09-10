@@ -90,7 +90,7 @@ class Listing(BaseListing):
 class RecallReason(models.Model):
     ISSUE = "issue"
     STORE_DISCRESSION = "store discretion"
-    OWNER_REQUEST = "owner_user request"
+    OWNER_REQUEST = "owner request"
 
     RECALL_REASONS_TYPES = [
         (ISSUE, "Issue"),

@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                         choices=[
                             ("issue", "Issue"),
                             ("store discretion", "Store Discretion"),
-                            ("owner_user request", "Owner Request"),
+                            ("owner request", "Owner Request"),
                         ],
                         max_length=255,
                     ),

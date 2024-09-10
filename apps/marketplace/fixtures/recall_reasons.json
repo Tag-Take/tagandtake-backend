@@ -40,7 +40,7 @@
         "pk": 5,
         "fields": {
             "reason": "Owner Request",
-            "type": "owner_user oequest",
+            "type": "owner request",
             "description": "Owner has requested to recall their item"
         }
     }
