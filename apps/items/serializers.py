@@ -51,7 +51,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
         try:
             with transaction.atomic():
                 item = Item.objects.create(
-                    owner=request.user, **validated_data, status="available"
+                    owner_user=request.user, **validated_data, status="available"
                 )
 
                 folder_name = get_item_images_folder(item.id)

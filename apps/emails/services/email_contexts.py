@@ -79,7 +79,7 @@ class ListingEmailContextGenerator:
     def get_base_context(self, listing: BaseListing):
         self.item = listing.item
         self.store = listing.store
-        self.user = self.item.owner
+        self.user = self.item.owner_user
         return {
             "username": self.user.username,
             "item_name": self.item.name,

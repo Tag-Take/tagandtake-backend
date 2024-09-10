@@ -234,6 +234,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             )
 
 
+# TODO: don't log out user until password reset is confirmed
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
     throttle_scope = "password_reset"

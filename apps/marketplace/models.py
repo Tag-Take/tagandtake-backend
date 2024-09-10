@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 
 from apps.items.models import Item
 from apps.stores.models import Tag
+from apps.members.models import MemberProfile as Member
 from apps.marketplace.services.pricing_services import PricingEngine
 
 User = get_user_model()
@@ -89,7 +90,7 @@ class Listing(BaseListing):
 class RecallReason(models.Model):
     ISSUE = "issue"
     STORE_DISCRESSION = "store discretion"
-    OWNER_REQUEST = "owner request"
+    OWNER_REQUEST = "owner_user request"
 
     RECALL_REASONS_TYPES = [
         (ISSUE, "Issue"),
@@ -152,7 +153,7 @@ class DelistedListing(BaseListing):
 
 
 class SoldListing(BaseListing):
-    buyer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    buyer = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
     sold_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -34,7 +34,7 @@ class AccountEmailSender:
 
     def send_password_reset_email(self):
         context_generator = AccountEmailContextGenerator(self.user)
-        context = context_generator.generate_password_reset_context(self.user)
+        context = context_generator.generate_password_reset_context()
         send_email(
             subject="Password Reset Request",
             to=self.user.email,
@@ -91,7 +91,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = listing.item.name
         send_email(
             subject=f"Item Listed - {item}",
-            to=listing.item.owner.email,
+            to=listing.item.owner_user.email,
             template_name=f"{ACTION_TRIGGERED}/item_listed.html",
             context=context,
         )
@@ -102,7 +102,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = listing.item.name
         send_email(
             subject=f"Congratulations! Your Item Sold - {item}",
-            to=listing.item.owner.email,
+            to=listing.item.owner_user.email,
             template_name=f"{ACTION_TRIGGERED}/item_sold.html",
             context=context,
         )
@@ -115,7 +115,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = listing.item.name
         send_email(
             subject=f"Item Recalled - {item}",
-            to=listing.item.owner.email,
+            to=listing.item.owner_user.email,
             template_name=f"{ACTION_TRIGGERED}/item_recalled.html",
             context=context,
         )
@@ -126,7 +126,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = listing.item.name
         send_email(
             subject=f"Item Delisted - {item}",
-            to=listing.item.owner.email,
+            to=listing.item.owner_user.email,
             template_name=f"{ACTION_TRIGGERED}/item_delisted.html",
             context=context,
         )
@@ -137,7 +137,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = recalled_listing.item.name
         send_email(
             subject=f"Collection Confirmation - {item}",
-            to=recalled_listing.item.owner.email,
+            to=recalled_listing.item.owner_user.email,
             template_name=f"{ACTION_TRIGGERED}/item_collected.html",
             context=context,
         )
@@ -158,7 +158,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
 
         send_email(
             subject=subject,
-            to=recalled_listing.item.owner.email,
+            to=recalled_listing.item.owner_user.email,
             template_name=template_name,
             context=context,
         )
@@ -171,7 +171,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = recalled_listing.item.name
         send_email(
             subject=f"Collection Reminder - {item}",
-            to=recalled_listing.item.owner.email,
+            to=recalled_listing.item.owner_user.email,
             template_name=f"{REMINDERS}/collect_item.html",
             context=context,
         )
@@ -184,7 +184,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         item = recalled_listing.item.name
         send_email(
             subject=f"New Collection PIN - {item}",
-            to=recalled_listing.item.owner.email,
+            to=recalled_listing.item.owner_user.email,
             template_name=f"{ACTION_TRIGGERED}/new_collection_pin.html",
             context=context,
         )

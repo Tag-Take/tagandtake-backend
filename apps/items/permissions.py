@@ -8,7 +8,7 @@ from apps.items.models import Item
 
 class IsItemOwner(permissions.BasePermission):
     def has_object_permission(self, request: Request, view: APIView, item: Item):
-        return item.owner == request.user
+        return item.owner_user == request.user
 
 
 def check_item_permissions(request: Request, view: APIView, item: Item):

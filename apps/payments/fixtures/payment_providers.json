@@ -1,0 +1,11 @@
+[
+    {
+        "model": "payments.PaymentProvider",
+        "pk": 1,
+        "fields": {
+            "name": "Stripe",
+            "description": "Stripe payment processing via Stripe Connect.",
+            "api_url": "https://stripe.com/docs/api"
+        }
+    }
+]

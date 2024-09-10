@@ -47,6 +47,10 @@ class MemberProfile(models.Model):
         return self.user.username
 
     @property
+    def email(self):
+        return self.user.email
+
+    @property
     def stripe_account(self):
         StripeAccount = apps.get_model("payments", "StripeAccount")
         try:

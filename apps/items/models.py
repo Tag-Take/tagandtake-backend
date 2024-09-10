@@ -1,9 +1,9 @@
 from django.db import models
 from decimal import Decimal
 from django.contrib.auth import get_user_model
-
-# import min and max value validators
 from django.core.validators import MinValueValidator
+
+from apps.members.models import MemberProfile as Member
 
 User = get_user_model()
 
@@ -21,7 +21,7 @@ class Item(models.Model):
         (SOLD, "Sold"),
     )
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
+    owner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="items")
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     size = models.CharField(max_length=255, null=True, blank=True)
@@ -44,6 +44,10 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def owner_user(self):
+        return self.owner.user
 
     @property
     def main_image(self):

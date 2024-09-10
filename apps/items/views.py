@@ -123,7 +123,7 @@ class MemberItemListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsItemOwner]
 
     def get_queryset(self):
-        return Item.objects.filter(owner=self.request.user)
+        return Item.objects.filter(owner_user=self.request.user)
 
     def list(self, request: Request, *args, **kwargs):
         items: list[Item] = self.get_queryset()
