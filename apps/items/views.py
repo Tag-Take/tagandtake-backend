@@ -120,10 +120,10 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class MemberItemListView(generics.ListAPIView):
     serializer_class = ItemRetrieveUpdateDeleteSerializer
-    permission_classes = [permissions.IsAuthenticated, IsItemOwner]
+    permission_classes = [permissions.IsAuthenticated, IsItemOwner, IsMemberUser]
 
     def get_queryset(self):
-        return Item.objects.filter(owner_user=self.request.user)
+        return Item.objects.filter(owner=self.request.user.member)
 
     def list(self, request: Request, *args, **kwargs):
         items: list[Item] = self.get_queryset()

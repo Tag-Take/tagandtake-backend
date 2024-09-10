@@ -46,12 +46,13 @@ class ItemCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data: dict):
         request = self.context.get("request")
         image = validated_data.pop("image")
+        member = request.user.member
         order = 0
 
         try:
             with transaction.atomic():
                 item = Item.objects.create(
-                    owner_user=request.user, **validated_data, status="available"
+                    owner=member, **validated_data, status="available"
                 )
 
                 folder_name = get_item_images_folder(item.id)

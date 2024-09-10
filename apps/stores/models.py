@@ -19,7 +19,7 @@ User = get_user_model()
 
 
 class StoreProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="store")
     pin = models.CharField(
         max_length=4,
         validators=[MinLengthValidator(4)],

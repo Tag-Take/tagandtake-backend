@@ -12,7 +12,7 @@ User = get_user_model()
 
 
 class MemberProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="member")
     member_bio = models.CharField(max_length=255, blank=True)
     profile_photo_url = models.URLField(max_length=2048, blank=True, null=True)
     instagram_url = models.URLField(blank=True)
