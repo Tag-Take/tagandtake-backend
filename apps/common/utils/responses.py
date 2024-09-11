@@ -35,6 +35,7 @@ def create_success_response(message: str, data: list[dict], status_code: status)
     )
 
 
+# TODO: Fix and slowly start applying everywhere possible
 def extract_error_messages(exception: any):
     """
     Extract error messages from different types of exceptions, ensuring JSON-serializable output.

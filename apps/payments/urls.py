@@ -1,11 +1,12 @@
 from django.urls import path
 
-from apps.payments.views import (
+from apps.payments.views.leggacy_views import (
     create_stripe_account,
     create_stripe_account_session,
     PurchaseTagsView,
     PurchaseListingView,
 )
+from apps.payments.views.webhooks import stripe_platform_webhook, stripe_connect_webhook
 
 
 urlpatterns = [
@@ -19,4 +20,6 @@ urlpatterns = [
     path(
         "listings/<int:tag_id>/", PurchaseListingView.as_view(), name="purchase-listing"
     ),
+    path("stripe-platform-webhook/", stripe_platform_webhook, name="stripe-platform-webhook"),
+    path("stripe-connect-webhook/", stripe_connect_webhook, name="stripe-connect-webhook"),
 ]

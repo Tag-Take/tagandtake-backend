@@ -35,10 +35,6 @@ from apps.stores.permissions import IsStoreUser
 
 class ListingHandler:
     def create_listing(self, item_id: int, tag_id: int):
-        # TODO: create check_member_payment_details(user)
-        # elegantly handle instances where member
-        # hasn't added payment details - redirect to
-        # add payment details
         item = self.get_item(item_id)
         tag = self.get_tag(tag_id)
         self.item_meets_store_requirements(item, tag)
@@ -78,6 +74,7 @@ class ListingHandler:
             raise serializers.ValidationError("Invalid reason provided")
         except Exception as e:
             raise e
+        
 
     def delist_listing(self, listing: Listing, reason_id: int):
         try:
@@ -135,6 +132,7 @@ class ListingHandler:
             listing.save()
             return listing
 
+    # remove apply storage fee - change to lost item after 2 weeks. 
     def apply_recurring_storage_fee(self, recalled_listing: RecalledListing):
         with transaction.atomic():
             recalled_listing.fee_charged_count += 1

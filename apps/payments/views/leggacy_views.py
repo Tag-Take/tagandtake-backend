@@ -70,6 +70,7 @@ def create_stripe_account_session(request):
         return JsonResponse({"error": str(e)}), 500
 
 
+# TODO: Turn into a webhook based on the Stripe event
 class PurchaseTagsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreUser]
 
@@ -93,13 +94,6 @@ class PurchaseTagsView(APIView):
             return create_error_response(
                 "Invalid tag count provided.", {}, status.HTTP_400_BAD_REQUEST
             )
-        # TODO: only purchase tags if the store has stripe connect account
-
-        # tags_purchased.send(
-        #     sender=StoreProfile, store=store_profile, tag_count=group_size
-        # )
-
-        # TODO: Implement this signal correctly ^
 
         TagHandler(store_profile).create_tag_group_and_tags(group_size)
 
