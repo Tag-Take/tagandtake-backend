@@ -4,9 +4,8 @@ from apps.stores.models import StoreProfile as Store
 
 
 class PaymentAccountBase(models.Model):
-    provider = models.CharField(max_length=50, default="Stripe")
-    account_id = models.CharField(max_length=255)
-    customer_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_account_id = models.CharField(max_length=255)
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

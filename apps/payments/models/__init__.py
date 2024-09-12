@@ -4,6 +4,7 @@ from apps.payments.models.accounts import (
     MemberPaymentAccount,
     StorePaymentAccount,
     MemberWallet,
+    StoreWallet,
 )
 from apps.payments.models.transactions import (
     ItemPaymentTransaction,
