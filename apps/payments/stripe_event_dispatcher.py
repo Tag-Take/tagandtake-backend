@@ -13,14 +13,13 @@ class StripeEventDispatcher:
     def dispatch(self):
         event_group = self.event_type.split(".")[0]
         account_type = (
-            "connect_handlers" if self.connected_account else "platform_handlers"
+            "connect" if self.connected_account else "platform"
         )
 
-        module_path = f"apps.payments.handlers.{account_type}.{event_group}_handlers"
+        module_path = f"apps.payments.stripe_handlers.{account_type}_events.{event_group}_handlers"
 
         try:
             handler_module = importlib.import_module(module_path)
-
             handler_function_name = f"handle_{self.event_type.replace('.', '_')}"
             handler_function = getattr(handler_module, handler_function_name, None)
 

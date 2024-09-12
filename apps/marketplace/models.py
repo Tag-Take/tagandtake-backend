@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 
 from apps.items.models import Item
 from apps.stores.models import Tag
-from apps.members.models import MemberProfile as Member
+from apps.payments.models.transactions import PaymentTransaction
 from apps.marketplace.services.pricing_services import PricingEngine
 
 User = get_user_model()
@@ -153,7 +153,7 @@ class DelistedListing(BaseListing):
 
 
 class SoldListing(BaseListing):
-    buyer = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
+    transaction = models.ForeignKey(PaymentTransaction, on_delete=models.CASCADE)
     sold_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -35,4 +35,4 @@ CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
 # Prod image
 FROM base as production
 COPY . /app/
-CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8000", "tagandtake.wsgi:application"]
+CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]

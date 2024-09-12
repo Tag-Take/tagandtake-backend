@@ -21,7 +21,7 @@ from apps.stores.models import (
     StoreProfile,
     StoreOpeningHours,
 )
-from apps.members.models import MemberProfile as Member
+from apps.payments.models.transactions import PaymentTransaction
 from apps.marketplace.services.pricing_services import (
     RECALLED_LISTING_RECURRING_FEE,
     GRACE_PERIOD_DAYS,
@@ -45,7 +45,7 @@ class ListingHandler:
                 store_commission=tag.store.commission,
                 min_listing_days=tag.store.min_listing_days,
             )
-            item.status = "Listed"
+            item.status = "listed"
             item.save()
             ListingEmailSender.send_listing_created_email(listing)
         return listing
@@ -109,7 +109,7 @@ class ListingHandler:
             recalled_listing.delete()
 
     @staticmethod
-    def purchase_listing(listing: Listing, buyer: Member = None):
+    def purchase_listing(listing: Listing, trans: PaymentTransaction):
         if listing:
             with transaction.atomic():
                 SoldListing.objects.create(
@@ -117,7 +117,7 @@ class ListingHandler:
                     item=listing.item,
                     store_commission=listing.store_commission,
                     min_listing_days=listing.min_listing_days,
-                    buyer=buyer,
+                    transaction=trans,
                 )
                 listing.item.status = "sold"
                 listing.item.save()

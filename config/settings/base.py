@@ -23,12 +23,14 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
+    # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # third-party apps
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -37,12 +39,13 @@ INSTALLED_APPS = [
     "django_extensions",
     # internal apps
     "apps.accounts",
-    "apps.stores",
-    "apps.members",
-    "apps.items",
-    "apps.payments",
-    "apps.marketplace",
     "apps.emails",
+    "apps.items",
+    "apps.marketplace",
+    "apps.members",
+    "apps.payments",
+    "apps.stores",
+    "apps.tagandtake",
 ]
 
 REST_FRAMEWORK = {
@@ -150,7 +153,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "tagandtake.urls"
+ROOT_URLCONF = "config.urls"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -190,7 +193,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "tagandtake.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 LANGUAGE_CODE = "en-us"
