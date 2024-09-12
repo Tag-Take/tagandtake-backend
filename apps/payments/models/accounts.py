@@ -59,3 +59,21 @@ class MemberWallet(models.Model):
         verbose_name_plural = "Member Wallets"
         db_table = "member_wallets"
         ordering = ["-created_at"]
+
+
+class StoreWallet(models.Model):
+    store = models.OneToOneField(
+        Store, on_delete=models.CASCADE, related_name="wallet"
+    )
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Wallet for {self.store.user.email} - Balance: {self.balance}"
+
+    class Meta:
+        verbose_name = "Store Wallet"
+        verbose_name_plural = "Store Wallets"
+        db_table = "store_wallets"
+        ordering = ["-created_at"]
