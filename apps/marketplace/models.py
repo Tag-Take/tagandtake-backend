@@ -9,15 +9,14 @@ from django.core.exceptions import ValidationError
 
 from apps.items.models import Item
 from apps.stores.models import Tag
-from apps.payments.models.transactions import PaymentTransaction
+from apps.payments.models.transactions import ItemPaymentTransaction
 from apps.marketplace.services.pricing_services import PricingEngine
 
 User = get_user_model()
 
 
-class BaseListing(models.Model):
+class BaseItemListing(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     store_commission = models.DecimalField(
         max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
     )
@@ -65,18 +64,20 @@ class BaseListing(models.Model):
         return "".join(random.choices(string.digits, k=2))
 
 
-class Listing(BaseListing):
+class ItemListing(BaseItemListing):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+
     class Meta:
-        db_table = "listings"
+        db_table = "item_listings"
 
     def clean(self):
-        active_tag_listings = Listing.objects.filter(tag=self.tag)
+        active_tag_listings = ItemListing.objects.filter(tag=self.tag)
         if self.pk:
             active_tag_listings = active_tag_listings.exclude(pk=self.pk)
         if active_tag_listings.exists():
             raise ValidationError("There is already an active listing with this tag.")
 
-        active_item_listings = Listing.objects.filter(item=self.item)
+        active_item_listings = ItemListing.objects.filter(item=self.item)
         if self.pk:
             active_item_listings = active_item_listings.exclude(pk=self.pk)
         if active_item_listings.exists():
@@ -111,13 +112,14 @@ class RecallReason(models.Model):
         return f"{self.reason}"
 
 
-class RecalledListing(BaseListing):
+class RecalledItemListing(BaseItemListing):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     recalled_at = models.DateTimeField(auto_now_add=True)
     collection_pin = models.CharField(
         max_length=2,
         validators=[MinLengthValidator(4)],
-        default=BaseListing.generate_collection_pin,
+        default=BaseItemListing.generate_collection_pin,
         null=False,
     )
     fee_charged_count = models.PositiveIntegerField(default=0)
@@ -134,31 +136,33 @@ class RecalledListing(BaseListing):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "recalled_listings"
+        db_table = "recalled_item_listings"
 
     def __str__(self):
         return f"{self.reason}"
 
 
-class DelistedListing(BaseListing):
+class DelistedItemListing(BaseItemListing):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     delisted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "delisted_listings"
+        db_table = "delisted_item_listings"
 
     def __str__(self):
         return f"{self.reason}"
 
 
-class SoldListing(BaseListing):
-    transaction = models.ForeignKey(PaymentTransaction, on_delete=models.CASCADE)
+class SoldItemListing(BaseItemListing):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    transaction = models.ForeignKey(ItemPaymentTransaction, on_delete=models.CASCADE)
     sold_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "sold_listings"
+        db_table = "sold_item_listings"
 
     def __str__(self):
         return f"{self.buyer}"

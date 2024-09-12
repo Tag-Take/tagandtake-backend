@@ -8,10 +8,10 @@ from rest_framework.request import Request
 
 from apps.stores.models import Tag
 from apps.marketplace.models import (
-    Listing,
-    RecalledListing,
-    DelistedListing,
-    SoldListing,
+    ItemListing,
+    RecalledItemListing,
+    DelistedItemListing,
+    SoldItemListing,
     RecallReason,
 )
 from apps.items.models import Item
@@ -21,7 +21,7 @@ from apps.stores.models import (
     StoreProfile,
     StoreOpeningHours,
 )
-from apps.payments.models.transactions import PaymentTransaction
+from apps.payments.models.transactions import ItemPaymentTransaction
 from apps.marketplace.services.pricing_services import (
     RECALLED_LISTING_RECURRING_FEE,
     GRACE_PERIOD_DAYS,
@@ -39,7 +39,7 @@ class ListingHandler:
         tag = self.get_tag(tag_id)
         self.item_meets_store_requirements(item, tag)
         with transaction.atomic():
-            listing = Listing.objects.create(
+            listing = ItemListing.objects.create(
                 item=item,
                 tag=tag,
                 store_commission=tag.store.commission,
@@ -50,14 +50,14 @@ class ListingHandler:
             ListingEmailSender.send_listing_created_email(listing)
         return listing
 
-    def recall_listing(self, listing: Listing, reason_id: int):
+    def recall_listing(self, listing: ItemListing, reason_id: int):
         try:
             reason = self.get_recall_reasons(reason_id)
             with transaction.atomic():
                 next_fee_charge_at = self.get_next_fee_charge_date(
                     listing.tag.store, inital_charge=True
                 )
-                RecalledListing.objects.create(
+                RecalledItemListing.objects.create(
                     tag=listing.tag,
                     item=listing.item,
                     store_commission=listing.store_commission,
@@ -75,11 +75,11 @@ class ListingHandler:
         except Exception as e:
             raise e
 
-    def delist_listing(self, listing: Listing, reason_id: int):
+    def delist_listing(self, listing: ItemListing, reason_id: int):
         try:
             reason = self.get_recall_reasons(reason_id)
             with transaction.atomic():
-                DelistedListing.objects.create(
+                DelistedItemListing.objects.create(
                     tag=listing.tag,
                     item=listing.item,
                     store_commission=listing.store_commission,
@@ -94,9 +94,9 @@ class ListingHandler:
             raise serializers.ValidationError("Invalid reason provided")
 
     @staticmethod
-    def delist_recalled_listing(recalled_listing: RecalledListing):
+    def delist_recalled_listing(recalled_listing: RecalledItemListing):
         with transaction.atomic():
-            DelistedListing.objects.create(
+            DelistedItemListing.objects.create(
                 tag=recalled_listing.tag,
                 item=recalled_listing.item,
                 store_commission=recalled_listing.store_commission,
@@ -109,10 +109,10 @@ class ListingHandler:
             recalled_listing.delete()
 
     @staticmethod
-    def purchase_listing(listing: Listing, trans: PaymentTransaction):
+    def purchase_listing(listing: ItemListing, trans: ItemPaymentTransaction):
         if listing:
             with transaction.atomic():
-                SoldListing.objects.create(
+                SoldItemListing.objects.create(
                     tag=listing.tag,
                     item=listing.item,
                     store_commission=listing.store_commission,
@@ -124,7 +124,7 @@ class ListingHandler:
                 ListingEmailSender.send_listing_sold_email(listing)
                 listing.delete()
 
-    def replace_listing_tag(self, listing: Listing, new_tag_id: int):
+    def replace_listing_tag(self, listing: ItemListing, new_tag_id: int):
         new_tag = self.get_tag(new_tag_id)
         with transaction.atomic():
             listing.tag = new_tag
@@ -132,7 +132,7 @@ class ListingHandler:
             return listing
 
     # remove apply storage fee - change to lost item after 2 weeks.
-    def apply_recurring_storage_fee(self, recalled_listing: RecalledListing):
+    def apply_recurring_storage_fee(self, recalled_listing: RecalledItemListing):
         with transaction.atomic():
             recalled_listing.fee_charged_count += 1
             recalled_listing.last_fee_charge_at = now()
@@ -145,9 +145,11 @@ class ListingHandler:
             recalled_listing.save()
             ListingEmailSender.seld_new_collection_pin_email(recalled_listing)
 
-    def generate_new_collection_pin(self, recalled_listing: RecalledListing):
+    def generate_new_collection_pin(self, recalled_listing: RecalledItemListing):
         with transaction.atomic():
-            recalled_listing.collection_pin = RecalledListing.generate_collection_pin()
+            recalled_listing.collection_pin = (
+                RecalledItemListing.generate_collection_pin()
+            )
             recalled_listing.save()
             ListingEmailSender.send_new_collection_pin_email(recalled_listing)
 
@@ -248,7 +250,7 @@ class ListingHandler:
 
 
 class RecalledListingCollectionReminderService:
-    def __init__(self, recalled_listing: RecalledListing):
+    def __init__(self, recalled_listing: RecalledItemListing):
         self.recalled_listing = recalled_listing
 
     def is_time_to_remind(self):
@@ -263,7 +265,7 @@ class RecalledListingCollectionReminderService:
 
     @staticmethod
     def run_storage_fee_reminder_checks():
-        recalled_listings = RecalledListing.objects.all()
+        recalled_listings = RecalledItemListing.objects.all()
         for recalled_listing in recalled_listings:
             service = RecalledListingCollectionReminderService(recalled_listing)
             if service.is_time_to_remind():
@@ -271,7 +273,7 @@ class RecalledListingCollectionReminderService:
 
 
 class RecalledListingStorageFeeService:
-    def __init__(self, recalled_listing: RecalledListing):
+    def __init__(self, recalled_listing: RecalledItemListing):
         self.recalled_listing = recalled_listing
 
     def is_time_to_charge(self):
@@ -282,14 +284,14 @@ class RecalledListingStorageFeeService:
 
     @staticmethod
     def run_storage_fee_checks():
-        recalled_listings = RecalledListing.objects.all()
+        recalled_listings = RecalledItemListing.objects.all()
         for recalled_listing in recalled_listings:
             service = RecalledListingStorageFeeService(recalled_listing)
             if service.is_time_to_charge():
                 service.apply_storage_fee()
 
 
-def get_listing_user_role(request: Request, listing: Listing, view: object):
+def get_listing_user_role(request: Request, listing: ItemListing, view: object):
     data = {}
     if IsTagOwner().has_object_permission(request, view, listing):
         data["role"] = "HOST_STORE"

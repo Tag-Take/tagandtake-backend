@@ -40,6 +40,7 @@ services:
       python manage.py sync_categories_conditions;
       python manage.py sync_recall_reasons;
       python manage.py sync_payment_providers;
+      python manage.py sync_store_supplies;
       python manage.py runserver 0.0.0.0:8000;
       "
   

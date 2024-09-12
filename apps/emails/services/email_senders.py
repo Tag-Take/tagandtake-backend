@@ -10,7 +10,7 @@ from apps.emails.services.email_contexts import (
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import Listing, RecalledListing
+from apps.marketplace.models import ItemListing, RecalledItemListing
 
 
 class AccountEmailSender:
@@ -85,7 +85,7 @@ class StoreEmailSender:
 
 class ListingEmailSender(ListingEmailContextGenerator):
 
-    def send_listing_created_email(listing: Listing):
+    def send_listing_created_email(listing: ItemListing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_item_listed_context(listing)
         item = listing.item.name
@@ -96,7 +96,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_listing_sold_email(listing: Listing):
+    def send_listing_sold_email(listing: ItemListing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_item_sold_context(listing)
         item = listing.item.name
@@ -107,7 +107,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_listing_recalled_email(listing: Listing, recall_reason: int):
+    def send_listing_recalled_email(listing: ItemListing, recall_reason: int):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_item_recalled_context(
             listing, recall_reason
@@ -120,7 +120,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_listing_delisted_email(listing: Listing):
+    def send_listing_delisted_email(listing: ItemListing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_item_delisted_context(listing)
         item = listing.item.name
@@ -131,7 +131,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_recalled_listing_collected_email(recalled_listing: RecalledListing):
+    def send_recalled_listing_collected_email(recalled_listing: RecalledItemListing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_item_collected_context(recalled_listing)
         item = recalled_listing.item.name
@@ -142,7 +142,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_storage_fee_charged_email(recalled_listing: RecalledListing):
+    def send_storage_fee_charged_email(recalled_listing: RecalledItemListing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_initial_storage_fee_context(
             recalled_listing
@@ -163,7 +163,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_collection_reminder_email(recalled_listing: RecalledListing):
+    def send_collection_reminder_email(recalled_listing: RecalledItemListing):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_collection_reminder_context(
             recalled_listing

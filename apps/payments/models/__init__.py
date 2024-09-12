@@ -5,7 +5,12 @@ from apps.payments.models.accounts import (
     StorePaymentAccount,
     MemberWallet,
 )
-from apps.payments.models.transactions import PaymentTransaction, FailedTransaction
+from apps.payments.models.transactions import (
+    ItemPaymentTransaction,
+    FailedItemTransaction,
+    SupplyPaymentTransaction,
+    FailedSupplyPaymentTransaction,
+)
 from apps.payments.models.payouts import (
     PayoutBase,
     MemberPayout,

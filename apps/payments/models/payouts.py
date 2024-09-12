@@ -20,7 +20,7 @@ class PayoutBase(models.Model):
     status = models.CharField(
         max_length=10, choices=PAYOUT_STATUS_CHOICES, default=PENDING
     )
-    payout_reference_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_payout_reference_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

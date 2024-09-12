@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.marketplace.models import Listing, RecallReason, RecalledListing
+from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
 from apps.marketplace.services.listing_services import ListingHandler
 
@@ -10,7 +10,7 @@ class CreateListingSerializer(serializers.ModelSerializer):
     tag_id = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model = Listing
+        model = ItemListing
         fields = ["id", "item_id", "tag_id"]
 
     def create(self, validated_data):
@@ -40,7 +40,7 @@ class ListingSerializer(serializers.ModelSerializer):
     item_details = ItemRetrieveUpdateDeleteSerializer(read_only=True)
 
     class Meta:
-        model = Listing
+        model = ItemListing
         fields = [
             "id",
             "item",
@@ -79,7 +79,7 @@ class RecallListingSerializer(serializers.ModelSerializer):
     reason = RecallReasonSerializer()
 
     class Meta:
-        model = RecalledListing
+        model = RecalledItemListing
         fields = [
             "id",
             "item",

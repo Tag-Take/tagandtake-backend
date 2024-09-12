@@ -112,7 +112,7 @@ class PurchaseListingView(APIView):
             ListingHandler.purchase_listing(listing)
 
             return create_success_response(
-                "Listing purchased successfully.", {}, status.HTTP_200_OK
+                "ItemListing purchased successfully.", {}, status.HTTP_200_OK
             )
 
         except serializers.ValidationError as e:

@@ -63,9 +63,9 @@ class StoreProfile(models.Model):
 
     @property
     def active_listings_count(self):
-        from apps.marketplace.models import Listing
+        from apps.marketplace.models import ItemListing
 
-        return Listing.objects.filter(tag__tag_group__store=self).count()
+        return ItemListing.objects.filter(tag__tag_group__store=self).count()
 
     @property
     def accepting_listings(self):

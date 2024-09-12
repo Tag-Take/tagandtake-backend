@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class TagandtakeConfig(AppConfig):
+class MarketplaceConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "tagandtake"
+    name = "apps.tagandtake"

@@ -6,7 +6,10 @@ from apps.payments.views.legacy.views import (
     PurchaseTagsView,
     PurchaseListingView,
 )
-from apps.payments.views.webhooks import stripe_connect_event_webhook, stripe_platform_event_webhook
+from apps.payments.views.webhooks import (
+    stripe_connect_event_webhook,
+    stripe_platform_event_webhook,
+)
 
 
 urlpatterns = [
@@ -26,6 +29,8 @@ urlpatterns = [
         name="stripe-platform-webhook",
     ),
     path(
-        "stripe-connect-webhook/", stripe_connect_event_webhook, name="stripe-connect-webhook"
+        "stripe-connect-webhook/",
+        stripe_connect_event_webhook,
+        name="stripe-connect-webhook",
     ),
 ]

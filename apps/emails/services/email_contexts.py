@@ -9,7 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from apps.marketplace.services.pricing_services import RECALLED_LISTING_RECURRING_FEE
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import BaseListing, Listing, RecallReason, RecalledListing
+from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing
 
 
 class AccountEmailContextGenerator:
@@ -76,7 +76,7 @@ class StoreEmailContextGenerator:
 
 
 class ListingEmailContextGenerator:
-    def get_base_context(self, listing: BaseListing):
+    def get_base_context(self, listing: ItemListing):
         self.item = listing.item
         self.store = listing.store
         self.user = self.item.owner_user
@@ -86,7 +86,7 @@ class ListingEmailContextGenerator:
             "current_year": datetime.now().year,
         }
 
-    def generate_item_listed_context(self, listing: Listing):
+    def generate_item_listed_context(self, listing: ItemListing):
         base_context = self.get_base_context(listing)
         base_context.update(
             {
@@ -96,7 +96,7 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_sold_context(self, listing: Listing):
+    def generate_item_sold_context(self, listing: ItemListing):
         base_context = self.get_base_context(listing)
         sale_price = listing.price
         base_context.update(
@@ -108,7 +108,7 @@ class ListingEmailContextGenerator:
         return base_context
 
     def generate_item_recalled_context(
-        self, listing: Listing, recall_reason: RecallReason
+        self, listing: ItemListing, recall_reason: RecallReason
     ):
         base_context = self.get_base_context(listing)
         base_context.update(
@@ -122,8 +122,8 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_delisted_context(self, Listing: Listing):
-        base_context = self.get_base_context(Listing)
+    def generate_item_delisted_context(self, listing: ItemListing):
+        base_context = self.get_base_context(listing)
         base_context.update(
             {
                 "store_name": self.store.store_name,
@@ -131,7 +131,7 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_item_collected_context(self, recalled_listing: RecalledListing):
+    def generate_item_collected_context(self, recalled_listing: RecalledItemListing):
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
@@ -140,7 +140,9 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_initial_storage_fee_context(self, recalled_listing: RecalledListing):
+    def generate_initial_storage_fee_context(
+        self, recalled_listing: RecalledItemListing
+    ):
         next_charge_at = recalled_listing.next_fee_charge_at
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
@@ -153,7 +155,9 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_recurring_storage_fee_context(self, recalled_listing: RecalledListing):
+    def generate_recurring_storage_fee_context(
+        self, recalled_listing: RecalledItemListing
+    ):
         next_charge_at = recalled_listing.next_fee_charge_at
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
@@ -167,7 +171,9 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_collection_reminder_context(self, recalled_listing: RecalledListing):
+    def generate_collection_reminder_context(
+        self, recalled_listing: RecalledItemListing
+    ):
         next_charge_at = recalled_listing.next_fee_charge_at
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
@@ -180,7 +186,9 @@ class ListingEmailContextGenerator:
         )
         return base_context
 
-    def generate_new_collection_pin_context(self, recalled_listing: RecalledListing):
+    def generate_new_collection_pin_context(
+        self, recalled_listing: RecalledItemListing
+    ):
         collection_pin = recalled_listing.collection_pin
         base_context = self.get_base_context(recalled_listing)
         base_context.update({"collection_pin": collection_pin})
