@@ -213,4 +213,3 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 LOGO_URL = "https://your-logo-url.com/logo.png"
 LOGIN_ROUTE = "/login"
 HOW_IT_WORKS_ROUTE = "/how-it-works"
-

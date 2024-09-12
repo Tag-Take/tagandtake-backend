@@ -74,7 +74,6 @@ class ListingHandler:
             raise serializers.ValidationError("Invalid reason provided")
         except Exception as e:
             raise e
-        
 
     def delist_listing(self, listing: Listing, reason_id: int):
         try:
@@ -132,7 +131,7 @@ class ListingHandler:
             listing.save()
             return listing
 
-    # remove apply storage fee - change to lost item after 2 weeks. 
+    # remove apply storage fee - change to lost item after 2 weeks.
     def apply_recurring_storage_fee(self, recalled_listing: RecalledListing):
         with transaction.atomic():
             recalled_listing.fee_charged_count += 1

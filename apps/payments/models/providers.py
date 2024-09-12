@@ -31,4 +31,3 @@ class PayoutProvider(models.Model):
         verbose_name = "Payout Provider"
         verbose_name_plural = "Payout Providers"
         db_table = "payout_providers"
-

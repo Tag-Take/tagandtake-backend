@@ -27,7 +27,9 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING("Payout providers file not found."))
 
-        self.stdout.write(self.style.SUCCESS("Successfully synced payment and payout providers"))
+        self.stdout.write(
+            self.style.SUCCESS("Successfully synced payment and payout providers")
+        )
 
     def sync_providers(self, providers_data, model_class):
         existing_providers = model_class.objects.values_list("name", flat=True)

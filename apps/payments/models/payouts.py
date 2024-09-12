@@ -31,7 +31,10 @@ class PayoutBase(models.Model):
 
 class MemberPayout(PayoutBase):
     payout_provider = models.ForeignKey(
-        PayoutProvider, on_delete=models.SET_NULL, null=True, related_name="member_payouts"
+        PayoutProvider,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="member_payouts",
     )
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="payouts")
 
@@ -46,7 +49,10 @@ class MemberPayout(PayoutBase):
 
 class StorePayout(PayoutBase):
     payout_provider = models.ForeignKey(
-        PayoutProvider, on_delete=models.SET_NULL, null=True, related_name="store_payouts"
+        PayoutProvider,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="store_payouts",
     )
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="payouts")
 

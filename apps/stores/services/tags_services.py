@@ -1,9 +1,5 @@
-import time
-import hashlib
-import base64
 from io import BytesIO
 import qrcode
-import uuid
 
 from django.conf import settings
 from django.db import transaction

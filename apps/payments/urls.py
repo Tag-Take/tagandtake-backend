@@ -20,6 +20,12 @@ urlpatterns = [
     path(
         "listings/<int:tag_id>/", PurchaseListingView.as_view(), name="purchase-listing"
     ),
-    path("stripe-platform-webhook/", stripe_platform_webhook, name="stripe-platform-webhook"),
-    path("stripe-connect-webhook/", stripe_connect_webhook, name="stripe-connect-webhook"),
+    path(
+        "stripe-platform-webhook/",
+        stripe_platform_webhook,
+        name="stripe-platform-webhook",
+    ),
+    path(
+        "stripe-connect-webhook/", stripe_connect_webhook, name="stripe-connect-webhook"
+    ),
 ]

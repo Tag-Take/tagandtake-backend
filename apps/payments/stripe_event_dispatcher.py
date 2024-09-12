@@ -1,18 +1,23 @@
 import importlib
 import logging
 
+
 class StripeEventDispatcher:
-    def __init__(self, event_type: str, event_data: dict[any], connected_account: str =None):
+    def __init__(
+        self, event_type: str, event_data: dict[any], connected_account: str = None
+    ):
         self.event_type = event_type
         self.event_data = event_data
         self.connected_account = connected_account
 
     def dispatch(self):
-        event_group = self.event_type.split('.')[0]        
-        account_type = "connect_handlers" if self.connected_account else "platform_handlers"
-        
+        event_group = self.event_type.split(".")[0]
+        account_type = (
+            "connect_handlers" if self.connected_account else "platform_handlers"
+        )
+
         module_path = f"apps.payments.handlers.{account_type}.{event_group}_handlers"
-        
+
         try:
             handler_module = importlib.import_module(module_path)
 
@@ -22,10 +27,15 @@ class StripeEventDispatcher:
             if handler_function:
                 handler_function(self.event_data)
             else:
-                logging.error(f"Handler function '{handler_function_name}' not found in module '{module_path}' for event type: {self.event_type}")
-        
-        except ModuleNotFoundError as e:
-            logging.error(f"Module '{module_path}' not found for event group: {event_group} in {account_type}")
-        except AttributeError as e:
-            logging.error(f"Failed to find handler function '{handler_function_name}' in module '{module_path}' for event type: {self.event_type}")
+                logging.error(
+                    f"Handler function '{handler_function_name}' not found in module '{module_path}' for event type: {self.event_type}"
+                )
 
+        except ModuleNotFoundError as e:
+            logging.error(
+                f"Module '{module_path}' not found for event group: {event_group} in {account_type}"
+            )
+        except AttributeError as e:
+            logging.error(
+                f"Failed to find handler function '{handler_function_name}' in module '{module_path}' for event type: {self.event_type}"
+            )
