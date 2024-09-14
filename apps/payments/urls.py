@@ -1,27 +1,37 @@
 from django.urls import path
 
-from apps.payments.views.legacy.views import (
-    create_stripe_account,
+from apps.payments.views import (
+    create_stripe_account_view,
     create_stripe_account_session,
-    PurchaseTagsView,
-    PurchaseListingView,
+    create_stripe_item_checkout_session,
+    create_stripe_supplies_checkout_session,
 )
-from apps.payments.views.webhooks import (
+from apps.payments.webhooks import (
     stripe_connect_event_webhook,
     stripe_platform_event_webhook,
 )
 
 
 urlpatterns = [
-    path("create-stripe-account/", create_stripe_account, name="create-stripe-account"),
     path(
-        "create-account-session/",
-        create_stripe_account_session,
-        name="create-account-session",
+        "create-stripe-account/",
+        create_stripe_account_view,
+        name="create-member-stripe-account",
     ),
-    path("tags/", PurchaseTagsView.as_view(), name="purchase-tags"),
     path(
-        "listings/<int:tag_id>/", PurchaseListingView.as_view(), name="purchase-listing"
+        "create-stripe-account-session/",
+        create_stripe_account_session,
+        name="create-stripe-account-session",
+    ),
+    path(
+        "create-stripe-item-checkout-session/",
+        create_stripe_item_checkout_session,
+        name="create-stripe-item-checkout-session",
+    ),
+    path(
+        "create-stripe-supplies-checkout-session/",
+        create_stripe_supplies_checkout_session,
+        name="create-stripe-supplies-checkout-session",
     ),
     path(
         "stripe-platform-webhook/",

@@ -4,6 +4,7 @@ import os
 from django.core.management.base import BaseCommand
 from apps.tagandtake.models import StoreSupply
 
+
 class Command(BaseCommand):
     help = "Sync store supplies from fixtures (JSON files)"
 
@@ -20,15 +21,15 @@ class Command(BaseCommand):
 
     def sync_store_supplies(self, store_supplies_data: dict):
         existing_supplies = StoreSupply.objects.values_list("name", flat=True)
-        new_supplies = [
-            supply["fields"]["name"] for supply in store_supplies_data
-        ]
+        new_supplies = [supply["fields"]["name"] for supply in store_supplies_data]
 
         # Add new supplies
         for supply_name in new_supplies:
             if supply_name not in existing_supplies:
                 supply_data = next(
-                    s["fields"] for s in store_supplies_data if s["fields"]["name"] == supply_name
+                    s["fields"]
+                    for s in store_supplies_data
+                    if s["fields"]["name"] == supply_name
                 )
                 StoreSupply.objects.create(
                     name=supply_data["name"],

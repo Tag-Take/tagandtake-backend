@@ -4,7 +4,6 @@ from apps.items.models import Item
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
 from apps.payments.models.providers import PaymentProvider
-from apps.tagandtake.models import StoreSupply
 
 
 class BasePaymentTransaction(models.Model):
@@ -20,6 +19,7 @@ class BasePaymentTransaction(models.Model):
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     stripe_session_id = models.CharField(max_length=255, blank=True, null=True)
+    stipre_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(
         max_length=10, choices=TRANSACTION_STATUS_CHOICES, default=PENDING
     )
@@ -55,7 +55,7 @@ class ItemPaymentTransaction(BasePaymentTransaction):
         PaymentProvider,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="item_payment_transactions",  
+        related_name="item_payment_transactions",
     )
 
     def __str__(self):
@@ -84,18 +84,14 @@ class FailedItemTransaction(BaseFailedPaymentTransaction):
 
 
 class SupplyPaymentTransaction(BasePaymentTransaction):
-    supply = models.ForeignKey(
-        StoreSupply, on_delete=models.CASCADE, related_name="supply_transactions"
-    )
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_supply_transactions"
     )
-    quantity = models.IntegerField(default=1)
     payment_provider = models.ForeignKey(
         PaymentProvider,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="supply_payment_transactions", 
+        related_name="supply_payment_transactions",
     )
 
     def __str__(self):

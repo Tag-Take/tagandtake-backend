@@ -40,9 +40,7 @@ class TagHandler:
 
     @staticmethod
     def _generate_qr_image(tag_id):
-        qr = qrcode.QRCode(
-            version=1, box_size=10, border=4
-        )  
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
         url = f"{settings.FRONTEND_URL}/{LISTING}/{tag_id}"
         qr.add_data(url)
         qr.make(fit=True)

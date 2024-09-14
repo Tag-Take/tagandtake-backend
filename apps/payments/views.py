@@ -1,0 +1,150 @@
+from rest_framework import status
+from rest_framework.request import Request
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
+
+from apps.common.utils.responses import create_success_response, create_error_response
+from apps.stores.permissions import IsStoreUser
+from apps.accounts.models import User
+from apps.stores.models import StoreProfile as Store
+from apps.marketplace.utils import get_item_listing_by_tag_id
+from apps.payments.services.stripe_services import (
+    create_stripe_account,
+    create_stripe_account_session,
+    create_stripe_item_checkout_session,
+    create_stripe_supplies_checkout_session,
+)
+from apps.payments.serializers import SuppliesCheckoutSessionSerializer
+
+
+@api_view(["POST"])
+def create_stripe_account_view(request: Request):
+    try:
+        business_type = request.query_params.get("business_type")
+
+        if not business_type:
+            return create_error_response(
+                "query param 'business_type' is required.",
+                {"error": "No business type provided."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            account = create_stripe_account()
+            return create_success_response(
+                "Stripe account created successfully.",
+                {"account": account.id},
+                status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return create_error_response(
+                "An error occurred when calling the Stripe API to create an account: ",
+                {str(e)},
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+    except:
+        return create_error_response(
+            "An error occurred when creating the Stripe account: ",
+            {str(e)},
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+def create_stripe_account_session_view(request: Request):
+    try:
+        connected_account_id = request.data.get("account")
+
+        account_session = create_stripe_account_session(connected_account_id)
+
+        return create_success_response(
+            "Stripe account session created successfully.",
+            {"account_session": account_session.id},
+            status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        return create_error_response(
+            "An error occurred when creating the Stripe account session: ",
+            {str(e)},
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+def stripe_item_checkout_secssion_view(request: Request):
+    try:
+        tag_id = request.data.get("tag_id")
+        item_listing = get_item_listing_by_tag_id(tag_id)
+
+        if not tag_id:
+            return create_error_response(
+                "Tag ID is required.",
+                {"error": "No Tag ID provided."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        session = create_stripe_item_checkout_session(item_listing, tag_id)
+
+        return create_success_response(
+            "Checkout session created successfully.",
+            {"client_secret": session.client_secret},
+            status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        return create_error_response(
+            "An error occurred when creating the Stripe Checkout Session: ",
+            {str(e)},
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+# TODO: Add permissions
+# @permission_classes([permissions.IsAuthenticated])  # Add IsStoreUser if necessary
+@api_view(["POST"])
+def create_stripe_supplies_checkout_session(request: Request):
+
+    user: User = request.user
+    try:
+        store = Store.objects.get(user=user)
+    except Store.DoesNotExist:
+        store = None
+    # except Store.DoesNotExist:
+    #     return create_error_response(
+    #         "Profile not found.", {}, status.HTTP_404_NOT_FOUND
+    #     )
+
+    serializer = SuppliesCheckoutSessionSerializer(data=request.data)
+
+    if serializer.is_valid():
+        line_items = serializer.save()
+        if store:
+            store_id = store.id
+        else:
+            store_id = 1
+
+        try:
+            checkout_session = create_stripe_supplies_checkout_session(
+                line_items, store.id
+            )
+
+            return create_success_response(
+                "Checkout session created successfully.",
+                {"sessionId": checkout_session.id},
+                status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return create_error_response(
+                "An error occurred when creating the Stripe Checkout Session: ",
+                {str(e)},
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    return create_error_response(
+        "An error occurred when creating the Stripe Checkout Session: ",
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST,
+    )

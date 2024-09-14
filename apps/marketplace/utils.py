@@ -4,7 +4,7 @@ from apps.marketplace.models import ItemListing
 from apps.stores.models import Tag
 
 
-def get_listing_by_tag_id(tag_id: int, listing_model=ItemListing):
+def get_item_listing_by_tag_id(tag_id: int, listing_model=ItemListing):
     try:
         listing = listing_model.objects.get(tag__id=tag_id)
         return listing
@@ -16,7 +16,7 @@ def get_listing_by_tag_id(tag_id: int, listing_model=ItemListing):
         )
 
 
-def get_listing_by_item_id(item_id: int, listing_model=ItemListing):
+def get_item_listing_by_item_id(item_id: int, listing_model=ItemListing):
     try:
         listing = listing_model.objects.get(item_id=item_id)
         return listing

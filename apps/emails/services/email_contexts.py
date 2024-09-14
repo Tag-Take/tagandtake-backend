@@ -98,7 +98,7 @@ class ListingEmailContextGenerator:
 
     def generate_item_sold_context(self, listing: ItemListing):
         base_context = self.get_base_context(listing)
-        sale_price = listing.price
+        sale_price = listing.item_price
         base_context.update(
             {
                 "sale_price": sale_price,

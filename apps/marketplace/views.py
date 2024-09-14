@@ -11,8 +11,8 @@ from apps.marketplace.serializers import (
 )
 from apps.marketplace.models import ItemListing, RecalledItemListing
 from apps.marketplace.utils import (
-    get_listing_by_tag_id,
-    get_listing_by_item_id,
+    get_item_listing_by_tag_id,
+    get_item_listing_by_item_id,
 )
 from apps.marketplace.services.listing_services import (
     ListingHandler,
@@ -91,7 +91,7 @@ class ListingRetrieveView(generics.RetrieveAPIView):
     def retrieve(self, request: Request, *args, **kwargs):
         try:
             tag_id = self.kwargs.get("id")
-            listing: ItemListing = get_listing_by_tag_id(tag_id, ItemListing)
+            listing: ItemListing = get_item_listing_by_tag_id(tag_id, ItemListing)
         except serializers.ValidationError as e:
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
@@ -111,7 +111,7 @@ class ListingRoleCheckView(generics.RetrieveAPIView):
     def retrieve(self, request: Request, *args, **kwargs):
         try:
             tag_id = self.kwargs.get("id")
-            listing: ItemListing = get_listing_by_tag_id(tag_id, ItemListing)
+            listing: ItemListing = get_item_listing_by_tag_id(tag_id, ItemListing)
         except serializers.ValidationError as e:
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
@@ -166,7 +166,7 @@ class ReplaceTagView(generics.UpdateAPIView):
         item_id = self.kwargs.get("id")
 
         try:
-            listing = get_listing_by_item_id(item_id, ItemListing)
+            listing = get_item_listing_by_item_id(item_id, ItemListing)
         except serializers.ValidationError as e:
             return create_error_response(
                 "ItemListing not found", {str(e.detail[0])}, status.HTTP_404_NOT_FOUND
@@ -209,7 +209,7 @@ class RecallListingView(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             tag_id = self.kwargs.get("id")
-            listing: ItemListing = get_listing_by_tag_id(tag_id, ItemListing)
+            listing: ItemListing = get_item_listing_by_tag_id(tag_id, ItemListing)
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
         permission_error_response = check_listing_store_permissions(
@@ -240,7 +240,7 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             item_id = self.kwargs.get("id")
-            recalled_listing: ItemListing = get_listing_by_item_id(
+            recalled_listing: ItemListing = get_item_listing_by_item_id(
                 item_id, RecalledItemListing
             )
         except serializers.ValidationError as e:
@@ -268,7 +268,7 @@ class DelistListing(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             tag_id = self.kwargs.get("id")
-            listing: ItemListing = get_listing_by_tag_id(tag_id, ItemListing)
+            listing: ItemListing = get_item_listing_by_tag_id(tag_id, ItemListing)
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
         permission_error_response = check_listing_store_permissions(
@@ -300,7 +300,7 @@ class DelistRecalledListingView(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             item_id = self.kwargs.get("id")
-            recalled_listing: RecalledItemListing = get_listing_by_item_id(
+            recalled_listing: RecalledItemListing = get_item_listing_by_item_id(
                 item_id, RecalledItemListing
             )
         except serializers.ValidationError as e:

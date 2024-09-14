@@ -61,9 +61,7 @@ class MemberWallet(models.Model):
 
 
 class StoreWallet(models.Model):
-    store = models.OneToOneField(
-        Store, on_delete=models.CASCADE, related_name="wallet"
-    )
+    store = models.OneToOneField(Store, on_delete=models.CASCADE, related_name="wallet")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

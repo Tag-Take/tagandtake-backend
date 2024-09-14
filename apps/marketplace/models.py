@@ -17,6 +17,7 @@ User = get_user_model()
 
 class BaseItemListing(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     store_commission = models.DecimalField(
         max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
     )
@@ -28,11 +29,11 @@ class BaseItemListing(models.Model):
         abstract = True
 
     @property
-    def price(self):
+    def item_price(self):
         return Decimal(self.item.price)
 
     @property
-    def total_price(self):
+    def listing_price(self):
         return PricingEngine().calculate_list_price(self.item.price)
 
     @property
@@ -52,6 +53,10 @@ class BaseItemListing(models.Model):
         )
 
     @property
+    def owner(self):
+        return self.item.owner
+
+    @property
     def store(self):
         return self.tag.store
 
@@ -65,8 +70,6 @@ class BaseItemListing(models.Model):
 
 
 class ItemListing(BaseItemListing):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-
     class Meta:
         db_table = "item_listings"
 
@@ -113,7 +116,6 @@ class RecallReason(models.Model):
 
 
 class RecalledItemListing(BaseItemListing):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     recalled_at = models.DateTimeField(auto_now_add=True)
     collection_pin = models.CharField(
@@ -143,7 +145,6 @@ class RecalledItemListing(BaseItemListing):
 
 
 class DelistedItemListing(BaseItemListing):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     reason = models.ForeignKey(RecallReason, on_delete=models.CASCADE)
     delisted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -156,7 +157,6 @@ class DelistedItemListing(BaseItemListing):
 
 
 class SoldItemListing(BaseItemListing):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     transaction = models.ForeignKey(ItemPaymentTransaction, on_delete=models.CASCADE)
     sold_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

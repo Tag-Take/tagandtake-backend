@@ -24,11 +24,13 @@ class CreateListingSerializer(serializers.ModelSerializer):
 
 
 class ListingSerializer(serializers.ModelSerializer):
-    price = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
+    item_price = serializers.DecimalField(
+        read_only=True, max_digits=10, decimal_places=2
+    )
     transaction_fee = serializers.DecimalField(
         read_only=True, max_digits=10, decimal_places=2
     )
-    total_price = serializers.DecimalField(
+    listing_price = serializers.DecimalField(
         read_only=True, max_digits=10, decimal_places=2
     )
     store_commission_amount = serializers.DecimalField(
@@ -47,9 +49,9 @@ class ListingSerializer(serializers.ModelSerializer):
             "tag",
             "store_commission",
             "min_listing_days",
-            "price",
+            "item_price",
             "transaction_fee",
-            "total_price",
+            "listing_price",
             "store_commission_amount",
             "member_earnings",
             "item_details",
@@ -65,7 +67,9 @@ class RecallReasonSerializer(serializers.ModelSerializer):
 
 
 class RecallListingSerializer(serializers.ModelSerializer):
-    price = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
+    item_price = serializers.DecimalField(
+        read_only=True, max_digits=10, decimal_places=2
+    )
     transaction_fee = serializers.DecimalField(
         read_only=True, max_digits=10, decimal_places=2
     )
@@ -87,7 +91,7 @@ class RecallListingSerializer(serializers.ModelSerializer):
             "store_commission",
             "min_listing_days",
             "reason",
-            "price",
+            "item_price",
             "transaction_fee",
             "store_commission_amount",
             "member_earnings",
