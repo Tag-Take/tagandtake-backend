@@ -9,7 +9,10 @@ class StoreSupplySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SupplyOrderItemSerializer(serializers.Serializer):
+class SupplyOrderItemSerializer(serializers.ModelSerializer):
+    supply_id = serializers.PrimaryKeyRelatedField(
+        queryset=StoreSupply.objects.all(), source="supply", write_only=True
+    )
 
     class Meta:
         model = SupplyOrderItem

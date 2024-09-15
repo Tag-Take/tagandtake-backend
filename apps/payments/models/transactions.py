@@ -8,20 +8,26 @@ from apps.payments.models.providers import PaymentProvider
 
 class BasePaymentTransaction(models.Model):
     PENDING = "pending"
-    COMPLETED = "completed"
+    SUCCEEDED = "succeeded"
     FAILED = "failed"
 
     TRANSACTION_STATUS_CHOICES = [
         (PENDING, "Pending"),
-        (COMPLETED, "Completed"),
+        (SUCCEEDED, "Succeeded"),
         (FAILED, "Failed"),
     ]
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    stripe_session_id = models.CharField(max_length=255, blank=True, null=True)
-    stipre_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
-    status = models.CharField(
-        max_length=10, choices=TRANSACTION_STATUS_CHOICES, default=PENDING
+    session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    payment_intent_id = models.CharField(
+        max_length=255, unique=True, null=True, blank=True
+    )
+    charge_id = models.CharField(max_length=255, null=True, blank=True)
+    payment_status = models.CharField(
+        max_length=50, choices=TRANSACTION_STATUS_CHOICES, default=PENDING
+    )
+    charge_status = models.CharField(
+        max_length=50, choices=TRANSACTION_STATUS_CHOICES, default=PENDING
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -117,3 +123,17 @@ class FailedSupplyPaymentTransaction(BaseFailedPaymentTransaction):
         verbose_name = "Failed Supply Transaction"
         verbose_name_plural = "Failed Supply Transactions"
         db_table = "failed_supply_transactions"
+
+
+class Transaction(models.Model):
+    session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    payment_intent_id = models.CharField(
+        max_length=255, unique=True, null=True, blank=True
+    )
+    charge_id = models.CharField(max_length=255, null=True, blank=True)
+    payment_status = models.CharField(
+        max_length=50, default="pending"
+    )  # pending, succeeded, failed
+    charge_status = models.CharField(
+        max_length=50, default="pending"
+    )  # pending, succeeded, failed

@@ -5,35 +5,30 @@ from apps.tagandtake.serializers import SupplyOrderItemSerializer
 
 
 class SuppliesCheckoutSessionSerializer(serializers.Serializer):
-    items = SupplyOrderItemSerializer(many=True)  # Use the nested serializer for items
+    supplies = SupplyOrderItemSerializer(many=True)
 
-    def validate_items(self, value):
-        for item in value:
-            try:
-                supply = StoreSupply.objects.get(id=item["supply_id"])
-                if not supply.stripe_price_id:
-                    raise serializers.ValidationError(
-                        f"Supply ID {item['supply_id']} is missing Stripe price ID."
-                    )
-            except StoreSupply.DoesNotExist:
+    def validate(self, data):
+        supplies = data.get("supplies", [])
+
+        for supply in supplies:
+            supply_obj = supply["supply"]
+            if not supply_obj.stripe_price_id:
                 raise serializers.ValidationError(
-                    f"Supply ID {item['supply_id']} not found."
+                    f"Supply ID {supply_obj.id} is missing Stripe price ID."
                 )
-        return value
+
+        return data
 
     def create(self, validated_data):
-        items_data = validated_data["items"]
+        supply_data = validated_data["supplies"]
 
         line_items = []
-        for item in items_data:
-            supply = StoreSupply.objects.get(
-                id=item["supply_id"]
-            )  # Fetch the supply details
+        for supply in supply_data:
+            supply_obj = supply["supply"]
             line_items.append(
                 {
-                    "price": supply.stripe_price_id,
-                    "quantity": item["quantity"],
+                    "price": supply_obj.stripe_price_id,
+                    "quantity": supply["quantity"],
                 }
             )
-
         return line_items

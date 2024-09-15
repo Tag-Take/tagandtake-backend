@@ -31,30 +31,31 @@ def create_stripe_account_session(connected_account_id: str):
 
 
 def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id):
-    return stripe.checkout.Session.create(
-        ui_mode="embedded",
-        line_items=[
-            {
-                "price_data": {
-                    "currency": "gbp",
-                    "product_data": {"name": item_listing.item.name},
-                    "unit_amount": item_listing.listing_price * 100,
-                },
-                "quantity": 1,
-            },
-        ],
-        mode="payment",
-        return_url=f"{settings.FRONTEND_URL}/listing/{tag_id}/return?session_id={{CHECKOUT_SESSION_ID}}",
-        metadata={
+    metadata = {
             "purchase": "item",
-            "item_id": item_listing.item.id,
+            "item_id": item_listing.item_details.id,
             "item_listing_id": item_listing.id,
             "member_id": item_listing.owner.id,
             "store_id": item_listing.store.id,
             "store_amount": item_listing.store_commission_amount,
             "member_earnings": item_listing.member_earnings,
             "transaction_fee": item_listing.transaction_fee,
-        },
+        }
+    return stripe.checkout.Session.create(
+        ui_mode="embedded",
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "gbp",
+                    "product_data": {"name": item_listing.item_details.name},
+                    "unit_amount": int(item_listing.listing_price * 100),
+                },
+                "quantity": 1,
+            },
+        ],
+        mode="payment",
+        return_url=f"{settings.FRONTEND_URL}/listing/{tag_id}/return?session_id={{CHECKOUT_SESSION_ID}}",
+        metadata=metadata,
     )
 
 

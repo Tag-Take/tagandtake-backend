@@ -1,10 +1,10 @@
+import stripe
+
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
 
 from apps.common.utils.responses import create_success_response, create_error_response
-from apps.stores.permissions import IsStoreUser
 from apps.accounts.models import User
 from apps.stores.models import StoreProfile as Store
 from apps.marketplace.utils import get_item_listing_by_tag_id
@@ -73,7 +73,7 @@ def create_stripe_account_session_view(request: Request):
 
 
 @api_view(["POST"])
-def stripe_item_checkout_secssion_view(request: Request):
+def create_stripe_item_checkout_secssion_view(request: Request):
     try:
         tag_id = request.data.get("tag_id")
         item_listing = get_item_listing_by_tag_id(tag_id)
@@ -104,35 +104,35 @@ def stripe_item_checkout_secssion_view(request: Request):
 # TODO: Add permissions
 # @permission_classes([permissions.IsAuthenticated])  # Add IsStoreUser if necessary
 @api_view(["POST"])
-def create_stripe_supplies_checkout_session(request: Request):
+def create_stripe_supplies_checkout_session_view(request: Request):
 
     user: User = request.user
-    try:
-        store = Store.objects.get(user=user)
-    except Store.DoesNotExist:
-        store = None
-    # except Store.DoesNotExist:
-    #     return create_error_response(
-    #         "Profile not found.", {}, status.HTTP_404_NOT_FOUND
-    #     )
+
+    if user.is_anonymous:
+        store_id = 1
+    else:
+        try:
+            store = Store.objects.get(user=user)
+            store_id = store.id
+
+        except Store.DoesNotExist:
+            return create_error_response(
+                "Profile not found.", {}, status.HTTP_404_NOT_FOUND
+            )
 
     serializer = SuppliesCheckoutSessionSerializer(data=request.data)
 
     if serializer.is_valid():
         line_items = serializer.save()
-        if store:
-            store_id = store.id
-        else:
-            store_id = 1
 
         try:
             checkout_session = create_stripe_supplies_checkout_session(
-                line_items, store.id
+                line_items, store_id
             )
 
             return create_success_response(
                 "Checkout session created successfully.",
-                {"sessionId": checkout_session.id},
+                {"client_secret": checkout_session.client_secret},
                 status.HTTP_200_OK,
             )
 
@@ -146,5 +146,35 @@ def create_stripe_supplies_checkout_session(request: Request):
     return create_error_response(
         "An error occurred when creating the Stripe Checkout Session: ",
         serializer.errors,
-        status=status.HTTP_400_BAD_REQUEST,
+        status.HTTP_400_BAD_REQUEST,
     )
+
+
+@api_view(["GET"])
+def get_stripe_session_status_view(request: Request):
+    try:
+        session_id = request.query_params.get("session_id")
+
+        if not session_id:
+            return create_error_response(
+                "query param 'session_id' is required.",
+                {"error": "No session ID provided."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        return create_success_response(
+            "Session status retrieved successfully.",
+            {
+                "status": session.status,
+            },
+            status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        return create_error_response(
+            "An error occurred when retrieving the session status: ",
+            {str(e)},
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
