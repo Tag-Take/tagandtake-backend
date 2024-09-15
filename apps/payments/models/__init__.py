@@ -7,10 +7,12 @@ from apps.payments.models.accounts import (
     StoreWallet,
 )
 from apps.payments.models.transactions import (
+    ItemCheckoutSession,
     ItemPaymentTransaction,
     FailedItemTransaction,
-    SupplyPaymentTransaction,
-    FailedSupplyPaymentTransaction,
+    SuppliesCheckoutSession,
+    SuppliesPaymentTransaction,
+    FailedSuppliesPaymentTransaction,
 )
 from apps.payments.models.payouts import (
     PayoutBase,

@@ -2,7 +2,7 @@ import stripe
 
 from rest_framework import status
 from rest_framework.request import Request
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 
 from apps.common.utils.responses import create_success_response, create_error_response
 from apps.accounts.models import User
@@ -14,6 +14,8 @@ from apps.payments.services.stripe_services import (
     create_stripe_item_checkout_session,
     create_stripe_supplies_checkout_session,
 )
+from apps.payments.models.transactions import ItemCheckoutSession
+from apps.payments.services.platform_services import save_supplies_checkout_session
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
 
 
@@ -87,6 +89,12 @@ def create_stripe_item_checkout_secssion_view(request: Request):
 
         session = create_stripe_item_checkout_session(item_listing, tag_id)
 
+        ItemCheckoutSession.objects.create(
+            item=item_listing.item_details,
+            store=item_listing.store,
+            session_id=session.id,
+        )
+
         return create_success_response(
             "Checkout session created successfully.",
             {"client_secret": session.client_secret},
@@ -105,30 +113,29 @@ def create_stripe_item_checkout_secssion_view(request: Request):
 # @permission_classes([permissions.IsAuthenticated])  # Add IsStoreUser if necessary
 @api_view(["POST"])
 def create_stripe_supplies_checkout_session_view(request: Request):
-
-    user: User = request.user
-
+    user = request.user
     if user.is_anonymous:
         store_id = 1
     else:
         try:
             store = Store.objects.get(user=user)
             store_id = store.id
-
         except Store.DoesNotExist:
             return create_error_response(
                 "Profile not found.", {}, status.HTTP_404_NOT_FOUND
             )
 
     serializer = SuppliesCheckoutSessionSerializer(data=request.data)
-
     if serializer.is_valid():
         line_items = serializer.save()
+        metadata = {"purchase": "supply", "store_id": store_id}
 
         try:
             checkout_session = create_stripe_supplies_checkout_session(
-                line_items, store_id
+                line_items, metadata
             )
+
+            save_supplies_checkout_session(checkout_session, store, line_items)
 
             return create_success_response(
                 "Checkout session created successfully.",

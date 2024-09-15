@@ -1,6 +1,9 @@
 from django.db import models
 
-from apps.payments.models.transactions import SupplyPaymentTransaction
+from apps.payments.models.transactions import (
+    SuppliesPaymentTransaction,
+    SuppliesCheckoutSession,
+)
 
 
 class StoreSupply(models.Model):
@@ -17,9 +20,28 @@ class StoreSupply(models.Model):
         db_table = "store_supplies"
 
 
+class SupplyCheckoutItem(models.Model):
+    checkout_session = models.ForeignKey(
+        SuppliesCheckoutSession, on_delete=models.CASCADE
+    )
+    supply = models.ForeignKey(StoreSupply, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    item_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.checkout_session} - {self.item} (x{self.quantity})"
+
+    class Meta:
+        verbose_name = "Supply Checkout Item"
+        verbose_name_plural = "Supply Checkout Items"
+        db_table = "supply_checkout_items"
+
+
 class SupplyOrderItem(models.Model):
     order = models.ForeignKey(
-        SupplyPaymentTransaction, related_name="supply_order", on_delete=models.CASCADE
+        SuppliesPaymentTransaction,
+        related_name="supply_order",
+        on_delete=models.CASCADE,
     )
     supply = models.ForeignKey(StoreSupply, on_delete=models.CASCADE)
     quantity = models.IntegerField()

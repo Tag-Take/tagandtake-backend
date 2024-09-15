@@ -12,20 +12,21 @@ from apps.payments.webhooks import (
     stripe_platform_event_webhook,
 )
 
-from apps.payments.legacy_views.views import PurchaseTagsView
+from apps.payments.legacy_views.views import PurchaseTagsView, create_member_stipe_account, create_stripe_account_session
 
 
 urlpatterns = [
-    path(
-        "create-stripe-account/",
-        create_stripe_account_view,
-        name="create-member-stripe-account",
-    ),
-    path(
-        "create-stripe-account-session/",
-        create_stripe_account_session_view,
-        name="create-stripe-account-session",
-    ),
+    # TODO: Remove add endpoint
+    # path(
+    #     "create-stripe-account/",
+    #     create_stripe_account_view,
+    #     name="create-member-stripe-account",
+    # ),
+    # path(
+    #     "create-stripe-account-session/",
+    #     create_stripe_account_session_view,
+    #     name="create-stripe-account-session",
+    # ),
     path(
         "create-stripe-item-checkout-session/",
         create_stripe_item_checkout_secssion_view,
@@ -51,9 +52,21 @@ urlpatterns = [
         stripe_connect_event_webhook,
         name="stripe-connect-webhook",
     ),
+    # TODO: Remove leggacy endpoints
     path(
         "tags/",
         PurchaseTagsView.as_view(),
         name="purchase-tags",
     ),
+    path(
+        "create-stripe-account/",
+        create_member_stipe_account,
+        name="create-member-stripe-account",
+    ),
+    path(
+        "create-stripe-account-session/",
+        create_stripe_account_session,
+        name="create-stripe-account-session",
+    ),
+
 ]

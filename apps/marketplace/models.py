@@ -9,7 +9,6 @@ from django.core.exceptions import ValidationError
 
 from apps.items.models import Item
 from apps.stores.models import Tag
-from apps.payments.models.transactions import ItemPaymentTransaction
 from apps.marketplace.services.pricing_services import PricingEngine
 
 User = get_user_model()
@@ -157,7 +156,6 @@ class DelistedItemListing(BaseItemListing):
 
 
 class SoldItemListing(BaseItemListing):
-    transaction = models.ForeignKey(ItemPaymentTransaction, on_delete=models.CASCADE)
     sold_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -27,7 +27,6 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 def create_member_stipe_account(request: Request):
     try:
         account = stripe.Account.create(
-            business_type="individual",
             controller={
                 "stripe_dashboard": {
                     "type": "express",
@@ -35,7 +34,7 @@ def create_member_stipe_account(request: Request):
                 "fees": {"payer": "application"},
                 "losses": {"payments": "application"},
             },
-            country="GB",
+            country="gb",
         )
         return JsonResponse(
             {
@@ -59,7 +58,7 @@ def create_store_stripe_account(request: Request):
                 "fees": {"payer": "application"},
                 "losses": {"payments": "application"},
             },
-            country="GB",
+            country="gb",
         )
         return JsonResponse(
             {

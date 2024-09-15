@@ -6,29 +6,41 @@ from apps.stores.models import StoreProfile as Store
 from apps.payments.models.providers import PaymentProvider
 
 
-class BasePaymentTransaction(models.Model):
-    PENDING = "pending"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
+class BaseChekoutSession(models.Model):
 
-    TRANSACTION_STATUS_CHOICES = [
-        (PENDING, "Pending"),
+    session_id = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class BasePaymentTransaction(models.Model):
+    CANCELED = "canceled"
+    PROCESSING = "processing"
+    REQUIRES_ACTION = "requires_action"
+    REQUIRES_CAPTURE = "requires_capture"
+    REQUIRES_CONFIRMATION = "requires_confirmation"
+    REQUIRES_PAYMENT_METHOD = "requires_payment_method"
+    SUCCEEDED = "succeeded"
+
+    PAYMENT_STAUSES = (
+        (CANCELED, "Cancelled"),
+        (PROCESSING, "Procession"),
+        (REQUIRES_ACTION, "Requires Action"),
+        (REQUIRES_CAPTURE, "Requires Capture"),
+        (REQUIRES_CONFIRMATION, "Requires Confirmation"),
+        (REQUIRES_PAYMENT_METHOD, "Required Payment Method"),
         (SUCCEEDED, "Succeeded"),
-        (FAILED, "Failed"),
-    ]
+    )
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     payment_intent_id = models.CharField(
         max_length=255, unique=True, null=True, blank=True
     )
-    charge_id = models.CharField(max_length=255, null=True, blank=True)
-    payment_status = models.CharField(
-        max_length=50, choices=TRANSACTION_STATUS_CHOICES, default=PENDING
-    )
-    charge_status = models.CharField(
-        max_length=50, choices=TRANSACTION_STATUS_CHOICES, default=PENDING
-    )
+    payment_status = models.CharField(max_length=50, choices=PAYMENT_STAUSES)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -44,6 +56,23 @@ class BaseFailedPaymentTransaction(models.Model):
 
     class Meta:
         abstract = True
+
+
+class ItemCheckoutSession(BaseChekoutSession):
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="item_checkout_sessions"
+    )
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="store_item_checkout_sessions"
+    )
+
+    def __str__(self):
+        return f"Checkout Session {self.id}"
+
+    class Meta:
+        verbose_name = "Item Checkout Session"
+        verbose_name_plural = "Item Checkout Sessions"
+        db_table = "item_checkout_sessions"
 
 
 class ItemPaymentTransaction(BasePaymentTransaction):
@@ -89,7 +118,21 @@ class FailedItemTransaction(BaseFailedPaymentTransaction):
         db_table = "failed_item_transaction"
 
 
-class SupplyPaymentTransaction(BasePaymentTransaction):
+class SuppliesCheckoutSession(BaseChekoutSession):
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="store_supply_checkout_sessions"
+    )
+
+    def __str__(self):
+        return f"Supply Checkout Session {self.id}"
+
+    class Meta:
+        verbose_name = "Supply Checkout Session"
+        verbose_name_plural = "Supply Checkout Sessions"
+        db_table = "supplies_checkout_sessions"
+
+
+class SuppliesPaymentTransaction(BasePaymentTransaction):
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_supply_transactions"
     )
@@ -106,14 +149,14 @@ class SupplyPaymentTransaction(BasePaymentTransaction):
     class Meta:
         verbose_name = "Supply Payment Transaction"
         verbose_name_plural = "Supply Payment Transactions"
-        db_table = "supply_payment_transactions"
+        db_table = "supplies_payment_transactions"
 
 
-class FailedSupplyPaymentTransaction(BaseFailedPaymentTransaction):
+class FailedSuppliesPaymentTransaction(BaseFailedPaymentTransaction):
     payment_transaction = models.OneToOneField(
-        SupplyPaymentTransaction,
+        SuppliesPaymentTransaction,
         on_delete=models.CASCADE,
-        related_name="failed_supply_transaction",
+        related_name="failed_supplies_transaction",
     )
 
     def __str__(self):
@@ -122,18 +165,4 @@ class FailedSupplyPaymentTransaction(BaseFailedPaymentTransaction):
     class Meta:
         verbose_name = "Failed Supply Transaction"
         verbose_name_plural = "Failed Supply Transactions"
-        db_table = "failed_supply_transactions"
-
-
-class Transaction(models.Model):
-    session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
-    payment_intent_id = models.CharField(
-        max_length=255, unique=True, null=True, blank=True
-    )
-    charge_id = models.CharField(max_length=255, null=True, blank=True)
-    payment_status = models.CharField(
-        max_length=50, default="pending"
-    )  # pending, succeeded, failed
-    charge_status = models.CharField(
-        max_length=50, default="pending"
-    )  # pending, succeeded, failed
+        db_table = "failed_supplies_transactions"
