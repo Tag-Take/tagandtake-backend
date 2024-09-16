@@ -1,8 +1,9 @@
+from typing import Dict
 from django.conf import settings
 import stripe
-from apps.payments.models.accounts import StorePaymentAccount, MemberPaymentAccount
+from apps.payments.models.accounts import StorePaymentAccount
 from apps.marketplace.models import ItemListing
-from apps.stores.models import StoreProfile as Store
+from apps.payments.utils import to_stripe_amount
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -30,13 +31,14 @@ def create_stripe_account_session(connected_account_id: str):
     )
 
 
-def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id):
+def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id: str):
     metadata = {
         "purchase": "item",
         "item_id": item_listing.item_details.id,
         "item_listing_id": item_listing.id,
         "member_id": item_listing.owner.id,
         "store_id": item_listing.store.id,
+        "amount": item_listing.listing_price,
         "store_amount": item_listing.store_commission_amount,
         "member_earnings": item_listing.member_earnings,
         "transaction_fee": item_listing.transaction_fee,
@@ -48,7 +50,7 @@ def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id):
                 "price_data": {
                     "currency": "gbp",
                     "product_data": {"name": item_listing.item_details.name},
-                    "unit_amount": int(item_listing.listing_price * 100),
+                    "unit_amount": to_stripe_amount(item_listing.listing_price),
                 },
                 "quantity": 1,
             },
@@ -60,7 +62,8 @@ def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id):
     )
 
 
-def create_stripe_supplies_checkout_session(line_items, metadata):
+def create_stripe_supplies_checkout_session(line_items: list[Dict[str, str]], store_id: str):
+    metadata = {"purchase": "supplies", "store_id": store_id, "line_items": line_items}
     return stripe.checkout.Session.create(
         payment_method_types=["card"],
         line_items=line_items,
@@ -68,42 +71,4 @@ def create_stripe_supplies_checkout_session(line_items, metadata):
         payment_intent_data={"metadata": metadata},
         metadata=metadata,
         return_url=f"{settings.FRONTEND_URL}/store/supplies/return?session_id={{CHECKOUT_SESSION_ID}}",
-    )
-
-
-def transfer_funds_to_store(event):
-    session = event["data"]["object"]
-    metadata = event["data"]["object"]["metadata"]
-
-    store_amount = metadata["store_amount"]
-    store_id = metadata["store_id"]
-    payment_intent_id = session["payment_intent"]
-
-    store_payment_account = StorePaymentAccount(store__id=store_id)
-    payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-
-    stripe.Transfer.create(
-        amount=store_amount,
-        currency="gbp",
-        source_transaction=payment_intent["latest_charge"],
-        destination=store_payment_account.stripe_account_id,
-    )
-
-
-def transfer_funds_to_member(event):
-    session = event["data"]["object"]
-    metadata = event["data"]["object"]["metadata"]
-
-    member_amount = metadata["member_amount"]
-    member_id = metadata["member_id"]
-    payment_intent_id = session["payment_intent"]
-
-    member_payment_account = MemberPaymentAccount(member__id=member_id)
-    payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-
-    stripe.Transfer.create(
-        amount=member_amount,
-        currency="gbp",
-        source_transaction=payment_intent["latest_charge"],
-        destination=member_payment_account.stripe_account_id,
     )

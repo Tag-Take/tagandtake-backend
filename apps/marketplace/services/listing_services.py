@@ -33,7 +33,7 @@ from apps.items.permissions import IsItemOwner
 from apps.stores.permissions import IsStoreUser
 
 
-class ListingHandler:
+class ItemListingHandler:
     def create_listing(self, item_id: int, tag_id: int):
         item = self.get_item(item_id)
         tag = self.get_tag(tag_id)
@@ -121,7 +121,6 @@ class ListingHandler:
                 )
                 listing.item.status = "sold"
                 listing.item.save()
-                ListingEmailSender.send_listing_sold_email(listing)
                 listing.delete()
 
     def replace_listing_tag(self, listing: ItemListing, new_tag_id: int):
@@ -280,7 +279,7 @@ class RecalledListingStorageFeeService:
         return now() >= self.recalled_listing.next_fee_charge_at
 
     def apply_storage_fee(self):
-        ListingHandler.apply_recurring_storage_fee(self.recalled_listing)
+        ItemListingHandler.apply_recurring_storage_fee(self.recalled_listing)
 
     @staticmethod
     def run_storage_fee_checks():

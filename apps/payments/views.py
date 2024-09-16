@@ -15,7 +15,7 @@ from apps.payments.services.stripe_services import (
     create_stripe_supplies_checkout_session,
 )
 from apps.payments.models.transactions import ItemCheckoutSession
-from apps.payments.services.platform_services import save_supplies_checkout_session
+from apps.payments.services.transaction_services import CheckoutSessionHandler
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
 
 
@@ -89,11 +89,7 @@ def create_stripe_item_checkout_secssion_view(request: Request):
 
         session = create_stripe_item_checkout_session(item_listing, tag_id)
 
-        ItemCheckoutSession.objects.create(
-            item=item_listing.item_details,
-            store=item_listing.store,
-            session_id=session.id,
-        )
+        CheckoutSessionHandler.save_item_checkout_session(session, item_listing)
 
         return create_success_response(
             "Checkout session created successfully.",
@@ -128,18 +124,17 @@ def create_stripe_supplies_checkout_session_view(request: Request):
     serializer = SuppliesCheckoutSessionSerializer(data=request.data)
     if serializer.is_valid():
         line_items = serializer.save()
-        metadata = {"purchase": "supply", "store_id": store_id}
 
         try:
-            checkout_session = create_stripe_supplies_checkout_session(
-                line_items, metadata
-            )
+            session = create_stripe_supplies_checkout_session(line_items, store_id)
 
-            save_supplies_checkout_session(checkout_session, store, line_items)
+            CheckoutSessionHandler.save_supplies_checkout_session(
+                session, store, line_items
+            )
 
             return create_success_response(
                 "Checkout session created successfully.",
-                {"client_secret": checkout_session.client_secret},
+                {"client_secret": session.client_secret},
                 status.HTTP_200_OK,
             )
 

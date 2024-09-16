@@ -3,8 +3,9 @@
         "model": "tagandtake.StoreSupply",
         "pk": 1,
         "fields": {
-            "name": "QR Security Tags",
+            "name": "50 QR Security Tags",
             "description": "Durable QR code tags for listing items on the platform.",
+            "price": 50.00,
             "stripe_price_id": "price_1Pz1sTRvBcboKceTVG5QRPPm"
         }
     },
@@ -14,6 +15,7 @@
         "fields": {
             "name": "Starter Pack",
             "description": "A bundle of essential supplies to get started selling, including 50 tags, a magnet, marketing material, and setup instructions.",
+            "price": 150.00,
             "stripe_price_id": "price_5678"
         }
     },
@@ -23,6 +25,7 @@
         "fields": {
             "name": "Magnets",
             "description": "Magnetic tools for securely removing tags from clothing and other items.",
+            "price": 100.00,
             "stripe_price_id": "price_91011"
         }
     }

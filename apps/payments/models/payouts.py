@@ -25,7 +25,7 @@ class PayoutBase(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        abstract = True  # This ensures no table is created for this class
+        abstract = True  
         ordering = ["-created_at"]
 
 

@@ -40,7 +40,7 @@ class BasePaymentTransaction(models.Model):
     payment_intent_id = models.CharField(
         max_length=255, unique=True, null=True, blank=True
     )
-    payment_status = models.CharField(max_length=50, choices=PAYMENT_STAUSES)
+    payment_status = models.CharField(max_length=50, choices=PAYMENT_STAUSES, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -51,7 +51,6 @@ class BasePaymentTransaction(models.Model):
 class BaseFailedPaymentTransaction(models.Model):
     error_message = models.TextField()
     error_code = models.CharField(max_length=255, blank=True, null=True)
-    provider_response = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -86,12 +85,6 @@ class ItemPaymentTransaction(BasePaymentTransaction):
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_item_transactions"
     )
-    payment_provider = models.ForeignKey(
-        PaymentProvider,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="item_payment_transactions",
-    )
 
     def __str__(self):
         return f"Transaction {self.id} - {self.status}"
@@ -102,7 +95,7 @@ class ItemPaymentTransaction(BasePaymentTransaction):
         db_table = "item_payment_transactions"
 
 
-class FailedItemTransaction(BaseFailedPaymentTransaction):
+class FailedItemPaymentTransaction(BaseFailedPaymentTransaction):
     payment_transaction = models.OneToOneField(
         ItemPaymentTransaction,
         on_delete=models.CASCADE,
@@ -136,12 +129,6 @@ class SuppliesPaymentTransaction(BasePaymentTransaction):
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_supply_transactions"
     )
-    payment_provider = models.ForeignKey(
-        PaymentProvider,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="supply_payment_transactions",
-    )
 
     def __str__(self):
         return f"Supply Transaction {self.id} - {self.status}"
@@ -166,3 +153,41 @@ class FailedSuppliesPaymentTransaction(BaseFailedPaymentTransaction):
         verbose_name = "Failed Supply Transaction"
         verbose_name_plural = "Failed Supply Transactions"
         db_table = "failed_supplies_transactions"
+
+
+class PendingMemberTransfer(models.Model):
+    member = models.ForeignKey(
+        Member, on_delete=models.CASCADE, related_name="pending_transfers"
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    payment_intent_id = models.CharField(max_length=255, unique=True)
+    latest_charge = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Pending Transfer for {self.member.user.email}"
+
+    class Meta:
+        verbose_name = "Pending Member Transfer"
+        verbose_name_plural = "Pending Member Transfers"
+        db_table = "pending_member_transfers"
+
+
+class PendingStoreTransfer(models.Model):
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="pending_transfers"
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    payment_intent_id = models.CharField(max_length=255, unique=True)
+    latest_charge = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Pending Transfer for {self.store.store_name}"
+
+    class Meta:
+        verbose_name = "Pending Store Transfer"
+        verbose_name_plural = "Pending Store Transfers"
+        db_table = "pending_store_transfers"

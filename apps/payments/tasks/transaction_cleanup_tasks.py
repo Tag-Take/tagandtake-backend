@@ -5,8 +5,10 @@
 # - no payment intent id
 # - payment intent != canelled or succeeded
 # get payment_intent obj from_db and update
-
+# TODO
 # get all transaction objects with no checkout_session_id
 # get all matching checkout_session related objects from ceckouts table
 # fill data in transaction based on checout objecte
 # listinghandler - sold listing
+# TODO
+# attempt to transfer funds from wallet to bank account

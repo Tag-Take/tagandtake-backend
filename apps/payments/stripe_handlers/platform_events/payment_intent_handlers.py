@@ -1,28 +1,72 @@
-# from apps.payments.utils import get_or_create_item_transaction, get_or_create_supply_transaction
-
-# def handle_payment_intent_succeeded(payment_intent):
-#     """
-#     Handle the successful payment intent but wait for charge confirmation and metadata from
-#     `checkout.session.completed`.
-#     """
-
-#     transaction = get_or_create_transaction(None, payment_intent["id"])
-#     transaction.payment_status = "succeeded"
-
-#     # If charge is already succeeded and metadata is available, complete the transaction
-#     if transaction.charge_status == "succeeded" and transaction.has_required_metadata():
-#         transaction.status = "completed"
-#     else:
-#         transaction.status = "pending"
-#     TODO: transfer funds based on latest_charge in payment_intent
-
-#     transaction.save()
+from typing import Any, Dict
+from apps.payments.services.transaction_services import TransactionHandler
+from apps.payments.services.transfer_services import TransferHandler
+from apps.marketplace.services.listing_services import ItemListingHandler
+from apps.marketplace.utils import get_item_listing_by_item_id
+from apps.emails.services.email_senders import ListingEmailSender
+from apps.stores.models import StoreProfile as Store
+from apps.tagandtake.services import SuppliesHandler
 
 
-# def handle_payment_intent_failed(payment_intent):
-#     """
-#     If the payment intent failed, mark the transaction as failed.
-#     """
-#     transaction = get_or_create_transaction(None, payment_intent["id"])
-#     transaction.status = "failed"
-#     transaction.save()
+class PaymentIntentSucceededHandler:
+
+    def __init__(self, event_data_obj: Dict[str, Any]):
+        self.payment_intent = event_data_obj
+        self.transaction = TransactionHandler().update_or_create_transaction(
+            self.payment_intent
+        )
+
+    def handle(self):
+        print('purchase', self.payment_intent["metadata"]["purchase"])
+        if self.payment_intent["metadata"]["purchase"] == "item":
+            print('handling item listing purchase')
+            self.handle_item_listing_purchase()
+        elif self.payment_intent["metadata"]["purchase"] == "supplies":
+            self.handle_supplies_purchase()
+
+    def handle_item_listing_purchase(self):
+        item_listing = get_item_listing_by_item_id(
+            self.payment_intent["metadata"]["item_id"]
+        )
+        try:
+            ItemListingHandler.purchase_listing(item_listing, self.transaction)
+            TransferHandler().run_post_success_transfers(self.payment_intent)
+            ListingEmailSender.send_listing_sold_email(item_listing)
+            # Jey TODO: Send email to store owner with the list of supplies bought
+            # ListingEmailSender.send_listing_bought_email(item_listing)
+
+        except Exception as e:
+            print(f"Error occurred when handling payment intent: {str(e)}")
+
+    def handle_supplies_purchase(self):
+        line_items = self.payment_intent["metadata"]["line_items"]
+        store = Store.objects.get(id=self.payment_intent["metadata"]["store_id"])
+
+        try:
+            SuppliesHandler().purchase_supplies(self.transaction, line_items, store)
+            # Jey TODO: Send email to store owner with the list of supplies bought
+            # ListingEmailSender.send_supplies_bought_email(store, line_items)
+
+            # Dan TODO: Business logic for handling supplies purchase
+
+        except Exception as e:
+            print(f"Error occurred when handling payment intent: {str(e)}")
+
+
+class PaymentIntentFailedHandler:
+
+    def __init__(self, event_data_obj: Dict[str, Any]):
+        self.payment_intent = event_data_obj
+        self.transaction = TransactionHandler().update_or_create_transaction(
+            event_data_obj
+        )
+
+    def handle(self):
+        if self.payment_intent["metadata"]["purchase"] == "item":
+            TransactionHandler().handle_item_purchase_failed(
+                self.payment_intent, self.transaction
+            )
+        elif self.payment_intent["metadata"]["purchase"] == "supplies":
+            TransactionHandler().handle_supplies_purchase_failed(
+                self.payment_intent, self.transaction
+            )

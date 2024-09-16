@@ -16,7 +16,6 @@ def handle_stripe_webhook(request: Request, secret: str):
     except stripe.error.SignatureVerificationError:
         return Response(status=400)
 
-    print(event["data"]["object"])
     event_type = event["type"]
     event_data = event["data"]["object"]
     connected_account = event.get("account", None)

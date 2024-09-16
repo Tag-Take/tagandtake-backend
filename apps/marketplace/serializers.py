@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
-from apps.marketplace.services.listing_services import ListingHandler
+from apps.marketplace.services.listing_services import ItemListingHandler
 
 
 class CreateListingSerializer(serializers.ModelSerializer):
@@ -17,7 +17,7 @@ class CreateListingSerializer(serializers.ModelSerializer):
         item_id = validated_data.pop("item_id")
         tag_id = validated_data.pop("tag_id")
         try:
-            listing = ListingHandler.create_listing(item_id=item_id, tag_id=tag_id)
+            listing = ItemListingHandler.create_listing(item_id=item_id, tag_id=tag_id)
             return listing
         except Exception as e:
             raise serializers.ValidationError(str(e))

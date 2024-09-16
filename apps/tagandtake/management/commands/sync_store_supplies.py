@@ -35,6 +35,7 @@ class Command(BaseCommand):
                     name=supply_data["name"],
                     description=supply_data["description"],
                     stripe_price_id=supply_data["stripe_price_id"],
+                    price=supply_data["price"],
                 )
 
         # Remove old supplies

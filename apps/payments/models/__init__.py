@@ -3,16 +3,16 @@ from apps.payments.models.accounts import (
     PaymentAccountBase,
     MemberPaymentAccount,
     StorePaymentAccount,
-    MemberWallet,
-    StoreWallet,
 )
 from apps.payments.models.transactions import (
     ItemCheckoutSession,
     ItemPaymentTransaction,
-    FailedItemTransaction,
+    FailedItemPaymentTransaction,
     SuppliesCheckoutSession,
     SuppliesPaymentTransaction,
     FailedSuppliesPaymentTransaction,
+    PendingMemberTransfer,
+    PendingStoreTransfer,
 )
 from apps.payments.models.payouts import (
     PayoutBase,

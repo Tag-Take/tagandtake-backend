@@ -18,7 +18,7 @@ from apps.stores.services.tags_services import TagHandler
 from apps.stores.models import StoreProfile
 from apps.common.utils.responses import create_success_response
 from apps.marketplace.utils import get_item_listing_by_tag_id
-from apps.marketplace.services.listing_services import ListingHandler
+from apps.marketplace.services.listing_services import ItemListingHandler
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -133,7 +133,7 @@ class PurchaseListingView(APIView):
             tag_id = request.data.get("tag_id")
             listing = get_item_listing_by_tag_id(tag_id)
 
-            ListingHandler.purchase_listing(listing)
+            ItemListingHandler.purchase_listing(listing)
 
             return create_success_response(
                 "ItemListing purchased successfully.", {}, status.HTTP_200_OK

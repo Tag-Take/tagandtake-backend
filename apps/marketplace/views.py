@@ -15,7 +15,7 @@ from apps.marketplace.utils import (
     get_item_listing_by_item_id,
 )
 from apps.marketplace.services.listing_services import (
-    ListingHandler,
+    ItemListingHandler,
     get_listing_user_role,
 )
 from apps.marketplace.permissions import check_listing_store_permissions
@@ -63,7 +63,7 @@ class CreateItemAndListingView(generics.CreateAPIView):
             item: Item = item_serializer.save()
             tag_id = request.data.get("tag_id")
             try:
-                listing = ListingHandler().create_listing(
+                listing = ItemListingHandler().create_listing(
                     item_id=item.id, tag_id=tag_id
                 )
                 listing_data = ListingSerializer(listing).data
@@ -187,7 +187,7 @@ class ReplaceTagView(generics.UpdateAPIView):
             )
 
         try:
-            listing = ListingHandler().replace_listing_tag(listing, new_tag_id)
+            listing = ItemListingHandler().replace_listing_tag(listing, new_tag_id)
             serializer = self.get_serializer(listing)
             return create_success_response(
                 "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
@@ -221,7 +221,7 @@ class RecallListingView(generics.UpdateAPIView):
         reason = request.data.get("reason")
         if reason:
             try:
-                ListingHandler().recall_listing(listing, reason)
+                ItemListingHandler().recall_listing(listing, reason)
                 return create_success_response(
                     "ItemListing successfully recalled", {}, status_code=200
                 )
@@ -251,7 +251,7 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
         if permission_error_response:
             return permission_error_response
         try:
-            ListingHandler().generate_new_collection_pin(recalled_listing)
+            ItemListingHandler().generate_new_collection_pin(recalled_listing)
             return create_success_response(
                 "New collection PIN successfully generated", {}, status_code=200
             )
@@ -280,7 +280,7 @@ class DelistListing(generics.UpdateAPIView):
         reason = request.data.get("reason")
         if reason:
             try:
-                ListingHandler().delist_listing(listing, reason)
+                ItemListingHandler().delist_listing(listing, reason)
                 return create_success_response(
                     "ItemListing successfully delisted", {}, status_code=200
                 )
@@ -312,7 +312,7 @@ class DelistRecalledListingView(generics.UpdateAPIView):
             return permission_error_response
 
         try:
-            ListingHandler.delist_recalled_listing(recalled_listing)
+            ItemListingHandler.delist_recalled_listing(recalled_listing)
             return create_success_response(
                 "Recalled listing successfully delisted", {}, status_code=200
             )

@@ -12,7 +12,11 @@ from apps.payments.webhooks import (
     stripe_platform_event_webhook,
 )
 
-from apps.payments.legacy_views.views import PurchaseTagsView, create_member_stipe_account, create_stripe_account_session
+from apps.payments.legacy_views.views import (
+    PurchaseTagsView,
+    create_member_stipe_account,
+    create_stripe_account_session,
+)
 
 
 urlpatterns = [
@@ -68,5 +72,4 @@ urlpatterns = [
         create_stripe_account_session,
         name="create-stripe-account-session",
     ),
-
 ]

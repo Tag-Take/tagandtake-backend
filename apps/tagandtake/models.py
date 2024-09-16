@@ -4,11 +4,13 @@ from apps.payments.models.transactions import (
     SuppliesPaymentTransaction,
     SuppliesCheckoutSession,
 )
+from apps.stores.models import StoreProfile as Store
 
 
 class StoreSupply(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     stripe_price_id = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
@@ -25,6 +27,7 @@ class SupplyCheckoutItem(models.Model):
         SuppliesCheckoutSession, on_delete=models.CASCADE
     )
     supply = models.ForeignKey(StoreSupply, on_delete=models.CASCADE)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     item_price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -43,9 +46,14 @@ class SupplyOrderItem(models.Model):
         related_name="supply_order",
         on_delete=models.CASCADE,
     )
+    store = (
+        models.ForeignKey(
+            Store, on_delete=models.CASCADE, related_name="store_supply_order"
+        ),
+    )
     supply = models.ForeignKey(StoreSupply, on_delete=models.CASCADE)
     quantity = models.IntegerField()
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
+    item_price = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
