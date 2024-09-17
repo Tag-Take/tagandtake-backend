@@ -13,10 +13,12 @@ class StripeEventDispatcher:
     def dispatch(self):
         event_handler = self.get_handler()
         if event_handler:
-            handler = event_handler(self.event_data)
-            handler.handle()
-        else:
-            logging.error(f"Unable to dispatch event for type: {self.event_type}")
+            try:
+                handler = event_handler(self.event_data)
+                handler.handle()
+            except Exception as e:
+                logging.error(f"Error handling event '{self.event_type}': {str(e)}")
+
 
     def get_handler(self):
         event_group = self.event_type.split(".")[0]
