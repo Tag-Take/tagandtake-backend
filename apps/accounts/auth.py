@@ -1,4 +1,4 @@
-# authentication.py
+from apps.common.constants import USER_ID, ACCESS_TOKEN, SKIP_AUTHENTICATION
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
@@ -12,15 +12,15 @@ User = get_user_model()
 
 class CustomJWTAuthentication(BaseAuthentication):
     def authenticate(self, request: Request):
-        if getattr(request, "skip_authentication", False):
+        if getattr(request, SKIP_AUTHENTICATION, False):
             return None
 
-        token = request.COOKIES.get("access_token")
+        token = request.COOKIES.get(ACCESS_TOKEN)
         if not token:
             return None
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user = User.objects.get(id=payload["user_id"])
+            user = User.objects.get(id=payload[USER_ID])
             if not user.is_active:
                 raise AuthenticationFailed("User is inactive")
             return (user, token)

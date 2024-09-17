@@ -18,6 +18,8 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
+from apps.accounts.constants import UserRoles
+from apps.common.constants import *
 from apps.emails.services.email_senders import AccountEmailSender
 from apps.accounts.services.signup_services import SignupService, UsernameValidator
 from apps.stores.serializers import (
@@ -38,22 +40,22 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "password2"]
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = [USERNAME, EMAIL, PASSWORD, PASSWORD2]
+        extra_kwargs = {PASSWORD: {"write_only": True}}
 
     def validate(self, data: dict):
-        if data["password"] != data["password2"]:
+        if data[PASSWORD] != data[PASSWORD2]:
             raise serializers.ValidationError("Passwords do not match")
 
         try:
-            validate_password(data["password"])
+            validate_password(data[PASSWORD])
         except DjangoValidationError as e:
-            raise serializers.ValidationError({"password": list(e.messages)})
+            raise serializers.ValidationError({PASSWORD: list(e.messages)})
 
         return data
 
     def create(self, validated_data):
-        validated_data["role"] = "member"
+        validated_data[ROLE] = UserRoles.MEMBER
 
         return SignupService().create_member_user(validated_data)
 
@@ -71,33 +73,33 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "username",
-            "email",
-            "password",
-            "password2",
-            "store",
-            "address",
-            "opening_hours",
+            USERNAME,
+            EMAIL,
+            PASSWORD,
+            PASSWORD2,
+            STORE,
+            ADDRESS,
+            OPENING_HOURS,
         ]
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {PASSWORD: {"write_only": True}}
 
     def validate(self, data: dict):
-        if data["password"] != data["password2"]:
+        if data[PASSWORD] != data[PASSWORD2]:
             raise serializers.ValidationError("Passwords do not match")
 
         try:
-            validate_password(data["password"])
+            validate_password(data[PASSWORD])
         except DjangoValidationError as e:
-            raise serializers.ValidationError({"password": list(e.messages)})
+            raise serializers.ValidationError({PASSWORD: list(e.messages)})
 
         return data
 
     def create(self, validated_data):
-        validated_data["role"] = "store"
+        validated_data[ROLE] = UserRoles.STORE
 
-        address_data = self.initial_data.pop("address", None)
-        opening_hours_data = self.initial_data.pop("opening_hours", [])
-        store_profile_data = self.initial_data.pop("store", None)
+        address_data = self.initial_data.pop(ADDRESS, None)
+        opening_hours_data = self.initial_data.pop(OPENING_HOURS, [])
+        store_profile_data = self.initial_data.pop(UserRoles.STORE, None)
 
         return SignupService().create_store_user(
             validated_data, store_profile_data, address_data, opening_hours_data
@@ -106,11 +108,13 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs: dict):
-        username_or_email = attrs.get("username")
-        password = attrs.get("password")
+        username_or_email = attrs.get(USERNAME)
+        password = attrs.get(PASSWORD)
 
         user = User.objects.filter(
-            Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
+            Q(username__iexact=username_or_email) 
+            | # or 
+            Q(email__iexact=username_or_email)
         ).first()
 
         if not user:
@@ -141,29 +145,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         refresh = self.get_token(self.user)
 
         data = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            REFRESH: str(refresh),
+            ACCESS: str(refresh.access_token),
         }
 
-        data["user"] = {"id": user.id, "username": user.username, "role": user.role}
+        data[USER] = {ID: user.id, USERNAME: user.username, ROLE: user.role}
 
         return data
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs: dict):
-        refresh = RefreshToken(attrs["refresh"])
+        refresh = RefreshToken(attrs[REFRESH])
 
         decoded_refresh_token = refresh.payload
-        user_id = decoded_refresh_token["user_id"]
+        user_id = decoded_refresh_token[USER_ID]
         user = User.objects.get(id=user_id)
 
         access_token = refresh.access_token
-        access_token["role"] = user.role
+        access_token[ROLE] = user.role
 
         data = {
-            "access": str(access_token),
-            "refresh": str(refresh),
+            ACCESS: str(access_token),
+            REFRESH: str(refresh),
         }
 
         if api_settings.UPDATE_LAST_LOGIN:
@@ -185,7 +189,7 @@ class PasswordResetSerializer(serializers.Serializer):
         return value
 
     def save(self):
-        email = self.validated_data["email"]
+        email = self.validated_data[EMAIL]
         user = User.objects.get(email=email)
         AccountEmailSender(user).send_password_reset_email()
 
@@ -198,29 +202,29 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
     def validate(self, data: dict):
         try:
-            uid = force_str(urlsafe_base64_decode(data["uid"]))
+            uid = force_str(urlsafe_base64_decode(data[UID]))
             self.user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError("Invalid token or user ID")
 
-        if not default_token_generator.check_token(self.user, data["token"]):
+        if not default_token_generator.check_token(self.user, data[TOKEN]):
             raise serializers.ValidationError("Invalid token")
 
-        if data["new_password"] != data["confirm_new_password"]:
+        if data[NEW_PASSWORD] != data[CONFIRM_NEW_PASSWORD]:
             raise serializers.ValidationError("Passwords do not match")
 
-        if check_password(data["new_password"], self.user.password):
+        if check_password(data[NEW_PASSWORD], self.user.password):
             raise serializers.ValidationError(
                 "The new password cannot be the same as the old password."
             )
 
         try:
-            validate_password(data["new_password"])
+            validate_password(data[NEW_PASSWORD])
         except DjangoValidationError as e:
-            raise serializers.ValidationError({"new_password": list(e.messages)})
+            raise serializers.ValidationError({NEW_PASSWORD: list(e.messages)})
 
         return data
 
     def save(self):
-        self.user.set_password(self.validated_data["new_password"])
+        self.user.set_password(self.validated_data[NEW_PASSWORD])
         self.user.save()

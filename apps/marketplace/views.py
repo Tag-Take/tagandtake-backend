@@ -26,7 +26,6 @@ from apps.stores.permissions import IsStoreUser
 from apps.common.utils.responses import (
     create_error_response,
     create_success_response,
-    extract_error_messages,
 )
 
 
@@ -75,7 +74,7 @@ class CreateItemAndListingView(generics.CreateAPIView):
             except Exception as e:
                 return create_error_response(
                     "Error creating listing",
-                    extract_error_messages(e),
+                    {'Exception': str(e)},
                     status.HTTP_400_BAD_REQUEST,
                 )
         return create_error_response(

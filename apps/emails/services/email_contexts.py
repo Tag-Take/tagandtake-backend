@@ -6,6 +6,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
+from apps.common.constants import *
 from apps.marketplace.services.pricing_services import RECALLED_LISTING_RECURRING_FEE
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
@@ -19,11 +20,11 @@ class AccountEmailContextGenerator:
     def generate_account_activation_context(self):
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        activation_url = f"{settings.FRONTEND_URL}/activate?uuid={uid}&token={token}"
+        activation_url = f"{settings.FRONTEND_URL}/{ACTIVATE}?uuid={uid}&{TOKEN}={token}"
         context = {
-            "username": self.user.username,
-            "activation_url": activation_url,
-            "current_year": datetime.now().year,
+            USERNAME: self.user.username,
+            ACTIVATION_URL: activation_url,
+            CURRENT_YEAR: datetime.now().year,
         }
         return context
 
@@ -31,12 +32,12 @@ class AccountEmailContextGenerator:
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
         reset_url = (
-            f"{settings.FRONTEND_URL}/reset-password/confirm?uid={uid}&token={token}"
+            f"{settings.FRONTEND_URL}/reset-password/{CONFIRM}?uid={uid}&{TOKEN}={token}"
         )
         context = {
-            "username": self.user.username,
-            "reset_url": reset_url,
-            "current_year": datetime.now().year,
+            USERNAME: self.user.username,
+            RESET_URL: reset_url,
+            CURRENT_YEAR: datetime.now().year,
         }
         return context
 
@@ -50,8 +51,8 @@ class MemberEmailContextGenerator:
 
     def generate_memeber_welcome_context(self):
         context = {
-            "login_url": settings.FRONTEND_URL + settings.LOGIN_ROUTE,
-            "how_it_works_url": settings.FRONTEND_URL + settings.HOW_IT_WORKS_ROUTE,
+            LOGIN_URL: settings.FRONTEND_URL + settings.LOGIN_ROUTE,
+            HOW_IT_WORKS_URL: settings.FRONTEND_URL + settings.HOW_IT_WORKS_ROUTE,
         }
         return context
 
@@ -62,15 +63,15 @@ class StoreEmailContextGenerator:
 
     def generate_store_welcome_context(self):
         context = {
-            "logo_url": settings.LOGO_URL,
-            "pin": self.store.pin,
+            LOGO_URL: settings.LOGO_URL,
+            PIN: self.store.pin,
         }
         return context
 
     def generate_new_store_pin_context(self):
         context = {
-            "logo_url": settings.LOGO_URL,
-            "pin": self.store.pin,
+            LOGO_URL: settings.LOGO_URL,
+            PIN: self.store.pin,
         }
         return context
 
@@ -81,17 +82,17 @@ class ListingEmailContextGenerator:
         self.store = listing.store
         self.user = self.item.owner_user
         return {
-            "username": self.user.username,
-            "item_name": self.item.name,
-            "current_year": datetime.now().year,
+            USERNAME: self.user.username,
+            ITEM_NAME: self.item.name,
+            CURRENT_YEAR: datetime.now().year,
         }
 
     def generate_item_listed_context(self, listing: ItemListing):
         base_context = self.get_base_context(listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
-                "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
+                STORE_NAME: self.store.store_name,
+                ITEM_PAGE_URL: f"{settings.FRONTEND_URL}/items/{self.item.id}",
             }
         )
         return base_context
@@ -101,8 +102,8 @@ class ListingEmailContextGenerator:
         sale_price = listing.item_price
         base_context.update(
             {
-                "sale_price": sale_price,
-                "earnings": listing.member_earnings,
+                SALE_PRICE: sale_price,
+                EARNINGS: listing.member_earnings,
             }
         )
         return base_context
@@ -113,11 +114,11 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
-                "recall_reason_title": recall_reason.reason,
-                "recall_reason_description": recall_reason.description,
-                "storage_fee": f"{RECALLED_LISTING_RECURRING_FEE}",
-                "item_page_url": f"{settings.FRONTEND_URL}/items/{self.item.id}",
+                STORE_NAME: self.store.store_name,
+                RECALL_REASON_TITLE: recall_reason.reason,
+                RECALL_REASON_DESCRIPTION: recall_reason.description,
+                STORAGE_FEE: f"{RECALLED_LISTING_RECURRING_FEE}",
+                ITEM_PAGE_URL: f"{settings.FRONTEND_URL}/items/{self.item.id}",
             }
         )
         return base_context
@@ -126,7 +127,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
+                STORE_NAME: self.store.store_name,
             }
         )
         return base_context
@@ -135,7 +136,7 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
+                STORE_NAME: self.store.store_name,
             }
         )
         return base_context
@@ -147,10 +148,10 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
-                "storage_fee": f"{recalled_listing.last_fee_charge_amount}",
-                "next_charge_time": next_charge_at.strftime("%H:%M %p"),
-                "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
+                STORE_NAME: self.store.store_name,
+                STORAGE_FEE: f"{recalled_listing.last_fee_charge_amount}",
+                NEXT_CHARGE_TIME: next_charge_at.strftime("%H:%M %p"),
+                NEXT_CHARGE_DATE: next_charge_at.strftime("%B %d, %Y"),
             }
         )
         return base_context
@@ -162,11 +163,11 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
-                "storage_fee": f"{recalled_listing.last_fee_charge_amount}",
-                "fee_count": recalled_listing.fee_charged_count,
-                "next_charge_time": next_charge_at.strftime("%H:%M %p"),
-                "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
+                STORE_NAME: self.store.store_name,
+                STORAGE_FEE: f"{recalled_listing.last_fee_charge_amount}",
+                FEE_COUNT: recalled_listing.fee_charged_count,
+                NEXT_CHARGE_TIME: next_charge_at.strftime("%H:%M %p"),
+                NEXT_CHARGE_DATE: next_charge_at.strftime("%B %d, %Y"),
             }
         )
         return base_context
@@ -178,10 +179,10 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(recalled_listing)
         base_context.update(
             {
-                "store_name": self.store.store_name,
-                "recall_reason": recalled_listing.reason.reason,
-                "next_charge_time": next_charge_at.strftime("%H:%M %p"),
-                "next_charge_date": next_charge_at.strftime("%B %d, %Y"),
+                STORE_NAME: self.store.store_name,
+                RECALL_REASON: recalled_listing.reason.reason,
+                NEXT_CHARGE_TIME: next_charge_at.strftime("%H:%M %p"),
+                NEXT_CHARGE_DATE: next_charge_at.strftime("%B %d, %Y"),
             }
         )
         return base_context
@@ -191,5 +192,5 @@ class ListingEmailContextGenerator:
     ):
         collection_pin = recalled_listing.collection_pin
         base_context = self.get_base_context(recalled_listing)
-        base_context.update({"collection_pin": collection_pin})
+        base_context.update({COLLECTION_PIN: collection_pin})
         return base_context
