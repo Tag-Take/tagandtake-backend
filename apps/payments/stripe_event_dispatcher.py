@@ -1,6 +1,8 @@
 import importlib
 import logging
 
+from apps.common.constants import PALTFORM, CONNECT
+
 
 class StripeEventDispatcher:
     def __init__(
@@ -19,10 +21,9 @@ class StripeEventDispatcher:
             except Exception as e:
                 logging.error(f"Error handling event '{self.event_type}': {str(e)}")
 
-
     def get_handler(self):
         event_group = self.event_type.split(".")[0]
-        account_type = "connect" if self.connected_account else "platform"
+        account_type = CONNECT if self.connected_account else PALTFORM
         module_path = f"apps.payments.stripe_handlers.{account_type}_events.{event_group}_handlers"
 
         try:

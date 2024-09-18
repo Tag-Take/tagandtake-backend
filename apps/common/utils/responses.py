@@ -9,15 +9,15 @@ from rest_framework import serializers, status
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from apps.common.constants import (
-    ACCESS_TOKEN, 
+    ACCESS_TOKEN,
     REFRESH_TOKEN,
-    STATUS, 
-    DATA, 
+    STATUS,
+    DATA,
     MESSAGE,
     SUCCESS,
     ERROR,
-    ERRORS
-    )
+    ERRORS,
+)
 from apps.accounts.models import User
 
 

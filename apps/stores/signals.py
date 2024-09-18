@@ -7,11 +7,12 @@ from apps.accounts.signals import user_activated
 from apps.accounts.models import User as UserModel
 from apps.stores.models import (
     StoreProfile,
-    StoreNotificationPreferences,
 )
 from apps.emails.services.email_senders import StoreEmailSender
 from apps.stores.services.tags_services import TagHandler
 from apps.payments.signals import tags_purchased
+from apps.accounts.models import User
+from apps.common.constants import TAG_COUNT
 
 
 User = get_user_model()
@@ -19,7 +20,7 @@ User = get_user_model()
 
 @receiver(user_activated, sender=User)
 def seend_wemcome_email(sender, instance: UserModel, **kwargs):
-    if instance.is_active and instance.role == "store":
+    if instance.is_active and instance.role == User.Roles.STORE:
         store_profile = StoreProfile.objects.get(user=instance)
         if store_profile:
             StoreEmailSender(store_profile).send_welcome_email()
@@ -45,7 +46,7 @@ def update_store_notification_preference(sender, instance: UserModel, **kwargs):
 
 @receiver(tags_purchased)
 def create_tag_group_and_tags(sender, instance: StoreProfile, **kwargs):
-    tag_count = kwargs.get("tag_count")
+    tag_count = kwargs.get(TAG_COUNT)
     if not tag_count:
         raise ValueError("tag_count is required")
 

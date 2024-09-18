@@ -4,6 +4,7 @@ import os
 from django.core.management.base import BaseCommand
 
 from apps.marketplace.models import RecallReason
+from apps.common.constants import FIELDS, REASON, TYPE, DESCRIPTION
 
 
 # TODO: Review and refine recall reasons
@@ -22,23 +23,23 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully synced recall reasons"))
 
     def sync_recall_reasons(self, recall_reasons_data: dict):
-        existing_conditions = RecallReason.objects.values_list("reason", flat=True)
+        existing_conditions = RecallReason.objects.values_list(REASON, flat=True)
         new_conditions = [
-            condition["fields"]["reason"] for condition in recall_reasons_data
+            condition[FIELDS][REASON] for condition in recall_reasons_data
         ]
 
         # Add new reason
         for condition in new_conditions:
             if condition not in existing_conditions:
                 condition_data = next(
-                    c["fields"]
+                    c[FIELDS]
                     for c in recall_reasons_data
-                    if c["fields"]["reason"] == condition
+                    if c[FIELDS][REASON] == condition
                 )
                 RecallReason.objects.create(
-                    reason=condition_data["reason"],
-                    type=condition_data["type"],
-                    description=condition_data["description"],
+                    reason=condition_data[REASON],
+                    type=condition_data[TYPE],
+                    description=condition_data[DESCRIPTION],
                 )
 
         # Remove old reasons

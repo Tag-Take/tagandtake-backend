@@ -18,19 +18,20 @@ from apps.common.s3.s3_config import (
     FILE_NAMES,
     IMAGE_FILE_TYPE,
 )
+from apps.common.constants import *
 
 
 class StoreAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreAddress
         fields = [
-            "street_address",
-            "city",
-            "state",
-            "postal_code",
-            "country",
-            "latitude",
-            "longitude",
+            STREET_ADDRESS,
+            CITY,
+            STATE,
+            POSTAL_CODE,
+            COUNTRY,
+            LATITUDE,
+            LONGITUDE,
         ]
 
 
@@ -38,11 +39,11 @@ class StoreOpeningHoursSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOpeningHours
         fields = [
-            "day_of_week",
-            "opening_time",
-            "closing_time",
-            "timezone",
-            "is_closed",
+            DAY_OF_WEEK,
+            OPENING_TIME,
+            CLOSING_TIME,
+            TIMEZONE,
+            IS_CLOSED,
         ]
 
 
@@ -53,35 +54,35 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreProfile
         fields = [
-            "user",
-            "store_name",
-            "phone",
-            "store_bio",
-            "profile_photo_url",
-            "google_profile_url",
-            "website_url",
-            "instagram_url",
-            "commission",
-            "stock_limit",
-            "active_listings_count",
-            "remaining_stock",
-            "min_listing_days",
-            "min_price",
-            "opening_hours",
-            "address",
-            "created_at",
-            "updated_at",
+            USER,
+            STORE_NAME,
+            PHONE,
+            STORE_BIO,
+            PROFILE_PHOTO_URL,
+            GOOGLE_PROFILE_URL,
+            WEBSITE_URL,
+            INSTAGRAM_URL,
+            COMMISSION,
+            STOCK_LIMIT,
+            ACTIVE_LISTINGS_COUNT,
+            REMAINING_STOCK,
+            MIN_LISTING_DAYS,
+            MIN_PRICE,
+            OPENING_HOURS,
+            ADDRESS,
+            CREATED_AT,
+            UPDATED_AT,
         ]
         read_only_fields = [
-            "user",
-            "created_at",
-            "updated_at",
-            "opening_hours",
-            "address",
-            "active_listings_count",
-            "accepting_listings",
-            "profile_photo_url",
-            "remaining_stock",
+            USER,
+            CREATED_AT,
+            UPDATED_AT,
+            OPENING_HOURS,
+            ADDRESS,
+            ACTIVE_LISTINGS_COUNT,
+            ACCEPTING_LISTINGS,
+            PROFILE_PHOTO_URL,
+            REMAINING_STOCK,
         ]
 
     def __init__(self, *args, **kwargs):
@@ -97,7 +98,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         if store is None:
             return data
 
-        stock_limit = data.get("stock_limit", store.stock_limit)
+        stock_limit = data.get(STOCK_LIMIT, store.stock_limit)
         if stock_limit is not None and stock_limit < store.active_listings_count:
             raise serializers.ValidationError(
                 {
@@ -107,8 +108,8 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, store: StoreProfile, validated_data: dict):
-        address_data = validated_data.pop("address", None)
-        opening_hours_data = validated_data.pop("opening_hours", None)
+        address_data = validated_data.pop(ADDRESS, None)
+        opening_hours_data = validated_data.pop(OPENING_HOURS, None)
 
         for attr, value in validated_data.items():
             setattr(store, attr, value)
@@ -130,7 +131,7 @@ class StoreItemCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StoreItemCategorie
-        fields = ["id", "category"]
+        fields = [ID, CATEGORY]
 
 
 class StoreItemCategoryUpdateSerializer(serializers.Serializer):
@@ -140,8 +141,8 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
     )
 
     def validate(self, data: dict):
-        store_id = self.context["store_id"]
-        user: User = self.context["request"].user
+        store_id = self.context[STORE_ID]
+        user: User = self.context[REQUEST].user
 
         try:
             store: StoreProfile = StoreProfile.objects.get(id=store_id, user=user)
@@ -150,12 +151,12 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
                 "Store not found or you do not have permission."
             )
 
-        if not store.validate_pin(data["pin"]):
+        if not store.validate_pin(data[PIN]):
             raise serializers.ValidationError("Invalid PIN.")
 
-        data["store"] = store
+        data[STORE] = store
 
-        category_ids: list[int] = data["categories"]
+        category_ids: list[int] = data[CATEGORIES]
         if not category_ids:
             raise serializers.ValidationError(
                 "You must provide at least one category ID."
@@ -164,19 +165,19 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
         categories: list[ItemCategory] = ItemCategory.objects.filter(
             id__in=category_ids
         )
-        invalid_ids = set(category_ids) - set(categories.values_list("id", flat=True))
+        invalid_ids = set(category_ids) - set(categories.values_list(ID, flat=True))
 
         if invalid_ids:
             raise serializers.ValidationError(
                 f"The following category IDs are invalid: {', '.join(map(str, invalid_ids))}"
             )
 
-        data["categories"] = categories
+        data[CATEGORIES] = categories
         return data
 
     def update_categories(self):
-        store: StoreProfile = self.validated_data["store"]
-        categories = self.validated_data["categories"]
+        store: StoreProfile = self.validated_data[STORE]
+        categories = self.validated_data[CATEGORIES]
 
         StoreItemCategorie.objects.filter(store=store).delete()
         for category in categories:
@@ -188,7 +189,7 @@ class StoreItemConditionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StoreItemConditions
-        fields = ["id", "condition"]
+        fields = [ID, CONDITION]
 
 
 class StoreItemConditionUpdateSerializer(serializers.Serializer):
@@ -198,8 +199,8 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
     )
 
     def validate(self, data: dict):
-        store_id = self.context["store_id"]
-        user = self.context["request"].user
+        store_id = self.context[STORE_ID]
+        user = self.context[REQUEST].user
 
         try:
             store = StoreProfile.objects.get(id=store_id, user=user)
@@ -208,31 +209,31 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
                 "Store not found or you do not have permission."
             )
 
-        if not store.validate_pin(data["pin"]):
+        if not store.validate_pin(data[PIN]):
             raise serializers.ValidationError("Invalid PIN.")
 
-        data["store"] = store
+        data[STORE] = store
 
-        condition_ids = data["conditions"]
+        condition_ids = data[CONDITIONS]
         if not condition_ids:
             raise serializers.ValidationError(
                 "You must provide at least one condition ID."
             )
 
         conditions = ItemCondition.objects.filter(id__in=condition_ids)
-        invalid_ids = set(condition_ids) - set(conditions.values_list("id", flat=True))
+        invalid_ids = set(condition_ids) - set(conditions.values_list(ID, flat=True))
 
         if invalid_ids:
             raise serializers.ValidationError(
                 f"The following condition IDs are invalid: {', '.join(map(str, invalid_ids))}"
             )
 
-        data["conditions"] = conditions
+        data[CONDITIONS] = conditions
         return data
 
     def update_conditions(self):
-        store = self.validated_data["store"]
-        conditions = self.validated_data["conditions"]
+        store = self.validated_data[STORE]
+        conditions = self.validated_data[CONDITIONS]
 
         StoreItemConditions.objects.filter(store=store).delete()
         for condition in conditions:
@@ -242,7 +243,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
 class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreNotificationPreferences
-        fields = ["new_listing_notifications", "sale_notifications"]
+        fields = [NEW_LISTING_NOTIFICATIONS, SALES_NOTIFICATIONS]
 
 
 class StoreProfileImageUploadSerializer(serializers.Serializer):
@@ -250,26 +251,26 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
     pin = serializers.CharField(max_length=4)
 
     def validate(self, attrs: dict):
-        request: Request = self.context.get("request")
+        request: Request = self.context.get(REQUEST)
         try:
             profile = StoreProfile.objects.get(user=request.user)
         except StoreProfile.DoesNotExist:
             raise serializers.ValidationError("Store profile not found.")
 
-        pin = attrs.get("pin")
+        pin = attrs.get(PIN)
         if not pin or not profile.validate_pin(pin):
             raise serializers.ValidationError("Invalid PIN.")
 
-        attrs["profile"] = profile
+        attrs[PROFILE] = profile
         return attrs
 
     def save(self):
-        store: StoreProfile = self.validated_data["profile"]
-        file = self.validated_data["profile_photo"]
+        store: StoreProfile = self.validated_data[PROFILE]
+        file = self.validated_data[PROFILE_PHOTO]
 
         s3_handler = S3ImageHandler()
         folder_name = get_store_profile_folder(store.id)
-        key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
+        key = f"{folder_name}/{FILE_NAMES[PROFILE_PHOTO]}.{IMAGE_FILE_TYPE}"
 
         try:
             image_url = s3_handler.upload_image(file, key)
@@ -287,26 +288,26 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
     pin = serializers.CharField(max_length=4)
 
     def validate(self, attrs: dict):
-        request: Request = self.context.get("request")
+        request: Request = self.context.get(REQUEST)
         try:
             profile = StoreProfile.objects.get(user=request.user)
         except StoreProfile.DoesNotExist:
             raise serializers.ValidationError("Store profile not found.")
 
-        pin = attrs.get("pin")
+        pin = attrs.get(PIN)
         if not pin or not profile.validate_pin(pin):
             raise serializers.ValidationError("Invalid PIN.")
 
         if not profile.profile_photo_url:
             raise serializers.ValidationError("No profile photo to delete.")
 
-        attrs["profile"] = profile
+        attrs[PROFILE] = profile
         return attrs
 
     def save(self):
-        store: StoreProfile = self.validated_data["profile"]
+        store: StoreProfile = self.validated_data[PROFILE]
         folder_name = get_store_profile_folder(store.id)
-        key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
+        key = f"{folder_name}/{FILE_NAMES[PROFILE_PHOTO]}.{IMAGE_FILE_TYPE}"
 
         s3_handler = S3ImageHandler()
         try:

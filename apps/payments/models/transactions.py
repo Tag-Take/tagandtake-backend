@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from apps.items.models import Item
 from apps.members.models import MemberProfile as Member
@@ -17,30 +18,24 @@ class BaseChekoutSession(models.Model):
 
 
 class BasePaymentTransaction(models.Model):
-    CANCELED = "canceled"
-    PROCESSING = "processing"
-    REQUIRES_ACTION = "requires_action"
-    REQUIRES_CAPTURE = "requires_capture"
-    REQUIRES_CONFIRMATION = "requires_confirmation"
-    REQUIRES_PAYMENT_METHOD = "requires_payment_method"
-    SUCCEEDED = "succeeded"
 
-    PAYMENT_STAUSES = (
-        (CANCELED, "Cancelled"),
-        (PROCESSING, "Procession"),
-        (REQUIRES_ACTION, "Requires Action"),
-        (REQUIRES_CAPTURE, "Requires Capture"),
-        (REQUIRES_CONFIRMATION, "Requires Confirmation"),
-        (REQUIRES_PAYMENT_METHOD, "Required Payment Method"),
-        (SUCCEEDED, "Succeeded"),
-    )
+    class PaymentStatuses(models.TextChoices):
+        CANCELED = "canceled", _("Cancelled")
+        PROCESSING = "processing", _("Processing")
+        REQUIRES_ACTION = "requires_action", _("Requires Action")
+        REQUIRES_CAPTURE = "requires_capture", _("Requires Capture")
+        REQUIRES_CONFIRMATION = "requires_confirmation", _("Requires Confirmation")
+        REQUIRES_PAYMENT_METHOD = "requires_payment_method", _(
+            "Required Payment Method"
+        )
+        SUCCEEDED = "succeeded", _("Succeeded")
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     payment_intent_id = models.CharField(
         max_length=255, unique=True, null=True, blank=True
     )
-    payment_status = models.CharField(max_length=50, choices=PAYMENT_STAUSES, null=True)
+    payment_status = models.CharField(max_length=50, choices=PaymentStatuses, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

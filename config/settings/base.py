@@ -21,7 +21,6 @@ DEBUG = env.bool("DJANGO_DEBUG", default=True)
 
 ALLOWED_HOSTS = []
 
-
 INSTALLED_APPS = [
     # Django apps
     "django.contrib.admin",
@@ -61,10 +60,10 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "login": "5/minute",  # 5 login attempts per minute per IP (or per user if authenticated)
-        "signup": "5/minute",  # 3 signups per hour per IP (or per user if authenticated)
-        "password_reset": "5/hour",  # 5 password reset requests per hour per IP
-        "resend_activation": "5/hour",  # 3 resend activation requests per hour per IP
+        "login": "20/minute",  # 5 login attempts per minute per IP (or per user if authenticated)
+        "signup": "20/minute",  # 3 signups per hour per IP (or per user if authenticated)
+        "password_reset": "20/hour",  # 5 password reset requests per hour per IP
+        "resend_activation": "20/hour",  # 3 resend activation requests per hour per IP
     },
 }
 

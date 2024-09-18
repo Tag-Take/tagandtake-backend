@@ -20,7 +20,9 @@ class AccountEmailContextGenerator:
     def generate_account_activation_context(self):
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        activation_url = f"{settings.FRONTEND_URL}/{ACTIVATE}?uuid={uid}&{TOKEN}={token}"
+        activation_url = (
+            f"{settings.FRONTEND_URL}/{ACTIVATE}?uuid={uid}&{TOKEN}={token}"
+        )
         context = {
             USERNAME: self.user.username,
             ACTIVATION_URL: activation_url,
@@ -31,9 +33,7 @@ class AccountEmailContextGenerator:
     def generate_password_reset_context(self):
         token = self.generate_activation_token()
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        reset_url = (
-            f"{settings.FRONTEND_URL}/reset-password/{CONFIRM}?uid={uid}&{TOKEN}={token}"
-        )
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{CONFIRM}?uid={uid}&{TOKEN}={token}"
         context = {
             USERNAME: self.user.username,
             RESET_URL: reset_url,

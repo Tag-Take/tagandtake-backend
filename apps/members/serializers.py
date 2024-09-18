@@ -6,25 +6,26 @@ from apps.common.s3.s3_config import (
     FILE_NAMES,
     IMAGE_FILE_TYPE,
 )
+from apps.common.constants import *
 
 
 class MemberProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MemberProfile
         fields = [
-            "username",
-            "profile_photo_url",
-            "member_bio",
-            "instagram_url",
-            "longitude",
-            "latitude",
+            USERNAME,
+            PROFILE_PHOTO_URL,
+            MEMBER_BIO,
+            INSTAGRAM_URL,
+            LONGITUDE,
+            LATITUDE,
         ]
         read_only_fields = [
-            "username",
-            "user",
-            "profile_photo_url",
-            "created_at",
-            "updated_at",
+            USERNAME,
+            USER,
+            PROFILE_PHOTO_URL,
+            CREATED_AT,
+            UPDATED_AT,
         ]
 
     def update(self, member: MemberProfile, validated_data: dict):
@@ -38,12 +39,12 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = MemberNotificationPreferences
         fields = [
-            "secondary_email",
-            "mobile",
-            "email_notifications",
-            "mobile_notifications",
+            SECONDARY_EMAIL,
+            MOBILE,
+            EMAIL_NOTIFICATIONS,
+            MOBILE_NOTIFICATIONS,
         ]
-        read_only_fields = ["user"]
+        read_only_fields = [USER]
 
     def update(
         self, member_notifications: MemberNotificationPreferences, validated_data: dict
@@ -58,22 +59,22 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
     profile_photo = serializers.ImageField()
 
     def validate(self, attrs: dict):
-        request = self.context.get("request")
+        request = self.context.get(REQUEST)
         try:
             profile = MemberProfile.objects.get(user=request.user)
         except MemberProfile.DoesNotExist:
             raise serializers.ValidationError("Store profile not found.")
 
-        attrs["profile"] = profile
+        attrs[PROFILE] = profile
         return attrs
 
     def save(self):
-        memeber: MemberProfile = self.validated_data["profile"]
-        file = self.validated_data["profile_photo"]
+        memeber: MemberProfile = self.validated_data[PROFILE]
+        file = self.validated_data[PROFILE_PHOTO]
 
         s3_handler = S3ImageHandler()
         folder_name = get_member_profile_folder(memeber.id)
-        key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
+        key = f"{folder_name}/{FILE_NAMES[PROFILE_PHOTO]}.{IMAGE_FILE_TYPE}"
 
         try:
             image_url = s3_handler.upload_image(file, key)
@@ -89,7 +90,7 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
 
 class MemberProfileImageDeleteSerializer(serializers.Serializer):
     def validate(self, attrs: dict):
-        request = self.context.get("request")
+        request = self.context.get(REQUEST)
         try:
             profile = MemberProfile.objects.get(user=request.user)
         except MemberProfile.DoesNotExist:
@@ -98,13 +99,13 @@ class MemberProfileImageDeleteSerializer(serializers.Serializer):
         if not profile.profile_photo_url:
             raise serializers.ValidationError("No profile photo to delete.")
 
-        attrs["profile"] = profile
+        attrs[PROFILE] = profile
         return attrs
 
     def save(self):
-        member: MemberProfile = self.validated_data["profile"]
+        member: MemberProfile = self.validated_data[PROFILE]
         folder_name = get_member_profile_folder(member.id)
-        key = f"{folder_name}/{FILE_NAMES['profile_photo']}.{IMAGE_FILE_TYPE}"
+        key = f"{folder_name}/{FILE_NAMES[PROFILE_PHOTO]}.{IMAGE_FILE_TYPE}"
 
         s3_handler = S3ImageHandler()
         try:

@@ -6,6 +6,15 @@ from apps.marketplace.utils import get_item_listing_by_item_id
 from apps.emails.services.email_senders import ListingEmailSender
 from apps.stores.models import StoreProfile as Store
 from apps.tagandtake.services import SuppliesHandler
+from apps.common.constants import (
+    METADATA,
+    STORE_ID,
+    PURCHASE,
+    ITEM,
+    SUPPLIES,
+    ITEM_ID,
+    LINE_ITEMS,
+)
 
 
 class PaymentIntentSucceededHandler:
@@ -17,16 +26,15 @@ class PaymentIntentSucceededHandler:
         )
 
     def handle(self):
-        print('purchase', self.payment_intent["metadata"]["purchase"])
-        if self.payment_intent["metadata"]["purchase"] == "item":
-            print('handling item listing purchase')
+        if self.payment_intent[METADATA][PURCHASE] == ITEM:
+            print("handling item listing purchase")
             self.handle_item_listing_purchase()
-        elif self.payment_intent["metadata"]["purchase"] == "supplies":
+        elif self.payment_intent[METADATA][PURCHASE] == SUPPLIES:
             self.handle_supplies_purchase()
 
     def handle_item_listing_purchase(self):
         item_listing = get_item_listing_by_item_id(
-            self.payment_intent["metadata"]["item_id"]
+            self.payment_intent[METADATA][ITEM_ID]
         )
         try:
             ItemListingHandler.purchase_listing(item_listing, self.transaction)
@@ -39,8 +47,8 @@ class PaymentIntentSucceededHandler:
             print(f"Error occurred when handling payment intent: {str(e)}")
 
     def handle_supplies_purchase(self):
-        line_items = self.payment_intent["metadata"]["line_items"]
-        store = Store.objects.get(id=self.payment_intent["metadata"]["store_id"])
+        line_items = self.payment_intent[METADATA][LINE_ITEMS]
+        store = Store.objects.get(id=self.payment_intent[METADATA][STORE_ID])
 
         try:
             SuppliesHandler().purchase_supplies(self.transaction, line_items, store)
@@ -62,11 +70,11 @@ class PaymentIntentFailedHandler:
         )
 
     def handle(self):
-        if self.payment_intent["metadata"]["purchase"] == "item":
+        if self.payment_intent[METADATA][PURCHASE] == ITEM:
             TransactionHandler().handle_item_purchase_failed(
                 self.payment_intent, self.transaction
             )
-        elif self.payment_intent["metadata"]["purchase"] == "supplies":
+        elif self.payment_intent[METADATA][PURCHASE] == SUPPLIES:
             TransactionHandler().handle_supplies_purchase_failed(
                 self.payment_intent, self.transaction
             )

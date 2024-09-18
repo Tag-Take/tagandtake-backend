@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
 from apps.marketplace.services.listing_services import ItemListingHandler
+from apps.common.constants import *
 
 
 class CreateListingSerializer(serializers.ModelSerializer):
@@ -11,11 +12,11 @@ class CreateListingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ItemListing
-        fields = ["id", "item_id", "tag_id"]
+        fields = [ID, ITEM_ID, TAG_ID]
 
     def create(self, validated_data):
-        item_id = validated_data.pop("item_id")
-        tag_id = validated_data.pop("tag_id")
+        item_id = validated_data.pop(ITEM_ID)
+        tag_id = validated_data.pop(TAG_ID)
         try:
             listing = ItemListingHandler.create_listing(item_id=item_id, tag_id=tag_id)
             return listing
@@ -44,19 +45,19 @@ class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemListing
         fields = [
-            "id",
-            "item",
-            "tag",
-            "store_commission",
-            "min_listing_days",
-            "item_price",
-            "transaction_fee",
-            "listing_price",
-            "store_commission_amount",
-            "member_earnings",
-            "item_details",
-            "created_at",
-            "updated_at",
+            ID,
+            ITEM,
+            TAG,
+            STORE_COMMISSION,
+            MIN_LISTING_DAYS,
+            ITEM_PRICE,
+            TRANSACTION_FEE,
+            LISTING_PRICE,
+            STORE_COMMISSION_AMOUNT,
+            MEMBER_EARNINGS,
+            ITEM_DETAILS,
+            CREATED_AT,
+            UPDATED_AT,
         ]
 
 
@@ -85,17 +86,17 @@ class RecallListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecalledItemListing
         fields = [
-            "id",
-            "item",
-            "tag",
-            "store_commission",
-            "min_listing_days",
-            "reason",
-            "item_price",
-            "transaction_fee",
-            "store_commission_amount",
-            "member_earnings",
-            "item_details",
-            "created_at",
-            "updated_at",
+            ID,
+            ITEM,
+            TAG,
+            STORE_COMMISSION,
+            MIN_LISTING_DAYS,
+            RECALL_REASON,
+            ITEM_PRICE,
+            TRANSACTION_FEE,
+            LISTING_PRICE,
+            MEMBER_EARNINGS,
+            ITEM_DETAILS,
+            CREATED_AT,
+            UPDATED_AT,
         ]

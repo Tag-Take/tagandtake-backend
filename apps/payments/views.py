@@ -14,15 +14,23 @@ from apps.payments.services.stripe_services import (
     create_stripe_item_checkout_session,
     create_stripe_supplies_checkout_session,
 )
-from apps.payments.models.transactions import ItemCheckoutSession
 from apps.payments.services.transaction_services import CheckoutSessionHandler
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
+from apps.common.constants import (
+    BUSINESS_TYPE,
+    ACCOUNT,
+    TAG_ID,
+    STATUS,
+    CLIENT_SECRET,
+    SESSION_ID,
+    ACCOUNT_SESSION,
+)
 
 
 @api_view(["POST"])
 def create_stripe_account_view(request: Request):
     try:
-        business_type = request.query_params.get("business_type")
+        business_type = request.query_params.get(BUSINESS_TYPE)
 
         if not business_type:
             return create_error_response(
@@ -35,7 +43,7 @@ def create_stripe_account_view(request: Request):
             account = create_stripe_account()
             return create_success_response(
                 "Stripe account created successfully.",
-                {"account": account.id},
+                {ACCOUNT: account.id},
                 status.HTTP_200_OK,
             )
 
@@ -56,13 +64,13 @@ def create_stripe_account_view(request: Request):
 @api_view(["POST"])
 def create_stripe_account_session_view(request: Request):
     try:
-        connected_account_id = request.data.get("account")
+        connected_account_id = request.data.get(ACCOUNT)
 
         account_session = create_stripe_account_session(connected_account_id)
 
         return create_success_response(
             "Stripe account session created successfully.",
-            {"account_session": account_session.id},
+            {ACCOUNT_SESSION: account_session.id},
             status.HTTP_200_OK,
         )
 
@@ -77,7 +85,7 @@ def create_stripe_account_session_view(request: Request):
 @api_view(["POST"])
 def create_stripe_item_checkout_secssion_view(request: Request):
     try:
-        tag_id = request.data.get("tag_id")
+        tag_id = request.data.get(TAG_ID)
         item_listing = get_item_listing_by_tag_id(tag_id)
 
         if not tag_id:
@@ -93,7 +101,7 @@ def create_stripe_item_checkout_secssion_view(request: Request):
 
         return create_success_response(
             "Checkout session created successfully.",
-            {"client_secret": session.client_secret},
+            {CLIENT_SECRET: session.client_secret},
             status.HTTP_200_OK,
         )
 
@@ -134,7 +142,7 @@ def create_stripe_supplies_checkout_session_view(request: Request):
 
             return create_success_response(
                 "Checkout session created successfully.",
-                {"client_secret": session.client_secret},
+                {CLIENT_SECRET: session.client_secret},
                 status.HTTP_200_OK,
             )
 
@@ -155,7 +163,7 @@ def create_stripe_supplies_checkout_session_view(request: Request):
 @api_view(["GET"])
 def get_stripe_session_status_view(request: Request):
     try:
-        session_id = request.query_params.get("session_id")
+        session_id = request.query_params.get(SESSION_ID)
 
         if not session_id:
             return create_error_response(
@@ -169,7 +177,7 @@ def get_stripe_session_status_view(request: Request):
         return create_success_response(
             "Session status retrieved successfully.",
             {
-                "status": session.status,
+                STATUS: session.status,
             },
             status.HTTP_200_OK,
         )

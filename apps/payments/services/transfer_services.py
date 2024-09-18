@@ -9,6 +9,15 @@ from apps.payments.models.transactions import (
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
 from apps.payments.utils import to_stripe_amount
+from apps.common.constants import (
+    ID,
+    STORE_AMOUNT,
+    METADATA,
+    MEMBER_ID,
+    LATEST_CHARGE,
+    MEMBER_EARNINGS,
+    STORE_ID,
+)
 
 
 class TransferHandler:
@@ -22,23 +31,23 @@ class TransferHandler:
 
         try:
             member_payment_account = MemberPaymentAccount(
-                member__id=event_data_obj["metadata"]["member_id"]
+                member__id=event_data_obj[METADATA][MEMBER_ID]
             )
 
             stripe.Transfer.create(
-                amount=to_stripe_amount(event_data_obj["metadata"]["member_earnings"]),
+                amount=to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS]),
                 currency="gbp",
-                source_transaction=event_data_obj["latest_charge"],
+                source_transaction=event_data_obj[LATEST_CHARGE],
                 destination=member_payment_account.stripe_account_id,
             )
 
         except:
-            member = Member.objects.get(id=event_data_obj["metadata"]["member_id"])
+            member = Member.objects.get(id=event_data_obj[METADATA][MEMBER_ID])
             PendingMemberTransfer.objects.create(
                 member=member,
-                amount=event_data_obj["metadata"]["member_earnings"],
-                payment_intent_id=event_data_obj["id"],
-                latest_charge=event_data_obj["latest_charge"],
+                amount=event_data_obj[METADATA][MEMBER_EARNINGS],
+                payment_intent_id=event_data_obj[ID],
+                latest_charge=event_data_obj[LATEST_CHARGE],
             )
 
     @staticmethod
@@ -46,20 +55,20 @@ class TransferHandler:
 
         try:
             store_payment_account = StorePaymentAccount(
-                store__id=event_data_obj["metadata"]["store_id"]
+                store__id=event_data_obj[METADATA][STORE_ID]
             )
 
             stripe.Transfer.create(
-                amount=to_stripe_amount(event_data_obj["metadata"]["store_amount"]),
+                amount=to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT]),
                 currency="gbp",
-                source_transaction=event_data_obj["latest_charge"],
+                source_transaction=event_data_obj[LATEST_CHARGE],
                 destination=store_payment_account.stripe_account_id,
             )
         except:
-            store = Store.objects.get(id=event_data_obj["metadata"]["store_id"])
+            store = Store.objects.get(id=event_data_obj[METADATA][STORE_ID])
             PendingStoreTransfer.objects.create(
                 store=store,
-                amount=event_data_obj["metadata"]["store_amount"],
-                payment_intent_id=event_data_obj["id"],
-                latest_charge=event_data_obj["latest_charge"],
+                amount=event_data_obj[METADATA][STORE_AMOUNT],
+                payment_intent_id=event_data_obj[ID],
+                latest_charge=event_data_obj[LATEST_CHARGE],
             )

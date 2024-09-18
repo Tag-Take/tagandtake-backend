@@ -3,6 +3,7 @@ from pytz import all_timezones
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
@@ -13,13 +14,14 @@ from django.apps import apps
 
 from apps.items.models import ItemCategory, ItemCondition
 from apps.stores.utils import generate_pin
+from apps.common.constants import STORE
 
 
 User = get_user_model()
 
 
 class StoreProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="store")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name=STORE)
     pin = models.CharField(
         max_length=4,
         validators=[MinLengthValidator(4)],
@@ -102,28 +104,20 @@ class StoreAddress(models.Model):
 
 
 class StoreOpeningHours(models.Model):
-    MONDAY = "monday"
-    TUESDAY = "tuesday"
-    WEDNESDAY = "wednesday"
-    THURSDAY = "thursday"
-    FRIDAY = "friday"
-    SATURDAY = "saturday"
-    SUNDAY = "sunday"
 
-    DAYS_OF_WEEK = [
-        (MONDAY, "Monday"),
-        (TUESDAY, "Tuesday"),
-        (WEDNESDAY, "Wednesday"),
-        (THURSDAY, "Thursday"),
-        (FRIDAY, "Friday"),
-        (SATURDAY, "Saturday"),
-        (SUNDAY, "Sunday"),
-    ]
+    class DaysOfWeek(models.TextChoices):
+        MONDAY = "monday", _("Monday")
+        TUESDAY = "tuesday", _("Tuesday")
+        WEDNESDAY = "wednesday", _("Wednesday")
+        THURSDAY = "thursday", _("Thursday")
+        FRIDAY = "friday", _("Friday")
+        SATURDAY = "saturday", _("Saturday")
+        SUNDAY = "sunday", _("Sunday")
 
     store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="opening_hours"
     )
-    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
+    day_of_week = models.CharField(max_length=9, choices=DaysOfWeek.choices)
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
     timezone = models.CharField(

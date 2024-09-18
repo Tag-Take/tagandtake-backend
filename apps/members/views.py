@@ -14,6 +14,7 @@ from apps.members.serializers import (
     MemberProfileImageUploadSerializer,
     MemberProfileImageDeleteSerializer,
 )
+from apps.common.constants import REQUEST, PROFILE_PHOTO_URL
 
 
 class MemberProfileView(generics.RetrieveUpdateAPIView):
@@ -97,14 +98,14 @@ class MemberProfileImageView(APIView):
 
     def post(self, request: Request, *args, **kwargs):
         serializer = MemberProfileImageUploadSerializer(
-            data=request.data, context={"request": request}
+            data=request.data, context={REQUEST: request}
         )
         if serializer.is_valid():
             member: MemberProfile = serializer.save()
             try:
                 return create_success_response(
                     "Profile photo uploaded successfully.",
-                    {"profile_photo_url": member.profile_photo_url},
+                    {PROFILE_PHOTO_URL: member.profile_photo_url},
                     status.HTTP_200_OK,
                 )
             except Exception as e:
@@ -121,7 +122,7 @@ class MemberProfileImageView(APIView):
 
     def delete(self, request: Request, *args, **kwargs):
         serializer = MemberProfileImageDeleteSerializer(
-            data=request.data, context={"request": request}
+            data=request.data, context={REQUEST: request}
         )
         if serializer.is_valid():
             serializer.save()

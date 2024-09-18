@@ -16,25 +16,26 @@ from apps.payments.models.transactions import (
     FailedSuppliesPaymentTransaction,
 )
 from apps.stores.models import StoreProfile as Store
-from apps.payments.constants import event_id_field_map, event_status_field_map
+from apps.payments.constants import EVENT_ID_FIELD_MAP, EVENT_STATUS_FIELD_MAP
 from apps.payments.utils import from_stripe_amount
 from apps.tagandtake.services import SuppliesHandler
+from apps.common.constants import *
 
 
 class TransactionHandler:
 
     def update_or_create_transaction(self, event_data_obj: Dict[str, Any]):
-        if event_data_obj["metadata"]["purchase"] == "item":
+        if event_data_obj[METADATA][PURCHASE] == ITEM:
             TransactionModel = ItemPaymentTransaction
             get_transaction_data = self.get_item_transaction_data
-        elif event_data_obj["metadata"]["purchase"] == "supplies":
+        elif event_data_obj[METADATA][PURCHASE] == SUPPLIES:
             TransactionModel = SuppliesPaymentTransaction
             get_transaction_data = self.get_supplies_transaction_data
         else:
             raise ValueError("Purchase must be either 'item' or 'supplies'.")
 
         lookup_field = {
-            event_id_field_map[event_data_obj["id"][:2]]: event_data_obj["id"],
+            EVENT_ID_FIELD_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
         }
         transaction_data = get_transaction_data(event_data_obj)
 
@@ -46,34 +47,34 @@ class TransactionHandler:
 
     @staticmethod
     def get_item_transaction_data(event_data_obj: Dict[str, Any]):
-        item = Item.objects.get(id=event_data_obj["metadata"]["item_id"])
-        store = Store.objects.get(id=event_data_obj["metadata"]["store_id"])
+        item = Item.objects.get(id=event_data_obj[METADATA][ITEM_ID])
+        store = Store.objects.get(id=event_data_obj[METADATA][STORE_ID])
 
         transaction_data = {
-            "amount": from_stripe_amount(
-                event_data_obj.get("amount") or event_data_obj.get("amount_total")
+            AMOUNT: from_stripe_amount(
+                event_data_obj.get(AMOUNT) or event_data_obj.get(AMOUNT_TOTAL)
             ),
-            "item": item,
-            "store": store,
-            "seller": item.owner,
-            "buyer_email": event_data_obj.get("customer_email")
-            or event_data_obj.get("receipt_email"),
+            ITEM: item,
+            STORE: store,
+            SELLER: item.owner,
+            BUYER_EMAIL: event_data_obj.get(CUSTOMER_EMAIL)
+            or event_data_obj.get(RECEIPT_EMAIL),
         }
 
-        if event_status_field_map[event_data_obj["id"][:2]]:
-            transaction_data["payment_status"] = event_data_obj['status']
+        if EVENT_STATUS_FIELD_MAP[event_data_obj[ID][:2]]:
+            transaction_data[PAYMENT_STATUS] = event_data_obj[STATUS]
         return transaction_data
 
     @staticmethod
     def get_supplies_transaction_data(event_data_obj: Dict[str, Any]):
-        store = Store.objects.get(id=event_data_obj["metadata"]["store_id"])
+        store = Store.objects.get(id=event_data_obj[METADATA][STORE_ID])
         transaction_data = {
-            "amount": event_data_obj["metadata"]["amount"],
-            "store": store,
+            AMOUNT: event_data_obj[METADATA][AMOUNT],
+            STORE: store,
         }
-        if event_status_field_map[event_data_obj["id"][:2]]:
-            transaction_data["payment_status"] = event_status_field_map[
-                event_data_obj["id"][:2]
+        if EVENT_STATUS_FIELD_MAP[event_data_obj[ID][:2]]:
+            transaction_data[PAYMENT_STATUS] = EVENT_STATUS_FIELD_MAP[
+                event_data_obj[ID][:2]
             ]
         return transaction_data
 
@@ -82,8 +83,8 @@ class TransactionHandler:
     ):
         return FailedItemPaymentTransaction.objects.create(
             payment_transaction=transaction,
-            error_message=payment_intent["last_payment_error"]["message"],
-            error_code=payment_intent["last_payment_error"]["code"],
+            error_message=payment_intent[LAST_PAYMENT_ERROR][MESSAGE],
+            error_code=payment_intent[LAST_PAYMENT_ERROR][CODE],
         )
 
     def handle_supplies_purchase_failed(
@@ -91,8 +92,8 @@ class TransactionHandler:
     ):
         return FailedSuppliesPaymentTransaction.objects.create(
             payment_transaction=transaction,
-            error_message=payment_intent["last_payment_error"]["message"],
-            error_code=payment_intent["last_payment_error"]["code"],
+            error_message=payment_intent[LAST_PAYMENT_ERROR][MESSAGE],
+            error_code=payment_intent[LAST_PAYMENT_ERROR][CODE],
         )
 
 

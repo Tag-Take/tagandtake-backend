@@ -3,6 +3,7 @@ from rest_framework.request import Request
 import stripe
 
 from apps.payments.stripe_event_dispatcher import StripeEventDispatcher
+from apps.common.constants import TYPE, DATA, OBJECT, ACCOUNT
 
 
 def handle_stripe_webhook(request: Request, secret: str):
@@ -16,9 +17,9 @@ def handle_stripe_webhook(request: Request, secret: str):
     except stripe.error.SignatureVerificationError:
         return Response(status=400)
 
-    event_type = event["type"]
-    event_data = event["data"]["object"]
-    connected_account = event.get("account", None)
+    event_type = event[TYPE]
+    event_data = event[DATA][OBJECT]
+    connected_account = event.get(ACCOUNT, None)
 
     dispatcher = StripeEventDispatcher(event_type, event_data, connected_account)
     dispatcher.dispatch()
