@@ -1,14 +1,13 @@
 from apps.payments.models.transactions import SuppliesPaymentTransaction
 from apps.tagandtake.models import StoreSupply, SupplyCheckoutItem, SupplyOrderItem
-from apps.payments.utils import from_stripe_amount
-
+from apps.common.constants import QUANTITY, PRICE
 
 class SuppliesHandler:
     def purchase_supplies(transaction, store_id, line_items):
         try:
             for item_data in line_items:
-                supply = StoreSupply.objects.get(stripe_price_id=item_data["price"])
-                quantity = item_data["quantity"]
+                supply = StoreSupply.objects.get(stripe_price_id=item_data[PRICE])
+                quantity = item_data[QUANTITY]
 
                 SupplyOrderItem.objects.create(
                     order=transaction,
@@ -25,8 +24,8 @@ class SuppliesHandler:
     def save_supplies_checkout_session(supplies_checkout_session, store, line_items):
         try:
             for item_data in line_items:
-                supply = StoreSupply.objects.get(stripe_price_id=item_data["price"])
-                quantity = item_data["quantity"]
+                supply = StoreSupply.objects.get(stripe_price_id=item_data[PRICE])
+                quantity = item_data[QUANTITY]
 
                 SupplyCheckoutItem.objects.create(
                     checkout_session=supplies_checkout_session,
