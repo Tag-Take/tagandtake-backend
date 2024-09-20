@@ -13,7 +13,7 @@ User = get_user_model()
 
 @receiver(user_activated, sender=User)
 def seend_wemcome_email(sender: Signal, instance: UserModel, **kwargs):
-    if instance.is_active and instance.role == "member":
+    if instance.is_active and instance.role == UserModel.Roles.MEMBER:
         memeber: MemberProfile = MemberProfile.objects.get(user=instance)
         MemberEmailSender(memeber).send_welcome_email()
 

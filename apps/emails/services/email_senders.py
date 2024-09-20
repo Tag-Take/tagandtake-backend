@@ -1,5 +1,7 @@
 # emails/senders.py
-from apps.common.utils.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS
+from django.contrib.auth import get_user_model
+
+from apps.common.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS
 from apps.emails.services.email_service import send_email
 from apps.emails.services.email_contexts import (
     AccountEmailContextGenerator,
@@ -20,9 +22,9 @@ class AccountEmailSender:
     def send_activation_email(self):
         context_generator = AccountEmailContextGenerator(self.user)
         context = context_generator.generate_account_activation_context()
-        if self.user.role == "member":
+        if self.user.role == User.Roles.MEMBER:
             template_name = f"{ACTION_TRIGGERED}/member_activate.html"
-        elif self.user.role == "store":
+        elif self.user.role == User.Roles.STORE:
             template_name = f"{ACTION_TRIGGERED}/store_activate.html"
 
         send_email(

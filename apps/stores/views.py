@@ -23,6 +23,7 @@ from apps.stores.serializers import (
     StoreProfileImageUploadSerializer,
 )
 from apps.emails.services.email_senders import StoreEmailSender
+from apps.common.constants import ADDRESS, OPENING_HOURS, PIN, STORE_ID, REQUEST
 
 
 class StoreProfileView(generics.RetrieveUpdateAPIView):
@@ -40,10 +41,10 @@ class StoreProfileView(generics.RetrieveUpdateAPIView):
         include_related = self.request.query_params.get("include", "").split(",")
 
         exclude = []
-        if "address" not in include_related:
-            exclude.append("address")
-        if "opening_hours" not in include_related:
-            exclude.append("opening_hours")
+        if ADDRESS not in include_related:
+            exclude.append(ADDRESS)
+        if OPENING_HOURS not in include_related:
+            exclude.append(OPENING_HOURS)
 
         kwargs["exclude"] = exclude
         return super().get_serializer(*args, **kwargs)
@@ -57,10 +58,10 @@ class StoreProfileView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         profile = self.get_object()
-        pin = request.data.get("pin")
+        pin = request.data.get(PIN)
         if not pin or not profile.validate_pin(pin):
             return create_error_response(
-                "Invalid PIN.", {"pin": ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
+                "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
             )
 
         serializer = self.get_serializer(profile, data=request.data, partial=True)
@@ -106,7 +107,7 @@ class StoreItemCategoriesView(generics.ListCreateAPIView):
         return []
 
     def get_queryset(self):
-        store_id = self.kwargs["store_id"]
+        store_id = self.kwargs[STORE_ID]
         return StoreItemCategorie.objects.filter(store_id=store_id)
 
     def list(self, request, *args, **kwargs):
@@ -119,7 +120,7 @@ class StoreItemCategoriesView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = StoreItemCategoryUpdateSerializer(
             data=request.data,
-            context={"store_id": self.kwargs["store_id"], "request": request},
+            context={STORE_ID: self.kwargs[STORE_ID], REQUEST: request},
         )
         if serializer.is_valid():
             serializer.update_categories()
@@ -140,7 +141,7 @@ class StoreItemConditionsView(generics.ListCreateAPIView):
         return []
 
     def get_queryset(self):
-        store_id = self.kwargs["store_id"]
+        store_id = self.kwargs[STORE_ID]
         return StoreItemConditions.objects.filter(store_id=store_id)
 
     def list(self, request, *args, **kwargs):
@@ -153,7 +154,7 @@ class StoreItemConditionsView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = StoreItemConditionUpdateSerializer(
             data=request.data,
-            context={"store_id": self.kwargs["store_id"], "request": request},
+            context={STORE_ID: self.kwargs[STORE_ID], REQUEST: request},
         )
         if serializer.is_valid():
             serializer.update_conditions()
@@ -178,10 +179,10 @@ class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         preferences = self.get_object()
-        pin = request.data.get("pin")
+        pin = request.data.get(PIN)
         if not pin or not preferences.store.validate_pin(pin):
             return create_error_response(
-                "Invalid PIN.", {"pin": ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
+                "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
             )
 
         serializer = StoreNotificationPreferencesSerializer(
@@ -211,7 +212,7 @@ class StoreProfileImageView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = StoreProfileImageUploadSerializer(
-            data=request.data, context={"request": request}
+            data=request.data, context={REQUEST: request}
         )
         if serializer.is_valid():
             profile = serializer.save()
@@ -228,7 +229,7 @@ class StoreProfileImageView(APIView):
 
     def delete(self, request, *args, **kwargs):
         serializer = StoreProfileImageDeleteSerializer(
-            data=request.data, context={"request": request}
+            data=request.data, context={REQUEST: request}
         )
         if serializer.is_valid():
             profile = serializer.save()

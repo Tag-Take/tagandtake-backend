@@ -4,6 +4,7 @@ import string
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
 
@@ -92,18 +93,14 @@ class ItemListing(BaseItemListing):
 
 
 class RecallReason(models.Model):
-    ISSUE = "issue"
-    STORE_DISCRESSION = "store discretion"
-    OWNER_REQUEST = "owner request"
 
-    RECALL_REASONS_TYPES = [
-        (ISSUE, "Issue"),
-        (STORE_DISCRESSION, "Store Discretion"),
-        (OWNER_REQUEST, "Owner Request"),
-    ]
+    class Type(models.TextChoices):
+        ISSUE = "issue", _("Issue")
+        STORE_DISCRETION = "store discretion", _("Store Discretion")
+        OWNER_REQUEST = "owner request", _("Owner Request")
 
     reason = models.CharField(max_length=255)
-    type = models.CharField(choices=RECALL_REASONS_TYPES, max_length=255)
+    type = models.CharField(choices=Type.choices, max_length=255)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

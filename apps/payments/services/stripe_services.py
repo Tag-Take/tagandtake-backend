@@ -4,6 +4,7 @@ import stripe
 from apps.payments.models.accounts import StorePaymentAccount
 from apps.marketplace.models import ItemListing
 from apps.payments.utils import to_stripe_amount
+from apps.common.constants import *
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -33,15 +34,15 @@ def create_stripe_account_session(connected_account_id: str):
 
 def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id: str):
     metadata = {
-        "purchase": "item",
-        "item_id": item_listing.item_details.id,
-        "item_listing_id": item_listing.id,
-        "member_id": item_listing.owner.id,
-        "store_id": item_listing.store.id,
-        "amount": item_listing.listing_price,
-        "store_amount": item_listing.store_commission_amount,
-        "member_earnings": item_listing.member_earnings,
-        "transaction_fee": item_listing.transaction_fee,
+        PURCHASE: ITEM,
+        ITEM_ID: item_listing.item_details.id,
+        ITEM_LISTING_ID: item_listing.id,
+        MEMBER_ID: item_listing.owner.id,
+        STORE_ID: item_listing.store.id,
+        AMOUNT: item_listing.listing_price,
+        STORE_AMOUNT: item_listing.store_commission_amount,
+        MEMBER_EARNINGS: item_listing.member_earnings,
+        TRANSACTION_FEE: item_listing.transaction_fee,
     }
     return stripe.checkout.Session.create(
         ui_mode="embedded",
@@ -55,20 +56,22 @@ def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id: str):
                 "quantity": 1,
             },
         ],
-        payment_intent_data={"metadata": metadata},
+        payment_intent_data={METADATA: metadata},
         mode="payment",
         return_url=f"{settings.FRONTEND_URL}/listing/{tag_id}/return?session_id={{CHECKOUT_SESSION_ID}}",
         metadata=metadata,
     )
 
 
-def create_stripe_supplies_checkout_session(line_items: list[Dict[str, str]], store_id: str):
-    metadata = {"purchase": "supplies", "store_id": store_id, "line_items": line_items}
+def create_stripe_supplies_checkout_session(
+    line_items: list[Dict[str, str]], store_id: str
+):
+    metadata = {PURCHASE: SUPPLIES, STORE_ID: store_id, LINE_ITEMS: line_items}
     return stripe.checkout.Session.create(
         payment_method_types=["card"],
         line_items=line_items,
         mode="payment",
-        payment_intent_data={"metadata": metadata},
+        payment_intent_data={METADATA: metadata},
         metadata=metadata,
         return_url=f"{settings.FRONTEND_URL}/store/supplies/return?session_id={{CHECKOUT_SESSION_ID}}",
     )

@@ -1,31 +1,26 @@
 from django.db import models
 
+from django.utils.translation import gettext_lazy as _
 from apps.payments.models.providers import PayoutProvider
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
 
 
 class PayoutBase(models.Model):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    FAILED = "failed"
 
-    PAYOUT_STATUS_CHOICES = [
-        (PENDING, "Pending"),
-        (COMPLETED, "Completed"),
-        (FAILED, "Failed"),
-    ]
+    class Statuses(models.TextChoices):
+        PENDING = "pending", _("Pending")
+        COMPLETED = "completed", _("Completed")
+        FAILED = "failed", _("Failed")
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(
-        max_length=10, choices=PAYOUT_STATUS_CHOICES, default=PENDING
-    )
+    status = models.CharField(max_length=10, choices=Statuses, default=Statuses.PENDING)
     stripe_payout_reference_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        abstract = True  
+        abstract = True
         ordering = ["-created_at"]
 
 

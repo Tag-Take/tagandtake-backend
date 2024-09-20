@@ -15,6 +15,7 @@ from rest_framework.request import Request
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from apps.common.constants import *
 from apps.accounts.models import User as UserModel
 from apps.accounts.serializers import (
     MemberSignUpSerializer,
@@ -40,7 +41,7 @@ User = get_user_model()
 class MemberSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = MemberSignUpSerializer
-    throttle_scope = "signup"
+    throttle_scope = SIGNUP
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -50,7 +51,7 @@ class MemberSignUpView(generics.CreateAPIView):
                 AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Member created successfully.",
-                    {"user": user.username},
+                    {USER: user.username},
                     status.HTTP_201_CREATED,
                 )
             except serializers.ValidationError as e:
@@ -66,7 +67,7 @@ class MemberSignUpView(generics.CreateAPIView):
 class StoreSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = StoreSignUpSerializer
-    throttle_scope = "signup"
+    throttle_scope = SIGNUP
 
     def create(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -76,7 +77,7 @@ class StoreSignUpView(generics.CreateAPIView):
                 AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Store created successfully.",
-                    {"user": user.username},
+                    {USER: user.username},
                     status.HTTP_201_CREATED,
                 )
             except serializers.ValidationError as e:
@@ -91,7 +92,7 @@ class StoreSignUpView(generics.CreateAPIView):
 
 class ActivateUserView(APIView):
     authentication_classes = []
-    throttle_scope = "resend_activation"
+    throttle_scope = RESEND_ACTIVATION
 
     def get(self, request: Request, uidb64: str, token: str):
         try:
@@ -107,7 +108,7 @@ class ActivateUserView(APIView):
                 user_activated.send(sender=user.__class__, instance=user)
                 response = create_success_response(
                     "Account activated successfully",
-                    {"role": user.role},
+                    {ROLE: user.role},
                     status.HTTP_200_OK,
                 )
                 access_token, refresh_token = JWTCookieHandler(
@@ -131,7 +132,7 @@ class ResendActivationEmailView(APIView):
     throttle_scope = "resend_activation"
 
     def post(self, request: Request, *args, **kwargs):
-        email = request.data.get("email")
+        email = request.data.get(EMAIL)
         try:
             user: UserModel = User.objects.get(email=email)
             if user.is_active:
@@ -151,7 +152,7 @@ class ResendActivationEmailView(APIView):
 
 class LogoutView(APIView):
     def post(self, request: Request, *args, **kwargs):
-        refresh_token = request.COOKIES.get("refresh_token")
+        refresh_token = request.COOKIES.get(REFRESH_TOKEN)
         if not refresh_token:
             return create_error_response(
                 "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
@@ -165,7 +166,7 @@ class LogoutView(APIView):
 
         except TokenError as e:
             return create_error_response(
-                "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
+                "Token error occurred", {TOKEN: str(e)}, status.HTTP_401_UNAUTHORIZED
             )
         except Exception as e:
             return create_error_response(
@@ -175,7 +176,7 @@ class LogoutView(APIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-    throttle_scope = "login"
+    throttle_scope = LOGIN
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -187,12 +188,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 "Authentication failed.", e.detail, status.HTTP_401_UNAUTHORIZED
             )
 
-        user: UserModel = serializer.validated_data["user"]
-        access_token = serializer.validated_data["access"]
-        refresh_token = serializer.validated_data["refresh"]
+        user: UserModel = serializer.validated_data[USER]
+        access_token = serializer.validated_data[ACCESS]
+        refresh_token = serializer.validated_data[REFRESH]
 
         response = create_success_response(
-            "Authentication successful.", {"user": user}, status.HTTP_200_OK
+            "Authentication successful.", {USER: user}, status.HTTP_200_OK
         )
 
         return JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)
@@ -202,7 +203,7 @@ class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
 
     def post(self, request: Request, *args, **kwargs):
-        refresh_token = request.COOKIES.get("refresh_token")
+        refresh_token = request.COOKIES.get(REFRESH_TOKEN)
         if not refresh_token:
             return create_error_response(
                 "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
@@ -210,14 +211,14 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         mutable_data = QueryDict("", mutable=True)
         mutable_data.update(request.data)
-        mutable_data["refresh"] = refresh_token
+        mutable_data[REFRESH] = refresh_token
 
         request._full_data = mutable_data
 
         try:
             response = super().post(request, *args, **kwargs)
             if response.status_code == 200:
-                access_token = response.data["access"]
+                access_token = response.data[ACCESS]
 
                 response = create_success_response(
                     "Access token refreshed successfully", {}, status.HTTP_200_OK
@@ -226,7 +227,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         except TokenError as e:
             return create_error_response(
-                "Token error occurred", {"token": str(e)}, status.HTTP_401_UNAUTHORIZED
+                "Token error occurred", {TOKEN: str(e)}, status.HTTP_401_UNAUTHORIZED
             )
         except Exception as e:
             return create_error_response(
@@ -237,7 +238,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 # TODO: don't log out user until password reset is confirmed
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
-    throttle_scope = "password_reset"
+    throttle_scope = PASSWORD_RESET
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -258,14 +259,14 @@ class PasswordResetView(generics.GenericAPIView):
 
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
-    throttle_scope = "password_reset"
+    throttle_scope = PASSWORD_RESET
 
     def post(self, request: Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
 
-            refresh_token = request.COOKIES.get("refresh_token")
+            refresh_token = request.COOKIES.get(REFRESH_TOKEN)
 
             response = create_success_response(
                 "Password has been reset and user has been logged out from all sessions.",
@@ -284,12 +285,12 @@ class DeleteAccountView(APIView):
 
     def delete(self, request: Request, *args, **kwargs):
         user = request.user
-        if user.role == "store":
-            pin = request.data.get("pin")
+        if user.role == STORE:
+            pin = request.data.get(PIN)
             if not pin:
                 return create_error_response(
                     "PIN is required.",
-                    {"pin": ["PIN is required"]},
+                    {PIN: ["PIN is required"]},
                     status.HTTP_400_BAD_REQUEST,
                 )
             profile = Store.objects.get(user=user)
@@ -300,7 +301,7 @@ class DeleteAccountView(APIView):
             if not profile.validate_pin(pin):
                 return create_error_response(
                     "Invalid PIN.",
-                    {"pin": ["Invalid PIN"]},
+                    {PIN: ["Invalid PIN"]},
                     status.HTTP_400_BAD_REQUEST,
                 )
         user.delete()

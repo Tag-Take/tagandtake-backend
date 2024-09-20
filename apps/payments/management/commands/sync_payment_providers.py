@@ -1,8 +1,17 @@
 import json
 import os
 
+from django.db import models
 from django.core.management.base import BaseCommand
 from apps.payments.models.providers import PaymentProvider, PayoutProvider
+from apps.common.constants import (
+    FIELDS,
+    PAYMENT_PROVIDERS,
+    PAYOUT_PROVIDERS,
+    NAME,
+    API_URL,
+    DESCRIPTION,
+)
 
 
 class Command(BaseCommand):
@@ -31,21 +40,21 @@ class Command(BaseCommand):
             self.style.SUCCESS("Successfully synced payment and payout providers")
         )
 
-    def sync_providers(self, providers_data, model_class):
-        existing_providers = model_class.objects.values_list("name", flat=True)
-        new_providers = [provider["fields"]["name"] for provider in providers_data]
+    def sync_providers(self, providers_data, model_class: models.Model):
+        existing_providers = model_class.objects.values_list(NAME, flat=True)
+        new_providers = [provider[FIELDS][NAME] for provider in providers_data]
 
         for provider_name in new_providers:
             if provider_name not in existing_providers:
                 provider_data = next(
-                    p["fields"]
+                    p[FIELDS]
                     for p in providers_data
-                    if p["fields"]["name"] == provider_name
+                    if p[FIELDS][NAME] == provider_name
                 )
                 model_class.objects.create(
-                    name=provider_data["name"],
-                    description=provider_data["description"],
-                    api_url=provider_data["api_url"],
+                    name=provider_data[NAME],
+                    description=provider_data[DESCRIPTION],
+                    api_url=provider_data[API_URL],
                 )
 
         for provider_name in existing_providers:

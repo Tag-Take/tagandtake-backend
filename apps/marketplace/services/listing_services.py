@@ -31,6 +31,8 @@ from apps.emails.services.email_senders import ListingEmailSender
 from apps.marketplace.permissions import IsTagOwner
 from apps.items.permissions import IsItemOwner
 from apps.stores.permissions import IsStoreUser
+from apps.common.constants import ROLE, CONDITION, CATEGORY, PRICE
+from apps.marketplace.constants import ListingRole
 
 
 class ItemListingHandler:
@@ -45,7 +47,7 @@ class ItemListingHandler:
                 store_commission=tag.store.commission,
                 min_listing_days=tag.store.min_listing_days,
             )
-            item.status = "listed"
+            item.status = Item.Statuses.LISTED
             item.save()
             ListingEmailSender.send_listing_created_email(listing)
         return listing
@@ -65,7 +67,7 @@ class ItemListingHandler:
                     reason=reason,
                     next_fee_charge_at=next_fee_charge_at,
                 )
-                listing.item.status = "recalled"
+                listing.item.status = Item.Statuses.RECALLED
                 listing.item.save()
                 ListingEmailSender.send_listing_recalled_email(listing, reason)
                 listing.delete()
@@ -86,7 +88,7 @@ class ItemListingHandler:
                     min_listing_days=listing.min_listing_days,
                     reason=reason,
                 )
-                listing.item.status = "available"
+                listing.item.status = Item.Statuses.AVAILABLE
                 listing.item.save()
                 ListingEmailSender().send_listing_delisted_email(listing)
                 listing.delete()
@@ -103,7 +105,7 @@ class ItemListingHandler:
                 min_listing_days=recalled_listing.min_listing_days,
                 reason=recalled_listing.reason,
             )
-            recalled_listing.item.status = "available"
+            recalled_listing.item.status = Item.Statuses.AVAILABLE
             recalled_listing.item.save()
             ListingEmailSender.send_recalled_listing_collected_email(recalled_listing)
             recalled_listing.delete()
@@ -119,7 +121,7 @@ class ItemListingHandler:
                     min_listing_days=listing.min_listing_days,
                     transaction=trans,
                 )
-                listing.item.status = "sold"
+                listing.item.status = Item.Statuses.SOLD
                 listing.item.save()
                 listing.delete()
 
@@ -162,17 +164,17 @@ class ItemListingHandler:
         if item.condition not in [
             condition.condition for condition in store_conditions
         ]:
-            errors["condition"] = (
+            errors[CONDITION] = (
                 f"'{item.condition}' does not meet store condition requirements."
             )
 
         if item.category not in [category.category for category in categories]:
-            errors["category"] = (
+            errors[CATEGORY] = (
                 f"{tag.store.store_name} does not accept '{item.category}' items."
             )
 
         if item.price < tag.store.min_price:
-            errors["price"] = (
+            errors[PRICE] = (
                 f"Item price is below {tag.store.store_name}'s minimum price requirement."
             )
 
@@ -191,7 +193,7 @@ class ItemListingHandler:
     def get_item(item_id: int):
         try:
             item = Item.objects.get(id=item_id)
-            if item.status != "available":
+            if item.status != Item.Statuses.AVAILABLE:
                 raise serializers.ValidationError(
                     f"Item is not available for listing. Item is currelty {item.status}."
                 )
@@ -293,11 +295,11 @@ class RecalledListingStorageFeeService:
 def get_listing_user_role(request: Request, listing: ItemListing, view: object):
     data = {}
     if IsTagOwner().has_object_permission(request, view, listing):
-        data["role"] = "HOST_STORE"
+        data[ROLE] = ListingRole.HOST_STORE
     elif IsItemOwner().has_object_permission(request, view, listing.item):
-        data["role"] = "ITEM_OWNER"
+        data[ROLE] = ListingRole.ITEM_OWNER
     elif IsStoreUser().has_permission(request, view):
-        data["role"] = "NON_HOST_STORE"
+        data[ROLE] = ListingRole.GUEST_STORE
     else:
-        data["role"] = "GUEST"
+        data[ROLE] = ListingRole.GUEST
     return data

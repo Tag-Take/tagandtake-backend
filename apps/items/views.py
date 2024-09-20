@@ -15,6 +15,7 @@ from apps.common.utils.responses import create_error_response, create_success_re
 from apps.members.permissions import IsMemberUser
 from apps.items.permissions import IsItemOwner, check_item_permissions
 from apps.items.models import Item, ItemCategory, ItemCondition
+from apps.common.constants import REQUEST, ITEM, ITEMS, CATEGORIES, CONDITIONS
 
 
 class ItemCreateView(generics.CreateAPIView):
@@ -23,14 +24,12 @@ class ItemCreateView(generics.CreateAPIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def create(self, request: Request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data, context={"request": request}
-        )
+        serializer = self.get_serializer(data=request.data, context={REQUEST: request})
         if serializer.is_valid():
             item: Item = serializer.save()
             return create_success_response(
                 "Item created successfully.",
-                {"item": self.get_serializer(item).data},
+                {ITEM: self.get_serializer(item).data},
                 status.HTTP_201_CREATED,
             )
         return create_error_response(
@@ -59,7 +58,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(item)
         return create_success_response(
             "Item retrieved successfully.",
-            {"item": serializer.data},
+            {ITEM: serializer.data},
             status.HTTP_200_OK,
         )
 
@@ -74,7 +73,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         partial = kwargs.pop("partial", False)
         serializer = self.get_serializer(
-            instance, data=request.data, partial=partial, context={"request": request}
+            instance, data=request.data, partial=partial, context={REQUEST: request}
         )
 
         if serializer.is_valid():
@@ -82,7 +81,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
                 serializer.save()
                 return create_success_response(
                     "Item updated successfully.",
-                    {"item": serializer.data},
+                    {ITEM: serializer.data},
                     status.HTTP_200_OK,
                 )
             except serializers.ValidationError as e:
@@ -134,7 +133,7 @@ class MemberItemListView(generics.ListAPIView):
         serializer = self.get_serializer(items, many=True)
         return create_success_response(
             "Items retrieved successfully.",
-            {"items": serializer.data},
+            {ITEMS: serializer.data},
             status.HTTP_200_OK,
         )
 
@@ -152,7 +151,7 @@ class ItemCategoryListView(generics.ListAPIView):
         serializer = self.get_serializer(item_categories, many=True)
         return create_success_response(
             "Item categories retrieved successfully.",
-            {"categories": serializer.data},
+            {CATEGORIES: serializer.data},
             status.HTTP_200_OK,
         )
 
@@ -170,6 +169,6 @@ class ItemConditionListView(generics.ListAPIView):
         serializer = self.get_serializer(item_conditions, many=True)
         return create_success_response(
             "Item conditions retrieved successfully.",
-            {"conditions": serializer.data},
+            {CONDITIONS: serializer.data},
             status.HTTP_200_OK,
         )

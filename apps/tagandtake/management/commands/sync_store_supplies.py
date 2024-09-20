@@ -3,6 +3,7 @@ import os
 
 from django.core.management.base import BaseCommand
 from apps.tagandtake.models import StoreSupply
+from apps.common.constants import NAME, FIELDS, STRIPE_PRICE_ID, PRICE, DESCRIPTION
 
 
 class Command(BaseCommand):
@@ -20,22 +21,22 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully synced store supplies"))
 
     def sync_store_supplies(self, store_supplies_data: dict):
-        existing_supplies = StoreSupply.objects.values_list("name", flat=True)
-        new_supplies = [supply["fields"]["name"] for supply in store_supplies_data]
+        existing_supplies = StoreSupply.objects.values_list(NAME, flat=True)
+        new_supplies = [supply[FIELDS][NAME] for supply in store_supplies_data]
 
         # Add new supplies
         for supply_name in new_supplies:
             if supply_name not in existing_supplies:
                 supply_data = next(
-                    s["fields"]
+                    s[FIELDS]
                     for s in store_supplies_data
-                    if s["fields"]["name"] == supply_name
+                    if s[FIELDS][NAME] == supply_name
                 )
                 StoreSupply.objects.create(
-                    name=supply_data["name"],
-                    description=supply_data["description"],
-                    stripe_price_id=supply_data["stripe_price_id"],
-                    price=supply_data["price"],
+                    name=supply_data[NAME],
+                    description=supply_data[DESCRIPTION],
+                    stripe_price_id=supply_data[STRIPE_PRICE_ID],
+                    price=supply_data[PRICE],
                 )
 
         # Remove old supplies

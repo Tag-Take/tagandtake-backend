@@ -5,9 +5,10 @@ from django.conf import settings
 from django.db import transaction
 
 from apps.stores.models import Tag, TagGroup
-from apps.common.utils.constants import LISTING
+from apps.common.constants import LISTING
 from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import FILE_NAMES, get_tag_image_folder, IMAGE_FILE_TYPE
+from apps.common.constants import LISTING, TAG, QR_CODE
 
 
 class TagHandler:
@@ -34,7 +35,7 @@ class TagHandler:
     def generate_tag_images(self, tags, tag_group):
         for i, tag in enumerate(tags):
             folder_namne = get_tag_image_folder(tag_group.id, tag.id)
-            key = f"{folder_namne}/{FILE_NAMES['tag']}_{tag.id}_{FILE_NAMES['qr_code']}.{IMAGE_FILE_TYPE}"
+            key = f"{folder_namne}/{FILE_NAMES[TAG]}_{tag.id}_{FILE_NAMES[QR_CODE]}.{IMAGE_FILE_TYPE}"
             tag_image = self._generate_qr_image(tag.id)
             S3ImageHandler().upload_image(tag_image, key)
 

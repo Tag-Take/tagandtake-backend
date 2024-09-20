@@ -2,6 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db.models import Model
+from apps.common.constants import USERNAME, EMAIL, PASSWORD, ROLE, DATA
 
 User = get_user_model()
 
@@ -28,17 +29,17 @@ def create_instance_with_related_models(
         with transaction.atomic():
             if model_class == User:
                 instances[model_class] = model_class.objects.create_user(
-                    username=instance_data.get("username"),
-                    email=instance_data.get("email"),
-                    password=instance_data.get("password"),
-                    role=instance_data.get("role"),
+                    username=instance_data.get(USERNAME),
+                    email=instance_data.get(EMAIL),
+                    password=instance_data.get(PASSWORD),
+                    role=instance_data.get(ROLE),
                 )
             else:
                 instances[model_class] = model_class.objects.create(**instance_data)
 
             for related_model_class, related_info in related_data.items():
                 foreign_key_name = related_info["foreign_key_name"]
-                related_instances_data = related_info["data"]
+                related_instances_data = related_info[DATA]
 
                 if not isinstance(related_instances_data, list):
                     related_instances_data = [related_instances_data]

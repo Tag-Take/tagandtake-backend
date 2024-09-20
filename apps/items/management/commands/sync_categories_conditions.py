@@ -4,9 +4,9 @@ import os
 from django.core.management.base import BaseCommand
 
 from apps.items.models import ItemCategory, ItemCondition
+from apps.common.constants import FIELDS, CONDITION, NAME, DESCRIPTION
 
 
-# TODO: Review and refine item categories and conditions
 class Command(BaseCommand):
     help = "Sync item categories and conditions from fixtures (JSON files)"
 
@@ -30,22 +30,20 @@ class Command(BaseCommand):
         )
 
     def sync_conditions(self, conditions_data: dict):
-        existing_conditions = ItemCondition.objects.values_list("condition", flat=True)
-        new_conditions = [
-            condition["fields"]["condition"] for condition in conditions_data
-        ]
+        existing_conditions = ItemCondition.objects.values_list(CONDITION, flat=True)
+        new_conditions = [condition[FIELDS][CONDITION] for condition in conditions_data]
 
         # Add new conditions
         for condition in new_conditions:
             if condition not in existing_conditions:
                 condition_data = next(
-                    c["fields"]
+                    c[FIELDS]
                     for c in conditions_data
-                    if c["fields"]["condition"] == condition
+                    if c[FIELDS][CONDITION] == condition
                 )
                 ItemCondition.objects.create(
-                    condition=condition_data["condition"],
-                    description=condition_data["description"],
+                    condition=condition_data[CONDITION],
+                    description=condition_data[DESCRIPTION],
                 )
 
         # Remove old conditions
@@ -54,19 +52,17 @@ class Command(BaseCommand):
                 ItemCondition.objects.filter(condition=condition).delete()
 
     def sync_categories(self, categories_data: dict):
-        existing_categories = ItemCategory.objects.values_list("name", flat=True)
-        new_categories = [category["fields"]["name"] for category in categories_data]
+        existing_categories = ItemCategory.objects.values_list(NAME, flat=True)
+        new_categories = [category[FIELDS][NAME] for category in categories_data]
 
         # Add new categories
         for category in new_categories:
             if category not in existing_categories:
                 category_data = next(
-                    c["fields"]
-                    for c in categories_data
-                    if c["fields"]["name"] == category
+                    c[FIELDS] for c in categories_data if c[FIELDS][NAME] == category
                 )
                 ItemCategory.objects.create(
-                    name=category_data["name"], description=category_data["description"]
+                    name=category_data[NAME], description=category_data[DESCRIPTION]
                 )
 
         # Remove old categories
