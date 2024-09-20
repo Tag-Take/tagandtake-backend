@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django_extensions",
     # internal apps
     "apps.accounts",
-    "apps.emails",
+    "apps.notifications",
     "apps.items",
     "apps.marketplace",
     "apps.members",
@@ -178,7 +178,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            "apps/items/emails/templates",
+            "apps/notifications/emails/templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {

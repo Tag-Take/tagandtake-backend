@@ -8,7 +8,7 @@ from apps.accounts.models import User as UserModel
 from apps.stores.models import (
     StoreProfile,
 )
-from apps.emails.services.email_senders import StoreEmailSender
+from apps.notifications.emails.services.email_senders import StoreEmailSender
 from apps.stores.services.tags_services import TagHandler
 from apps.payments.signals import tags_purchased
 from apps.accounts.models import User

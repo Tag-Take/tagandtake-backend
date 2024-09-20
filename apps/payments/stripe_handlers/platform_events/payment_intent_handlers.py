@@ -3,7 +3,7 @@ from apps.payments.services.transaction_services import TransactionHandler
 from apps.payments.services.transfer_services import TransferHandler
 from apps.marketplace.services.listing_services import ItemListingHandler
 from apps.marketplace.utils import get_item_listing_by_item_id
-from apps.emails.services.email_senders import ListingEmailSender
+from apps.notifications.emails.services.email_senders import ListingEmailSender
 from apps.stores.models import StoreProfile as Store
 from apps.tagandtake.services import SuppliesHandler
 from apps.common.constants import (

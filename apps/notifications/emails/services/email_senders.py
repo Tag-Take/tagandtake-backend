@@ -2,8 +2,8 @@
 from django.contrib.auth import get_user_model
 
 from apps.common.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS
-from apps.emails.services.email_service import send_email
-from apps.emails.services.email_contexts import (
+from apps.notifications.emails.services.email_service import send_email
+from apps.notifications.emails.services.email_contexts import (
     AccountEmailContextGenerator,
     MemberEmailContextGenerator,
     StoreEmailContextGenerator,

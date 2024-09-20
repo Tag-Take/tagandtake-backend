@@ -22,7 +22,7 @@ from apps.stores.serializers import (
     StoreProfileImageDeleteSerializer,
     StoreProfileImageUploadSerializer,
 )
-from apps.emails.services.email_senders import StoreEmailSender
+from apps.notifications.emails.services.email_senders import StoreEmailSender
 from apps.common.constants import ADDRESS, OPENING_HOURS, PIN, STORE_ID, REQUEST
 
 

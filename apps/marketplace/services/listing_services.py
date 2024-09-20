@@ -27,7 +27,7 @@ from apps.marketplace.services.pricing_services import (
     GRACE_PERIOD_DAYS,
     RECURRING_FEE_INTERVAL_DAYS,
 )
-from apps.emails.services.email_senders import ListingEmailSender
+from apps.notifications.emails.services.email_senders import ListingEmailSender
 from apps.marketplace.permissions import IsTagOwner
 from apps.items.permissions import IsItemOwner
 from apps.stores.permissions import IsStoreUser

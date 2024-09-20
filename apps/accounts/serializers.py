@@ -21,7 +21,7 @@ from rest_framework_simplejwt.serializers import (
 )
 from apps.accounts.models import User
 from apps.common.constants import *
-from apps.emails.services.email_senders import AccountEmailSender
+from apps.notifications.emails.services.email_senders import AccountEmailSender
 from apps.accounts.services.signup_services import SignupService, UsernameValidator
 from apps.stores.serializers import (
     StoreProfileSerializer,
