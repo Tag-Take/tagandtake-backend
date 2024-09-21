@@ -14,7 +14,6 @@ from apps.common.constants import (
     EMAIL,
     USERNAME,
     MEMBER,
-    STORE,
     IS_STAFF,
     IS_SUPERUSER,
     CUSTOM_USER_SET,

@@ -48,7 +48,6 @@ class MemberSignUpView(generics.CreateAPIView):
         if serializer.is_valid():
             try:
                 user: UserModel = serializer.save()
-                AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Member created successfully.",
                     {USER: user.username},
@@ -74,7 +73,6 @@ class StoreSignUpView(generics.CreateAPIView):
         if serializer.is_valid():
             try:
                 user: UserModel = serializer.save()
-                AccountEmailSender(user).send_activation_email()
                 return create_success_response(
                     "Store created successfully.",
                     {USER: user.username},
