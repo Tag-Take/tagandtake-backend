@@ -6,7 +6,7 @@ from apps.payments.stripe_event_dispatcher import StripeEventDispatcher
 from apps.common.constants import TYPE, DATA, OBJECT, ACCOUNT
 
 
-def handle_stripe_webhook(request: Request, secret: str):
+def route_stripe_webhook(request: Request, secret: str):
     payload = request.body
     sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
 

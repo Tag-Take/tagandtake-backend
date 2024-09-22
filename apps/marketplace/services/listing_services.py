@@ -29,7 +29,7 @@ from apps.marketplace.constants import ListingRole
 from apps.common.abstract_classes import BaseTaskRunner
 
 
-COLLECTION_PERIOD_DAYS = 14
+COLLECTION_PERIOD_DAYS = 21
 
 
 class ItemListingService:

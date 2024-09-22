@@ -5,7 +5,6 @@ from rest_framework.request import Request
 from rest_framework.decorators import api_view
 
 from apps.common.utils.responses import create_success_response, create_error_response
-from apps.accounts.models import User
 from apps.stores.models import StoreProfile as Store
 from apps.marketplace.utils import get_item_listing_by_tag_id
 from apps.payments.services.stripe_services import (
