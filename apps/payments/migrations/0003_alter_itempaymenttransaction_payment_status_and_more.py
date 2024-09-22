@@ -6,18 +6,42 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('payments', '0002_rename_balance_pendingmembertransfer_amount_and_more'),
+        ("payments", "0002_rename_balance_pendingmembertransfer_amount_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='itempaymenttransaction',
-            name='payment_status',
-            field=models.CharField(choices=[('canceled', 'Cancelled'), ('processing', 'Processing'), ('requires_action', 'Requires Action'), ('requires_capture', 'Requires Capture'), ('requires_confirmation', 'Requires Confirmation'), ('requires_payment_method', 'Required Payment Method'), ('succeeded', 'Succeeded')], max_length=50, null=True),
+            model_name="itempaymenttransaction",
+            name="payment_status",
+            field=models.CharField(
+                choices=[
+                    ("canceled", "Cancelled"),
+                    ("processing", "Processing"),
+                    ("requires_action", "Requires Action"),
+                    ("requires_capture", "Requires Capture"),
+                    ("requires_confirmation", "Requires Confirmation"),
+                    ("requires_payment_method", "Required Payment Method"),
+                    ("succeeded", "Succeeded"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='suppliespaymenttransaction',
-            name='payment_status',
-            field=models.CharField(choices=[('canceled', 'Cancelled'), ('processing', 'Processing'), ('requires_action', 'Requires Action'), ('requires_capture', 'Requires Capture'), ('requires_confirmation', 'Requires Confirmation'), ('requires_payment_method', 'Required Payment Method'), ('succeeded', 'Succeeded')], max_length=50, null=True),
+            model_name="suppliespaymenttransaction",
+            name="payment_status",
+            field=models.CharField(
+                choices=[
+                    ("canceled", "Cancelled"),
+                    ("processing", "Processing"),
+                    ("requires_action", "Requires Action"),
+                    ("requires_capture", "Requires Capture"),
+                    ("requires_confirmation", "Requires Confirmation"),
+                    ("requires_payment_method", "Required Payment Method"),
+                    ("succeeded", "Succeeded"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
     ]

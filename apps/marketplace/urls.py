@@ -8,7 +8,7 @@ from apps.marketplace.views import (
     RecallListingView,
     GenerateNewCollectionPinView,
     DelistListing,
-    DelistRecalledListingView,
+    CollectRecalledListingView,
     StoreRecalledListingListView,
 )
 
@@ -47,8 +47,8 @@ urlpatterns = [
     ),
     path("listings/<int:id>/delist/", DelistListing.as_view(), name="listing-delist"),
     path(
-        "recalled-listings/<int:id>/delist/",
-        DelistRecalledListingView.as_view(),
+        "recalled-listings/<int:id>/collect/",
+        CollectRecalledListingView.as_view(),
         name="recalled-listing-delist",
     ),
 ]

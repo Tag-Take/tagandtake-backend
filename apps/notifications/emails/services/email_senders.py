@@ -144,24 +144,14 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
-    def send_storage_fee_charged_email(recalled_listing: RecalledItemListing):
+    def send_item_abandonded_email(recalled_listing: RecalledItemListing):
         context_generator = ListingEmailContextGenerator()
-        context = context_generator.generate_initial_storage_fee_context(
-            recalled_listing
-        )
+        context = context_generator.generate_item_abandonded_context(recalled_listing)
         item = recalled_listing.item.name
-
-        if recalled_listing.fee_charged_count == 1:
-            subject = f"Storage Fee Charged - {item}"
-            template_name = f"{NOTIFICATIONS}/initial_storage_fee_charged.html"
-        elif recalled_listing.fee_charged_count > 1:
-            subject = f"Recurring Storage Fee Charged - {item}"
-            template_name = f"{NOTIFICATIONS}/recurring_storage_fee_charged.html"
-
         send_email(
-            subject=subject,
+            subject=f"Notice: Item Was Not Collected - {item}",
             to=recalled_listing.item.owner.email,
-            template_name=template_name,
+            template_name=f"{NOTIFICATIONS}/item_abandoned_notification.html",
             context=context,
         )
 
@@ -174,7 +164,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Collection Reminder - {item}",
             to=recalled_listing.item.owner.email,
-            template_name=f"{REMINDERS}/collect_item.html",
+            template_name=f"{REMINDERS}/collect_item_reminder.html",
             context=context,
         )
 

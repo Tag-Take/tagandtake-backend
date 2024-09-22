@@ -2,6 +2,7 @@ from apps.payments.models.transactions import SuppliesPaymentTransaction
 from apps.tagandtake.models import StoreSupply, SupplyCheckoutItem, SupplyOrderItem
 from apps.common.constants import QUANTITY, PRICE
 
+
 class SuppliesHandler:
     def purchase_supplies(transaction, store_id, line_items):
         try:

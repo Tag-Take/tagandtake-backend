@@ -98,6 +98,7 @@ STORE_COMMISSION_AMOUNT: str = "store_commission_amount"
 MEMBER_EARNINGS: str = "member_earnings"
 ITEM_DETAILS: str = "item_details"
 SELLER: str = "seller"
+COLLECTION_DEADLINE: str = "collection_deadline"
 
 # MEMBERS
 MEMBER: str = "member"
@@ -131,6 +132,7 @@ ITEM_PAGE_URL: str = "item_page_url"
 # STORES
 STORE: str = "store"
 STORES: str = "stores"
+STORE_PROFILE: str = "store_profile"
 STORE_ID: str = "store_id"
 ADDRESS: str = "address"
 OPENING_HOURS: str = "opening_hours"

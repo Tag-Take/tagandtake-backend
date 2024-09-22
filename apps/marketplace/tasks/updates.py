@@ -1,7 +1,20 @@
 from celery import shared_task
-from apps.marketplace.services.listing_services import RecalledListingStorageFeeService
+from django.utils.timezone import now
+from apps.marketplace.models import RecalledItemListing
+from apps.marketplace.handlers import ItemListingAbandonedHandler
 
 
 @shared_task
-def apply_storage_fees_task():
-    RecalledListingStorageFeeService.run_storage_fee_checks()
+def run_abandoned_item_updates():
+    recalled_listings = RecalledItemListing.objects.filter(
+        collection_deadline__lt=now()
+    )
+    for listing in recalled_listings:
+        run_task_for_listing.delay(listing.id)
+
+
+@shared_task
+def run_task_for_listing(recalled_listing_id):
+    recalled_listing = RecalledItemListing.objects.get(id=recalled_listing_id)
+    handler = ItemListingAbandonedHandler(recalled_listing)
+    handler.handle()

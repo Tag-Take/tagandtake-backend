@@ -69,6 +69,9 @@ class BaseItemListing(models.Model):
     def generate_collection_pin():
         return "".join(random.choices(string.digits, k=2))
 
+    def validate_pin(self, pin):
+        return self.collection_pin == pin
+
 
 class ItemListing(BaseItemListing):
     class Meta:
@@ -121,17 +124,7 @@ class RecalledItemListing(BaseItemListing):
         default=BaseItemListing.generate_collection_pin,
         null=False,
     )
-    fee_charged_count = models.PositiveIntegerField(default=0)
-    last_fee_charge_at = models.DateTimeField(null=True, blank=True)
-    last_fee_charge_amount = models.DecimalField(
-        max_digits=9,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.00"))],
-        default=Decimal("0.00"),
-        null=True,
-        blank=True,
-    )
-    next_fee_charge_at = models.DateTimeField()
+    collection_deadline = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

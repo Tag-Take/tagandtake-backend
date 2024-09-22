@@ -7,14 +7,16 @@
 <body>
     <div class="container">
         <div class="content">
-            <h2>Item Recall Notice</h2>
-            <p>We wanted to let you know that your item, <strong>{{ item_name }}</strong>, has been recalled by <strong>{{ store_name }}</strong> due to the following reason:</p>
+            <h2>Important: Item Recall Notification</h2>
+            <p>Your item, <strong>{{ item_name }}</strong>, has been recalled by <strong>{{ store_name }}</strong> for the following reason:</p>
             <p><strong>{{ recall_reason_title }}</strong>: {{ recall_reason_description }}</p>
-            <p>Please visit the store within 10 days to collect your item. If not collected within this timeframe, a weekly storage fee of <strong>£{{ storage_fee }}</strong> will be applied on an ongoing basis until the item is collected.</p>
-            <p>To collect, please show your <a href="{{ item_page_url }}">item page</a> to a member of staff as proof of your listing.</p>
-            <p>We understand this might be disappointing, but we believe in second chances. Maybe your next listing will be the one!</p>
-            <p>Please remember to always only list items that are clean and ensure it matches the store’s categories and condition standards</li>
-            <p>If you have any questions or need further assistance, feel free to contact our support team.</p>
+            <p>Please collect your item from the store within the next 14 days. If the item is not collected within 14 days, it will be considered <strong>abandoned</strong>, and you will no longer have the right to claim the item.</p>
+            <p>To collect your item, please provide this collection PIN at the store:</p>
+            <div class="pin">{{ collection_pin }}</div>
+            <p>To help the assistant find your item, please show your <a href="{{ item_page_url }}">item page</a> at collection.</p>
+            <p>We understand that having an item recalled can be disappointing, but don’t worry—there’s always more chance to list! We encourage you to try again with a new item that could be the perfect match for the store.</p>
+            <p>As always, please ensure that any future listings match the store's categories and condition standards. We look forward to seeing your next listing!</p>
+            <p>If you have any questions or need assistance, feel free to reach out to our support team. We're here to help!</p>
         </div>
         <div class="footer">
             <p>&copy; {{ current_year }} Tag&Take. All rights reserved.</p>

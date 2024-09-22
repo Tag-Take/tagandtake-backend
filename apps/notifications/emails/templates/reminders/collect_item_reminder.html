@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>{{ css }}</style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h2>Friendly Reminder: Collect Your Recalled Item</h2>
+            <p>This is a gentle reminder to collect your recalled item, <strong>{{ item_name }}</strong>, from <strong>{{ store_name }}</strong>.</p>
+            <p>Your item has been recalled and is currently waiting for you at the store. Please ensure you collect it as soon as possible.</p>
+            <p><strong>Important:</strong> If your item is not collected by <strong>{{ collection_deadline }}</strong>, it will be considered <strong>abandoned</strong>, and you will no longer be able to claim the item.</p>
+            <p>To collect your item, please provide the following collection PIN at the store:</p>
+            <div class="pin">{{ collection_pin }}</div>
+            <p>To help the assistant find your item, please show your <a href="{{ item_page_url }}">item page</a> at collection.</p>
+            <p>Collection Details:</p>
+            <ul>
+                <li><strong>Store Name:</strong> {{ store_name }}</li>
+                <li><strong>Item Name:</strong> {{ item_name }}</li>
+                <li><strong>Recalled Reason:</strong> {{ recall_reason }}</li>
+            </ul>
+            <p>If you have any questions or need assistance, please feel free to contact the store or our support team.</p>
+            <p>Best regards,<br />The Tag&Take Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} Tag&Take. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
