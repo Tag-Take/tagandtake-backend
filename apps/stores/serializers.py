@@ -12,10 +12,8 @@ from apps.stores.models import (
 )
 from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
-from apps.common.s3.s3_utils import S3ImageHandler
-from apps.common.s3.s3_config import (
-    get_store_profile_photo_key
-)
+from apps.common.s3.s3_utils import S3Service
+from apps.common.s3.s3_config import get_store_profile_photo_key
 from apps.common.constants import *
 
 
@@ -266,7 +264,7 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
         store: StoreProfile = self.validated_data[PROFILE]
         file = self.validated_data[PROFILE_PHOTO]
 
-        s3_handler = S3ImageHandler()
+        s3_handler = S3Service()
         key = get_store_profile_photo_key(store)
         try:
             image_url = s3_handler.upload_image(file, key)
@@ -302,7 +300,7 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
 
     def save(self):
         store: StoreProfile = self.validated_data[PROFILE]
-        s3_handler = S3ImageHandler()
+        s3_handler = S3Service()
         key = get_store_profile_photo_key(store)
         try:
             s3_handler.delete_image(key)

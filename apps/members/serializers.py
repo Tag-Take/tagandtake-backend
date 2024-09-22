@@ -1,9 +1,7 @@
 from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from apps.common.s3.s3_utils import S3ImageHandler
-from apps.common.s3.s3_config import (
-    get_member_profile_photo_key
-)
+from apps.common.s3.s3_utils import S3Service
+from apps.common.s3.s3_config import get_member_profile_photo_key
 from apps.common.constants import *
 
 
@@ -70,7 +68,7 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
         memeber: MemberProfile = self.validated_data[PROFILE]
         file = self.validated_data[PROFILE_PHOTO]
 
-        s3_handler = S3ImageHandler()
+        s3_handler = S3Service()
         key = get_member_profile_photo_key(memeber)
 
         try:
@@ -103,7 +101,7 @@ class MemberProfileImageDeleteSerializer(serializers.Serializer):
         member: MemberProfile = self.validated_data[PROFILE]
         key = get_member_profile_photo_key(member)
 
-        s3_handler = S3ImageHandler()
+        s3_handler = S3Service()
         try:
             s3_handler.delete_image(key)
             member.profile_photo_url = None

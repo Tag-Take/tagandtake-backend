@@ -6,7 +6,7 @@ from django.conf import settings
 from apps.common.s3.s3_config import PRSIGNED_URL_EXPIRATION
 
 
-class S3BaseHandler:
+class S3ClientBase:
     def __init__(self):
         self.s3_client = self.get_s3_client()
 
@@ -27,10 +27,9 @@ class S3BaseHandler:
         return f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{key}"
 
 
-class S3ImageHandler(S3BaseHandler):
+class S3Service(S3ClientBase):
     def upload_image(self, file: BinaryIO, key: str):
         try:
-            # TODO: use celery async upload task
             self.s3_client.upload_fileobj(file, settings.AWS_STORAGE_BUCKET_NAME, key)
             return self.generate_s3_url(key)
         except ClientError as e:
@@ -40,7 +39,6 @@ class S3ImageHandler(S3BaseHandler):
 
     def delete_image(self, key: str):
         try:
-            # TODO: use celery async delete task
             self.s3_client.delete_object(
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key
             )
@@ -63,31 +61,3 @@ class S3ImageHandler(S3BaseHandler):
             raise Exception(f"Failed to generate pre-signed URL: {e}") from e
         except Exception as e:
             raise Exception(f"Error generating pre-signed URL: {e}") from e
-
-
-# @shared_task
-# def upload_image_task(file_data, key):
-#     s3_client = S3BaseHandler().get_s3_client()
-#     try:
-#         file_data = base64.b64decode(file_data)
-#         s3_client.put_object(
-#             Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-#             Key=key,
-#             Body=file_data,
-#             ContentType='image/jpeg'
-#         )
-#         return S3BaseHandler().generate_s3_url(key)
-#     except ClientError as e:
-#         raise Exception(f"Failed to upload file to S3: {e}") from e
-#     except Exception as e:
-#         raise Exception(f"Error uploading file to S3: {e}") from e
-
-# @shared_task
-# def delete_image_task(key):
-#     try:
-#         s3_client = S3BaseHandler().get_s3_client()
-#         s3_client.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key)
-#     except ClientError as e:
-#         raise Exception(f"Failed to delete file from S3: {e}") from e
-#     except Exception as e:
-#         raise Exception(f"Error deleting file from S3: {e}") from e

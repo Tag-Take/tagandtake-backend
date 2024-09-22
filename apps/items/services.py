@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework import serializers
 
 from apps.items.models import Item, ItemImages
-from apps.common.s3.s3_utils import S3ImageHandler
+from apps.common.s3.s3_utils import S3Service
 from apps.common.s3.s3_config import get_item_image_key
 from apps.common.constants import *
 
@@ -22,7 +22,7 @@ class ItemService:
             return item
         except Exception as e:
             raise serializers.ValidationError(f"Failed to create item: {e}")
-        
+
     @staticmethod
     def update_item(item: Item, validated_data: dict):
         try:
@@ -32,7 +32,6 @@ class ItemService:
             return item
         except Exception as e:
             raise serializers.ValidationError(f"Failed to update item attributes: {e}")
-
 
     def delete_item(item: Item):
         try:
@@ -78,12 +77,12 @@ class ItemValidationService:
             raise serializers.ValidationError(
                 f"Item is not available for listing. It is currently {item.status}."
             )
-        
+
 
 class ItemImageService:
 
     @staticmethod
-    def create_item_image(item: Item, image_url: str, order = 0):
+    def create_item_image(item: Item, image_url: str, order=0):
         try:
             ItemImages.objects.create(item=item, image_url=image_url, order=order)
         except Exception as e:
@@ -103,7 +102,7 @@ class ItemImageService:
     def create_and_upload_item_image(item: Item, image, order=0):
         try:
             key = get_item_image_key(item, order)
-            image_url = S3ImageHandler().upload_image(image, key)
+            image_url = S3Service().upload_image(image, key)
             ItemImageService.create_item_image(item, image_url, order)
             return image_url
         except Exception as e:
@@ -113,7 +112,7 @@ class ItemImageService:
     def update_and_replace_item_image(item: Item, image, order=0):
         try:
             key = get_item_image_key(item, order)
-            image_url = S3ImageHandler().upload_image(image, key)
+            image_url = S3Service().upload_image(image, key)
             ItemImageService.update_item_image(item, image_url, order)
             return image_url
         except Exception as e:
@@ -124,10 +123,8 @@ class ItemImageService:
         try:
             for image in item.images.all():
                 key = get_item_image_key(item, image.order)
-                S3ImageHandler().delete_image(key)
+                S3Service().delete_image(key)
 
             ItemImages.objects.filter(item=item).delete()
         except Exception as e:
             raise serializers.ValidationError(f"Failed to delete item images: {e}")
-
-
