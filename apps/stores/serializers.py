@@ -14,7 +14,7 @@ from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
 from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import (
-    get_store_profile_folder,
+    get_store_profile_photo_key,
     FILE_NAMES,
     IMAGE_FILE_TYPE,
 )
@@ -243,7 +243,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
 class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreNotificationPreferences
-        fields = [NEW_LISTING_NOTIFICATIONS, SALES_NOTIFICATIONS]
+        fields = [NEW_LISTING_NOTIFICATIONS, SALE_NOTIFICATIONS]
 
 
 class StoreProfileImageUploadSerializer(serializers.Serializer):
@@ -269,9 +269,7 @@ class StoreProfileImageUploadSerializer(serializers.Serializer):
         file = self.validated_data[PROFILE_PHOTO]
 
         s3_handler = S3ImageHandler()
-        folder_name = get_store_profile_folder(store.id)
-        key = f"{folder_name}/{FILE_NAMES[PROFILE_PHOTO]}.{IMAGE_FILE_TYPE}"
-
+        key = get_store_profile_photo_key(store)
         try:
             image_url = s3_handler.upload_image(file, key)
             store.profile_photo_url = image_url
@@ -306,10 +304,8 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
 
     def save(self):
         store: StoreProfile = self.validated_data[PROFILE]
-        folder_name = get_store_profile_folder(store.id)
-        key = f"{folder_name}/{FILE_NAMES[PROFILE_PHOTO]}.{IMAGE_FILE_TYPE}"
-
         s3_handler = S3ImageHandler()
+        key = get_store_profile_photo_key(store)
         try:
             s3_handler.delete_image(key)
             store.profile_photo_url = None

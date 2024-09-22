@@ -3,8 +3,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.items.models import Item, ItemCategory, ItemCondition, ItemImages
-from apps.common.s3.s3_utils import S3ImageHandler
-from apps.common.s3.s3_config import get_item_images_folder, IMAGE_FILE_TYPE, FILE_NAMES
+from apps.items.services import ItemService, ItemValidationService, ItemImageService
 from apps.common.constants import *
 
 
@@ -33,39 +32,15 @@ class ItemCreateSerializer(serializers.ModelSerializer):
             IMAGES,
         ]
 
-    def validate(self, data: dict):
-        category = data.get(CATEGORY)
-        valid_category = ItemCategory.objects.filter(id=category.id).exists()
-        if not valid_category:
-            raise serializers.ValidationError("Invalid category ID.")
-
-        condition = data.get(CONDITION)
-        valid_condition = ItemCondition.objects.filter(id=condition.id).exists()
-        if not valid_condition:
-            raise serializers.ValidationError("Invalid condition ID.")
-
-        return data
-
     def create(self, validated_data: dict):
         request = self.context.get(REQUEST)
         image = validated_data.pop(IMAGE)
         member = request.user.member
-        order = 0
 
         try:
             with transaction.atomic():
-                item = Item.objects.create(
-                    owner=member, **validated_data, status=Item.Statuses.AVAILABLE
-                )
-
-                folder_name = get_item_images_folder(item.id)
-                key = (
-                    f"{folder_name}/{FILE_NAMES[ITEM_IMAGE]}_{order}.{IMAGE_FILE_TYPE}"
-                )
-                image_url = S3ImageHandler().upload_image(image, key)
-
-                ItemImages.objects.create(item=item, image_url=image_url, order=order)
-
+                item = ItemService.create_item(validated_data, member)
+                ItemImageService.create_and_upload_item_image(item, image)
                 return item
         except Exception as e:
             raise serializers.ValidationError(f"Failed to create item: {e}")
@@ -98,68 +73,30 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [STATUS, CREATED_AT, UPDATED_AT]
 
-    def validate(self, data: dict):
-        category = data.get(CATEGORY)
-        valid_category = ItemCategory.objects.filter(id=category.id).exists()
-        if not valid_category:
-            raise serializers.ValidationError("Invalid category ID.")
-
-        condition = data.get(CONDITION)
-        valid_condition = ItemCondition.objects.filter(id=condition.id).exists()
-        if not valid_condition:
-            raise serializers.ValidationError("Invalid condition ID.")
-
-        return data
-
     def update(self, item: Item, validated_data: dict):
         image = validated_data.pop(IMAGE, None)
+        
+        with transaction.atomic():
+            if validated_data: 
+                item =  ItemService.update_item(item, validated_data)
+            if image:
+                ItemImageService.update_and_replace_item_image(item, image)
 
-        for key, value in validated_data.items():
-            setattr(item, key, value)
-
-        if image:
-            s3_handler = S3ImageHandler()
-            order = 0
-
-            try:
-                folder_name = get_item_images_folder(item.id)
-                key = (
-                    f"{folder_name}/{FILE_NAMES[ITEM_IMAGE]}_{order}.{IMAGE_FILE_TYPE}"
-                )
-                image_url = s3_handler.upload_image(image, key)
-
-                item_image, created = ItemImages.objects.update_or_create(
-                    item=item, order=order, defaults={IMAGE_URL: image_url}
-                )
-            except Exception as e:
-                raise serializers.ValidationError(f"Failed to upload image: {e}")
-
-        item.save()
         return item
 
     def destroy(self, item: Item):
-        s3_handler = S3ImageHandler()
-        folder_name = get_item_images_folder(item.id)
-
-        try:
-            for image in item.images.all():
-                key = f"{folder_name}/{FILE_NAMES[ITEM_IMAGE]}_{image.order}.{IMAGE_FILE_TYPE}"
-                s3_handler.delete_image(key)
-
-            item.delete()
-        except Exception as e:
-            raise serializers.ValidationError(f"Failed to delete item: {e}")
+        with transaction.atomic():
+            ItemImageService.delete_item_images(item)
+            ItemService.delete_item(item)
 
     def get_main_image(self, item: Item):
         return item.main_image
 
     def get_category_details(self, item: Item):
-        category = item.category
-        return ItemCategorySerializer(category).data
+        return ItemCategorySerializer(item.category).data
 
     def get_condition_details(self, item: Item):
-        condition = item.condition
-        return ItemConditionSerializer(condition).data
+        return ItemConditionSerializer(item.condition).data
 
 
 class ItemCategorySerializer(serializers.ModelSerializer):
