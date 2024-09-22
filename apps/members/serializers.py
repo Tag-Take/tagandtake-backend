@@ -2,9 +2,7 @@ from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
 from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import (
-    get_member_profile_photo_key,
-    FILE_NAMES,
-    IMAGE_FILE_TYPE,
+    get_member_profile_photo_key
 )
 from apps.common.constants import *
 

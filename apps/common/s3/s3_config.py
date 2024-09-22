@@ -4,22 +4,7 @@ from apps.stores.models import StoreProfile as Store, Tag
 from apps.items.models import Item
 
 PRSIGNED_URL_EXPIRATION: int = 3600
-BASE_PATHS = {
-    MEMBERS: MEMBERS,
-    STORES: STORES,
-    ITEMS: ITEMS,
-    IMAGES: IMAGES,
-    PROFILES: PROFILES,
-    TAGS: TAGS,
-    GROUPS: GROUPS,
-}
 IMAGE_FILE_TYPE = "jpg"
-FILE_NAMES = {
-    "profile_photo": "profile_photo",
-    "item_image": "item_image",
-    "tag": "tag",
-    "qr_code": "qr_code",
-}
 
 
 def get_member_profile_photo_key(member: Member):
@@ -35,4 +20,4 @@ def get_item_image_key(item: Item, order=0):
 
 
 def get_tag_image_key(tag: Tag):
-    return f"{STORES}/{tag.store.id}/{TAG_GROUPS}/{tag.tag_group}/{IMAGES}/{TAG}_{tag.id}_{QR_CODE}.{IMAGE_FILE_TYPE}"
+    return f"{STORES}/{tag.store.id}/{TAG_GROUPS}/{tag.tag_group.id}/{IMAGES}/{TAG}_{tag.id}_{QR_CODE}.{IMAGE_FILE_TYPE}"

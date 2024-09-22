@@ -14,9 +14,7 @@ from apps.items.models import ItemCategory, ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
 from apps.common.s3.s3_utils import S3ImageHandler
 from apps.common.s3.s3_config import (
-    get_store_profile_photo_key,
-    FILE_NAMES,
-    IMAGE_FILE_TYPE,
+    get_store_profile_photo_key
 )
 from apps.common.constants import *
 
