@@ -14,7 +14,7 @@ from rest_framework.decorators import api_view
 from apps.common.utils.responses import create_success_response, create_error_response
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import StoreProfile
-from apps.stores.services.tags_services import CreateTagsHandler
+from apps.stores.handlers import CreateTagsHandler
 from apps.stores.models import StoreProfile
 from apps.common.utils.responses import create_success_response
 from apps.marketplace.utils import get_item_listing_by_tag_id

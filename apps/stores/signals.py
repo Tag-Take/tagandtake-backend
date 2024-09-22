@@ -9,7 +9,7 @@ from apps.stores.models import (
     StoreProfile,
 )
 from apps.notifications.emails.services.email_senders import StoreEmailSender
-from apps.stores.services.tags_services import CreateTagsHandler
+from apps.stores.handlers import CreateTagsHandler
 from apps.payments.signals import tags_purchased
 from apps.accounts.models import User
 from apps.common.constants import TAG_COUNT
