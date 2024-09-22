@@ -23,8 +23,9 @@ class S3ClientBase:
         except Exception as e:
             raise Exception(f"Error creating S3 client: {e}") from e
 
-    def generate_s3_url(self, key: str):
-        return f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{key}"
+    def generate_s3_url(self, key: str, bucket_name: str = None):
+        bucket_name = bucket_name or settings.AWS_STORAGE_BUCKET_NAME
+        return f"https://{bucket_name}.s3.amazonaws.com/{key}"
 
 
 class S3Service(S3ClientBase):
