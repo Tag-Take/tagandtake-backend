@@ -9,7 +9,6 @@ from apps.stores.models import (
     StoreProfile,
 )
 from apps.notifications.emails.services.email_senders import StoreEmailSender
-from apps.stores.handlers import CreateTagsHandler
 from apps.payments.signals import tags_purchased
 from apps.accounts.models import User
 from apps.common.constants import TAG_COUNT
@@ -49,6 +48,3 @@ def create_tag_group_and_tags(sender, instance: StoreProfile, **kwargs):
     tag_count = kwargs.get(TAG_COUNT)
     if not tag_count:
         raise ValueError("tag_count is required")
-
-    handler = CreateTagsHandler(instance, tag_count)
-    handler.handle()

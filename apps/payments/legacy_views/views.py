@@ -14,10 +14,9 @@ from rest_framework.decorators import api_view
 from apps.common.utils.responses import create_success_response, create_error_response
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import StoreProfile
-from apps.stores.handlers import CreateTagsHandler
+from apps.stores.tasks import create_tags_task
 from apps.stores.models import StoreProfile
 from apps.common.utils.responses import create_success_response
-from apps.marketplace.utils import get_item_listing_by_tag_id
 from apps.marketplace.services.listing_services import ItemListingService
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -119,9 +118,8 @@ class PurchaseTagsView(APIView):
                 "Invalid tag count provided.", {}, status.HTTP_400_BAD_REQUEST
             )
 
-        handler = CreateTagsHandler(store_profile, group_size)
-        handler.handle()
-
+        create_tags_task.delay(store_profile.id, group_size)
+        
         return create_success_response(
             "Tags purchased successfully.", {}, status.HTTP_200_OK
         )
