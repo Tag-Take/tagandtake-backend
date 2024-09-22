@@ -14,7 +14,7 @@
         "fields": {
             "reason": "Item Category",
             "type": "issue",
-            "description": "Item categegoy is not one of the store's approved categories"
+            "description": "Item category is not one of the store's approved categories"
         }
     },
     {

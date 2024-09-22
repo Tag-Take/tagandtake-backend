@@ -18,7 +18,7 @@ def get_item_listing_by_tag_id(tag_id: int, listing_model=ItemListing):
 
 def get_item_listing_by_item_id(item_id: int, listing_model=ItemListing):
     try:
-        listing = listing_model.objects.get(item_id=item_id)
+        listing = listing_model.objects.get(item__id=item_id)
         return listing
     except listing_model.DoesNotExist:
         raise serializers.ValidationError(

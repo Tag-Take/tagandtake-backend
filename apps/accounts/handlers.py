@@ -18,7 +18,7 @@ from apps.common.constants import (
     ADDRESS,
     OPENING_HOURS,
 )
-from apps.common.handlers.abstract_handlers import AbstractHandler
+from apps.common.abstract_classes import AbstractHandler
 from apps.notifications.emails.services.email_senders import AccountEmailSender
 
 
@@ -79,7 +79,7 @@ class MemberSignupHandler(AbstractHandler):
         user = self._create_store_user()
         member_profile = self.create_member_profile(user)
         self.initialize_store_notifications(member_profile)
-        
+
         # 2. Send activation email
         self.send_activation_email(user)
 

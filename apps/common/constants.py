@@ -98,6 +98,7 @@ STORE_COMMISSION_AMOUNT: str = "store_commission_amount"
 MEMBER_EARNINGS: str = "member_earnings"
 ITEM_DETAILS: str = "item_details"
 SELLER: str = "seller"
+COLLECTION_DEADLINE: str = "collection_deadline"
 
 # MEMBERS
 MEMBER: str = "member"

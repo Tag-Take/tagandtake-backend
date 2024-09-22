@@ -19,3 +19,12 @@ def check_listing_store_permissions(request, view: APIView, listing: BaseItemLis
             status.HTTP_403_FORBIDDEN,
         )
     return None
+
+
+def check_listing_member_permissions(request, view: APIView, listing: BaseItemListing):
+    if not listing.item.owner.user.id == request.user.id:
+        return create_error_response(
+            "You do not have permission to modify this listing.",
+            {},
+            status.HTTP_403_FORBIDDEN,
+        )

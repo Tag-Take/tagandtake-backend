@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
                         ],
                     ),
                 ),
-                ("next_fee_charge_at", models.DateTimeField()),
+                ("collection_deadline", models.DateTimeField()),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "item",

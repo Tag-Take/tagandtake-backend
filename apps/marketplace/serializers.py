@@ -2,8 +2,11 @@ from rest_framework import serializers
 
 from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
-from apps.marketplace.services.listing_services import ItemListingHandler
+from apps.marketplace.services.listing_services import ItemListingValidationService
 from apps.common.constants import *
+from apps.items.services import ItemService, ItemValidationService
+from apps.stores.services.tags_services import TagService
+from apps.marketplace.handlers import ItemListingCreateHandler
 
 
 class CreateListingSerializer(serializers.ModelSerializer):
@@ -14,17 +17,27 @@ class CreateListingSerializer(serializers.ModelSerializer):
         model = ItemListing
         fields = [ID, ITEM_ID, TAG_ID]
 
-    def create(self, validated_data):
-        item_id = validated_data.pop(ITEM_ID)
-        tag_id = validated_data.pop(TAG_ID)
+    def validate(self, data):
         try:
-            listing = ItemListingHandler.create_listing(item_id=item_id, tag_id=tag_id)
-            return listing
-        except Exception as e:
-            raise serializers.ValidationError(str(e))
+            item = ItemService.get_item(data.get(ITEM_ID))
+            tag = TagService.get_tag(data.get(TAG_ID))
+            ItemValidationService.validate_item_availability(item)
+            ItemListingValidationService.meets_store_requirements(item, tag)
+
+            data[ITEM] = item
+            data[TAG] = tag
+            return data
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError(e.detail)
+
+    def create(self, validated_data):
+        item = validated_data.get(ITEM)
+        tag = validated_data.get(TAG)
+        handler = ItemListingCreateHandler(item, tag)
+        return handler.handle()
 
 
-class ListingSerializer(serializers.ModelSerializer):
+class ItemListingSerializer(serializers.ModelSerializer):
     item_price = serializers.DecimalField(
         read_only=True, max_digits=10, decimal_places=2
     )
@@ -67,7 +80,7 @@ class RecallReasonSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RecallListingSerializer(serializers.ModelSerializer):
+class RecallItemListingSerializer(serializers.ModelSerializer):
     item_price = serializers.DecimalField(
         read_only=True, max_digits=10, decimal_places=2
     )
@@ -89,14 +102,14 @@ class RecallListingSerializer(serializers.ModelSerializer):
             ID,
             ITEM,
             TAG,
-            STORE_COMMISSION,
+            STORE_COMMISSION_AMOUNT,
             MIN_LISTING_DAYS,
-            RECALL_REASON,
             ITEM_PRICE,
             TRANSACTION_FEE,
             LISTING_PRICE,
             MEMBER_EARNINGS,
             ITEM_DETAILS,
             CREATED_AT,
+            REASON,
             UPDATED_AT,
         ]

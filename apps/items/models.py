@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator
 from django.utils.translation import gettext_lazy as _
 
 from apps.members.models import MemberProfile as Member
-from apps.common.constants import ITEMS, ORDER, ITEM
+from apps.common.constants import ITEMS, ORDER, IMAGES
 
 User = get_user_model()
 
@@ -38,6 +38,7 @@ class Item(models.Model):
         LISTED = "listed", _("Listed")
         RECALLED = "recalled", _("Recalled")
         SOLD = "sold", _("Sold")
+        ABANDONED = "abandoned", _("Abandoned")
 
     owner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name=ITEMS)
     name = models.CharField(max_length=255)
@@ -91,7 +92,7 @@ class Item(models.Model):
 class ItemImages(models.Model):
     order_choices = [(i, i) for i in range(1, 4)]
 
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name=ITEM)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name=IMAGES)
     image_url = models.URLField(blank=True, null=True)
     order = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
