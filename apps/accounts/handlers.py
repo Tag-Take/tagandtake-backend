@@ -37,7 +37,6 @@ class StoreSignupHandler(AbstractHandler):
         self._create_store_address(store_profile)
         self._create_store_opening_hours(store_profile)
         self._initialize_store_defaults(store_profile)
-        self._send_activation_email(user)
 
         # 2. Send activation email
         self._send_activation_email(user)
@@ -56,14 +55,14 @@ class StoreSignupHandler(AbstractHandler):
         return StoreService.create_store_profile(user, self.store_profile_data)
 
     def _create_store_address(self, store_profile: StoreProfile):
-        return StoreService.create_store_address(store_profile, self.address_data)
+        StoreService.create_store_address(store_profile, self.address_data)
 
     def _create_store_opening_hours(self, store_profile: StoreProfile):
         for opening_hours in self.opening_hours_data:
             StoreService.create_store_opening_hours(store_profile, opening_hours)
 
     def _initialize_store_defaults(self, store_profile: StoreProfile):
-        return StoreService.initialize_store_defaults(store_profile)
+        StoreService.initialize_store_defaults(store_profile)
 
     def _send_activation_email(self, user: User):
         AccountEmailSender(user).send_activation_email()
@@ -99,7 +98,7 @@ class MemberSignupHandler(AbstractHandler):
 
     @staticmethod
     def initialize_store_notifications(member: MemberProfile):
-        return MemberService.initialize_store_notifications(member)
+        MemberService.initialize_store_notifications(member)
 
     @staticmethod
     def send_activation_email(user: User):
