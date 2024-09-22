@@ -7,6 +7,6 @@ CELERY_SCHEDULES = {
     },
     "send-recalled-listing-collection-reminders-every-day": {
         "task": "apps.marketplace.tasks.reminders.run_recalled_listing_reminders",
-        "schedule": crontab(minute=0, hour=9),
+        "schedule": crontab(minute=0, hour=10),
     },
 }

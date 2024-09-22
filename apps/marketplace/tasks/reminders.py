@@ -20,6 +20,7 @@ def remind_member(recalled_listing_id):
 
 def is_time_to_remind(recalled_listing: RecalledItemListing):
     return (
-        not now() >= recalled_listing.collection_deadline
-        and not recalled_listing.collection_deadline.date() == now().date()
+        now() < recalled_listing.collection_deadline
+        and now().date() != recalled_listing.collection_deadline.date()
+        and now().date() != recalled_listing.created_at.date() != now().date()
     )

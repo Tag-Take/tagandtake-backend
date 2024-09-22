@@ -77,9 +77,7 @@ class ItemListingService:
 
     @staticmethod
     def create_recalled_listing(listing: ItemListing, reason: RecallReason):
-        collection_deadline = ItemListingService.get_collection_deadline(
-            listing.store, inital_charge=True
-        )
+        collection_deadline = ItemListingService.get_collection_deadline(listing.store)
         return RecalledItemListing.objects.create(
             tag=listing.tag,
             item=listing.item,

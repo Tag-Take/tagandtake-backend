@@ -25,7 +25,9 @@ class CreateTagsHandler(AbstractHandler):
         self.generate_tag_images(tags, tag_group)
 
     def create_tag_group(self):
-        tag_group = TagGroup.objects.create(store=self.store, group_size=self.group_size)
+        tag_group = TagGroup.objects.create(
+            store=self.store, group_size=self.group_size
+        )
         return tag_group
 
     @staticmethod
