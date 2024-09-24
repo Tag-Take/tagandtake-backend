@@ -23,27 +23,29 @@ from apps.common.constants import *
 
 class TransactionService:
 
-    def update_or_create_item_transaction(self, event_data_obj: Dict[str, Any]):
-        event_id = {
-            EVENT_TYPE_ID_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
-        }
-        transaction_data = self.get_base_item_transaction_data(event_data_obj)
-        transaction_data = self.add_payment_intent_status(transaction_data, event_data_obj)
+    def upsert_item_transaction(self, event_data_obj: Dict[str, Any]):
+        event_id = TransactionService.get_event_id(event_data_obj)
+        transaction_data = TransactionService.get_base_item_transaction_data(event_data_obj)
+        transaction_data = TransactionService.add_payment_intent_status(transaction_data, event_data_obj)
         transaction, created = ItemPaymentTransaction.objects.get_or_create(
             **event_id, defaults=transaction_data
         )
         return transaction
 
-    def update_or_create_supplies_transaction(self, event_data_obj: Dict[str, Any]):
-        lookup_field = {
-            EVENT_TYPE_ID_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
-        }
-        transaction_data = self.get_supplies_transaction_data(event_data_obj)
+    def upsert_supplies_transaction(self, event_data_obj: Dict[str, Any]):
+        event_id = TransactionService.get_event_id(event_data_obj)
+        transaction_data = TransactionService.get_supplies_transaction_data(event_data_obj)
+        transaction_data = TransactionService.add_payment_intent_status(transaction_data, event_data_obj)
         transaction, created = SuppliesPaymentTransaction.objects.get_or_create(
-            **lookup_field, defaults=transaction_data
+            **event_id, defaults=transaction_data
         )
 
         return transaction
+    
+    def get_event_id(self, event_data_obj: Dict[str, Any]):
+        return {
+            EVENT_TYPE_ID_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
+        }
 
     @staticmethod
     def get_base_item_transaction_data(event_data_obj: Dict[str, Any]):
@@ -58,24 +60,18 @@ class TransactionService:
             BUYER_EMAIL: event_data_obj.get(CUSTOMER_EMAIL)
             or event_data_obj.get(RECEIPT_EMAIL),
         }
+    
+    @staticmethod
+    def get_supplies_transaction_data(event_data_obj: Dict[str, Any]):
+        return {
+            AMOUNT: event_data_obj[METADATA][AMOUNT],
+            STORE: Store.objects.get(id=event_data_obj[METADATA][STORE_ID]),
+        }
 
     @staticmethod
     def add_payment_intent_status(transaction_data, event_data_obj: Dict[str, Any]):
         if event_data_obj[ID].startswith("pi"):
             transaction_data[PAYMENT_STATUS] = event_data_obj[STATUS]
-        return transaction_data
-
-    @staticmethod
-    def get_supplies_transaction_data(event_data_obj: Dict[str, Any]):
-        store = Store.objects.get(id=event_data_obj[METADATA][STORE_ID])
-        transaction_data = {
-            AMOUNT: event_data_obj[METADATA][AMOUNT],
-            STORE: store,
-        }
-        if EVENT_STATUS_FIELD_MAP[event_data_obj[ID][:2]]:
-            transaction_data[PAYMENT_STATUS] = EVENT_STATUS_FIELD_MAP[
-                event_data_obj[ID][:2]
-            ]
         return transaction_data
 
     def handle_item_purchase_failed(

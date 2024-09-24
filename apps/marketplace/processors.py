@@ -185,7 +185,7 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
     @transaction.atomic
     def process(self):
         listing = self._get_listing()
-        transaction = self._update_or_create_transaction()
+        transaction = self.update_or_create_transaction()
         sold_listing = self._create_sold_listing(listing, transaction)
         self._delete_listing(listing)
         self._purchase_item()
@@ -196,8 +196,8 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
             self.event[METADATA][ITEM_ID]
         )
     
-    def _update_or_create_transaction(self):
-        return TransactionService.update_or_create_item_transaction(self.event)
+    def update_or_create_transaction(self):
+        return TransactionService.upsert_item_transaction(self.event)
     
     @staticmethod
     def _create_sold_listing(listing):
