@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
+from members.services import MemberService
 from apps.common.s3.s3_utils import S3Service
 from apps.common.s3.s3_config import get_member_profile_photo_key
 from apps.common.constants import *
@@ -25,10 +26,7 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, member: MemberProfile, validated_data: dict):
-        for attr, value in validated_data.items():
-            setattr(member, attr, value)
-        member.save()
-        return member
+        member = MemberService.update_member_profile(member, validated_data)
 
 
 class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
@@ -45,69 +43,36 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
     def update(
         self, member_notifications: MemberNotificationPreferences, validated_data: dict
     ):
-        for attr, value in validated_data.items():
-            setattr(member_notifications, attr, value)
-        member_notifications.save()
+        member_notifications = MemberService.update_member_notifications(
+            member_notifications, validated_data
+        )
         return member_notifications
-
 
 class MemberProfileImageUploadSerializer(serializers.Serializer):
     profile_photo = serializers.ImageField()
 
     def validate(self, attrs: dict):
         request = self.context.get(REQUEST)
-        try:
-            profile = MemberProfile.objects.get(user=request.user)
-        except MemberProfile.DoesNotExist:
-            raise serializers.ValidationError("Store profile not found.")
-
-        attrs[PROFILE] = profile
+        attrs[PROFILE] = MemberService.get_member_by_user(request.user)
         return attrs
 
     def save(self):
         memeber: MemberProfile = self.validated_data[PROFILE]
         file = self.validated_data[PROFILE_PHOTO]
-
-        s3_handler = S3Service()
-        key = get_member_profile_photo_key(memeber)
-
-        try:
-            image_url = s3_handler.upload_image(file, key)
-        except Exception as e:
-            raise serializers.ValidationError(
-                f"Failed to upload profile photo: {str(e)}"
-            )
-
-        memeber.profile_photo_url = image_url
-        memeber.save()
-        return memeber
+        member = MemberService.update_member_profile_photo(memeber, file) 
+        return member
 
 
 class MemberProfileImageDeleteSerializer(serializers.Serializer):
     def validate(self, attrs: dict):
         request = self.context.get(REQUEST)
-        try:
-            profile = MemberProfile.objects.get(user=request.user)
-        except MemberProfile.DoesNotExist:
-            raise serializers.ValidationError("Store profile not found.")
-
-        if not profile.profile_photo_url:
+        member = MemberService.get_member_by_user(request.user)
+        if not member.profile_photo_url:
             raise serializers.ValidationError("No profile photo to delete.")
-
-        attrs[PROFILE] = profile
+        attrs[PROFILE] = member
         return attrs
 
     def save(self):
         member: MemberProfile = self.validated_data[PROFILE]
-        key = get_member_profile_photo_key(member)
-
-        s3_handler = S3Service()
-        try:
-            s3_handler.delete_image(key)
-            member.profile_photo_url = None
-            member.save()
-        except Exception as e:
-            raise serializers.ValidationError(
-                f"Failed to delete profile photo: {str(e)}"
-            )
+        member = MemberService.delete_member_profile_photo(member)
         return member
