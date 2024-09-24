@@ -30,13 +30,13 @@ from apps.common.utils.responses import (
     create_success_response,
 )
 from apps.stores.services.tags_services import TagService
-from apps.marketplace.handlers import (
-    ItemListingCreateHandler,
-    ItemListingRecallHandler,
-    ItemListingDelistHandler,
-    ItemListingCollectHandler,
-    ReplaceListingTagHandler,
-    GenerateNewCollectionPinHandler,
+from apps.marketplace.processors import (
+    ItemListingCreateProcessor,
+    ItemListingRecallProcessor,
+    ItemListingDelistProcessor,
+    ItemListingCollectProcessor,
+    ItemListingReplaceTagProcessor,
+    CollectionPinUpdateProcessor,
 )
 from apps.common.constants import ID, TAG_ID, REASON, NEW_TAG_ID, PIN
 
@@ -78,8 +78,8 @@ class CreateItemAndListingView(generics.CreateAPIView):
             item: Item = item_serializer.save()
             tag = self.get_object()
             try:
-                handler = ItemListingCreateHandler(item, tag)
-                listing = handler.handle()
+                handler = ItemListingCreateProcessor(item, tag)
+                listing = handler.process()
                 listing_data = ItemListingSerializer(listing).data
                 return create_success_response(
                     "Item and listing created successfully",
@@ -196,8 +196,8 @@ class ReplaceTagView(generics.UpdateAPIView):
             return permission_error_response
         try:
             new_tag = TagService.get_tag(request.data.get(NEW_TAG_ID))
-            handler = ReplaceListingTagHandler(listing, new_tag)
-            listing = handler.handle()
+            handler = ItemListingReplaceTagProcessor(listing, new_tag)
+            listing = handler.process()
             serializer = self.get_serializer(listing)
             return create_success_response(
                 "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
@@ -231,8 +231,8 @@ class RecallListingView(generics.UpdateAPIView):
         try:
             reason_id = request.data.get(REASON)
             reason = ItemListingService().get_recall_reasons(reason_id)
-            handler = ItemListingRecallHandler(listing, reason)
-            handler.handle()
+            handler = ItemListingRecallProcessor(listing, reason)
+            handler.process()
             return create_success_response(
                 "ItemListing successfully recalled", {}, status_code=200
             )
@@ -257,8 +257,8 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
         if permission_error_response:
             return permission_error_response
         try:
-            handler = GenerateNewCollectionPinHandler(recalled_listing)
-            handler.handle()
+            handler = CollectionPinUpdateProcessor(recalled_listing)
+            handler.process()
             return create_success_response(
                 "New collection PIN successfully generated", {}, status_code=200
             )
@@ -287,8 +287,8 @@ class DelistListing(generics.UpdateAPIView):
         try:
             reason_id = request.data.get(REASON)
             reason = ItemListingService().get_recall_reasons(reason_id)
-            handler = ItemListingDelistHandler(listing, reason)
-            handler.handle()
+            handler = ItemListingDelistProcessor(listing, reason)
+            handler.process()
             return create_success_response(
                 "ItemListing successfully delisted", {}, status_code=200
             )
@@ -321,8 +321,8 @@ class CollectRecalledListingView(generics.UpdateAPIView):
                 "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
             )
         try:
-            handler = ItemListingCollectHandler(recalled_listing)
-            handler.handle()
+            handler = ItemListingCollectProcessor(recalled_listing)
+            handler.process()
             return create_success_response(
                 "Recalled listing successfully delisted", {}, status_code=200
             )

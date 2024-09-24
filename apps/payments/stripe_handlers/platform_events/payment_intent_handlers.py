@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from apps.payments.services.transaction_services import TransactionHandler
+from apps.payments.services.transaction_services import TransactionService
 from apps.payments.services.transfer_services import TransferHandler
 from apps.marketplace.services.listing_services import ItemListingHandler
 from apps.marketplace.utils import get_item_listing_by_item_id
@@ -21,7 +21,7 @@ class PaymentIntentSucceededHandler:
 
     def __init__(self, event_data_obj: Dict[str, Any]):
         self.payment_intent = event_data_obj
-        self.transaction = TransactionHandler().update_or_create_transaction(
+        self.transaction = TransactionService().update_or_create_transaction(
             self.payment_intent
         )
 
@@ -65,16 +65,16 @@ class PaymentIntentFailedHandler:
 
     def __init__(self, event_data_obj: Dict[str, Any]):
         self.payment_intent = event_data_obj
-        self.transaction = TransactionHandler().update_or_create_transaction(
+        self.transaction = TransactionService().update_or_create_transaction(
             event_data_obj
         )
 
     def handle(self):
         if self.payment_intent[METADATA][PURCHASE] == ITEM:
-            TransactionHandler().handle_item_purchase_failed(
+            TransactionService().handle_item_purchase_failed(
                 self.payment_intent, self.transaction
             )
         elif self.payment_intent[METADATA][PURCHASE] == SUPPLIES:
-            TransactionHandler().handle_supplies_purchase_failed(
+            TransactionService().handle_supplies_purchase_failed(
                 self.payment_intent, self.transaction
             )

@@ -6,7 +6,7 @@ from apps.marketplace.services.listing_services import ItemListingValidationServ
 from apps.common.constants import *
 from apps.items.services import ItemService, ItemValidationService
 from apps.stores.services.tags_services import TagService
-from apps.marketplace.handlers import ItemListingCreateHandler
+from apps.marketplace.processors import ItemListingCreateProcessor
 
 
 class CreateListingSerializer(serializers.ModelSerializer):
@@ -33,8 +33,8 @@ class CreateListingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         item = validated_data.get(ITEM)
         tag = validated_data.get(TAG)
-        handler = ItemListingCreateHandler(item, tag)
-        return handler.handle()
+        handler = ItemListingCreateProcessor(item, tag)
+        return handler.process()
 
 
 class ItemListingSerializer(serializers.ModelSerializer):

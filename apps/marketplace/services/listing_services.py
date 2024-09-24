@@ -11,6 +11,7 @@ from apps.marketplace.models import (
     ItemListing,
     RecalledItemListing,
     DelistedItemListing,
+    SoldItemListing,
     RecallReason,
 )
 from apps.items.models import Item
@@ -99,6 +100,14 @@ class ItemListingService:
             store_commission=listing.store_commission,
             min_listing_days=listing.min_listing_days,
             reason=reason,
+        )
+    
+    def create_sold_listing(listing: ItemListing):
+        return SoldItemListing.objects.create(
+            tag=listing.tag,
+            item=listing.item,
+            store_commission=listing.store_commission,
+            min_listing_days=listing.min_listing_days,
         )
 
     @staticmethod

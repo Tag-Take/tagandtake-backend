@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 
 
-class AbstractHandler(ABC):
+class AbstractProcessor(ABC):
     @abstractmethod
-    def handle(self):
-        raise NotImplementedError("Subclasses must implement the handle method")
+    def process(self):
+        raise NotImplementedError("Subclasses must implement the process method")
 
 
 class BaseTaskRunner(ABC):

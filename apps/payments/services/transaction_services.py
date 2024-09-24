@@ -1,5 +1,4 @@
 from typing import Any, Dict
-
 import stripe
 
 from apps.payments.models.transactions import SuppliesPaymentTransaction
@@ -16,52 +15,53 @@ from apps.payments.models.transactions import (
     FailedSuppliesPaymentTransaction,
 )
 from apps.stores.models import StoreProfile as Store
-from apps.payments.constants import EVENT_ID_FIELD_MAP, EVENT_STATUS_FIELD_MAP
+from apps.payments.constants import EVENT_TYPE_ID_MAP, EVENT_STATUS_FIELD_MAP
 from apps.payments.utils import from_stripe_amount
 from apps.tagandtake.services import SuppliesHandler
 from apps.common.constants import *
 
 
-class TransactionHandler:
+class TransactionService:
 
-    def update_or_create_transaction(self, event_data_obj: Dict[str, Any]):
-        if event_data_obj[METADATA][PURCHASE] == ITEM:
-            TransactionModel = ItemPaymentTransaction
-            get_transaction_data = self.get_item_transaction_data
-        elif event_data_obj[METADATA][PURCHASE] == SUPPLIES:
-            TransactionModel = SuppliesPaymentTransaction
-            get_transaction_data = self.get_supplies_transaction_data
-        else:
-            raise ValueError("Purchase must be either 'item' or 'supplies'.")
-
-        lookup_field = {
-            EVENT_ID_FIELD_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
+    def update_or_create_item_transaction(self, event_data_obj: Dict[str, Any]):
+        event_id = {
+            EVENT_TYPE_ID_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
         }
-        transaction_data = get_transaction_data(event_data_obj)
+        transaction_data = self.get_base_item_transaction_data(event_data_obj)
+        transaction_data = self.add_payment_intent_status(transaction_data, event_data_obj)
+        transaction, created = ItemPaymentTransaction.objects.get_or_create(
+            **event_id, defaults=transaction_data
+        )
+        return transaction
 
-        transaction, created = TransactionModel.objects.get_or_create(
+    def update_or_create_supplies_transaction(self, event_data_obj: Dict[str, Any]):
+        lookup_field = {
+            EVENT_TYPE_ID_MAP[event_data_obj[ID][:2]]: event_data_obj[ID],
+        }
+        transaction_data = self.get_supplies_transaction_data(event_data_obj)
+        transaction, created = SuppliesPaymentTransaction.objects.get_or_create(
             **lookup_field, defaults=transaction_data
         )
 
         return transaction
 
     @staticmethod
-    def get_item_transaction_data(event_data_obj: Dict[str, Any]):
+    def get_base_item_transaction_data(event_data_obj: Dict[str, Any]):
         item = Item.objects.get(id=event_data_obj[METADATA][ITEM_ID])
-        store = Store.objects.get(id=event_data_obj[METADATA][STORE_ID])
-
-        transaction_data = {
+        return {
             AMOUNT: from_stripe_amount(
                 event_data_obj.get(AMOUNT) or event_data_obj.get(AMOUNT_TOTAL)
             ),
             ITEM: item,
-            STORE: store,
+            STORE: Store.objects.get(id=event_data_obj[METADATA][STORE_ID]),
             SELLER: item.owner,
             BUYER_EMAIL: event_data_obj.get(CUSTOMER_EMAIL)
             or event_data_obj.get(RECEIPT_EMAIL),
         }
 
-        if EVENT_STATUS_FIELD_MAP[event_data_obj[ID][:2]]:
+    @staticmethod
+    def add_payment_intent_status(transaction_data, event_data_obj: Dict[str, Any]):
+        if event_data_obj[ID].startswith("pi"):
             transaction_data[PAYMENT_STATUS] = event_data_obj[STATUS]
         return transaction_data
 

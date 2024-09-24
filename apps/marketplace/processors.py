@@ -1,21 +1,23 @@
 from django.db import transaction
 
-from apps.common.abstract_classes import AbstractHandler
+from apps.common.abstract_classes import AbstractProcessor
 from apps.marketplace.services.listing_services import ItemListingService
 from apps.notifications.emails.services.email_senders import ListingEmailSender
 from apps.items.models import Item
 from apps.stores.models import Tag
 from apps.items.services import ItemService
 from apps.marketplace.models import ItemListing, RecalledItemListing, RecallReason
+from apps.marketplace.utils import get_item_listing_by_tag_id, get_item_listing_by_item_id
+from apps.payments.services.transaction_services import TransactionService
+from common.constants import METADATA, ITEM_ID
 
-
-class ItemListingCreateHandler(AbstractHandler):
+class ItemListingCreateProcessor(AbstractProcessor):
     def __init__(self, item: Item, tag: Tag):
         self.item = item
         self.tag = tag
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         listing = self._create_item_listing()
         self._list_item()
         self._send_notifications(listing)
@@ -32,13 +34,13 @@ class ItemListingCreateHandler(AbstractHandler):
         ListingEmailSender.send_listing_created_email(listing)
 
 
-class ItemListingRecallHandler(AbstractHandler):
+class ItemListingRecallProcessor(AbstractProcessor):
     def __init__(self, listing: ItemListing, reason: RecallReason):
         self.listing = listing
         self.reason = reason
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         recalled_listing = self._create_recalled_listing()
         self._recall_item(recalled_listing.item)
         self._delete_listing()
@@ -59,13 +61,13 @@ class ItemListingRecallHandler(AbstractHandler):
         ListingEmailSender.send_listing_recalled_email(recalled_listing, self.reason)
 
 
-class ItemListingDelistHandler(AbstractHandler):
+class ItemListingDelistProcessor(AbstractProcessor):
     def __init__(self, listing: ItemListing, reason: RecallReason):
         self.listing = listing
         self.reason = reason
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         delisted_listing = self._create_delisted_listing()
         self._delist_item(delisted_listing.item)
         self._delete_listing()
@@ -87,12 +89,12 @@ class ItemListingDelistHandler(AbstractHandler):
         ListingEmailSender.send_listing_delisted_email(delisted_listing)
 
 
-class ItemListingCollectHandler(AbstractHandler):
+class ItemListingCollectProcessor(AbstractProcessor):
     def __init__(self, listing: RecalledItemListing):
         self.recalled_listing = listing
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         delisted_listing = self._create_delisted_listing()
         self._collect_item(delisted_listing.item)
         self._delete_recalled_listing()
@@ -116,12 +118,12 @@ class ItemListingCollectHandler(AbstractHandler):
         ListingEmailSender.send_recalled_listing_collected_email(delisted_listing)
 
 
-class ReplaceListingTagHandler(AbstractHandler):
+class ItemListingReplaceTagProcessor(AbstractProcessor):
     def __init__(self, listing: ItemListing, tag: Tag):
         self.listing = listing
         self.tag = tag
 
-    def handle(self):
+    def process(self):
         self._replace_tag(self.listing, self.tag)
         return self.listing
 
@@ -130,11 +132,11 @@ class ReplaceListingTagHandler(AbstractHandler):
         return ItemListingService.replace_listing_tag(listing, tag)
 
 
-class GenerateNewCollectionPinHandler(AbstractHandler):
+class CollectionPinUpdateProcessor(AbstractProcessor):
     def __init__(self, listing: RecalledItemListing):
         self.recalled_listing = listing
 
-    def handle(self):
+    def process(self):
         self._update_collection_pin()
         self._send_notifications()
         return self.recalled_listing
@@ -148,12 +150,12 @@ class GenerateNewCollectionPinHandler(AbstractHandler):
         ListingEmailSender.send_new_collection_pin_email(self.recalled_listing)
 
 
-class ItemListingAbandonedHandler(AbstractHandler):
+class ItemListingAbandonedProcessor(AbstractProcessor):
     def __init__(self, recalled_listing: RecalledItemListing):
         self.recalled_listing = recalled_listing
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         delisted_listing = self._create_delisted_listing()
         self._abandon_item(delisted_listing.item)
         self._delete_recalled_listing()
@@ -174,3 +176,42 @@ class ItemListingAbandonedHandler(AbstractHandler):
 
     def _send_notifications(self):
         ListingEmailSender.send_item_abandonded_email(self.recalled_listing)
+
+
+class ItemListingPurchaseProcessor(AbstractProcessor):
+    def __init__(self, purchase_event_obj: dict):
+        self.event = purchase_event_obj
+
+    @transaction.atomic
+    def process(self):
+        listing = self._get_listing()
+        transaction = self._update_or_create_transaction()
+        sold_listing = self._create_sold_listing(listing, transaction)
+        self._delete_listing(listing)
+        self._purchase_item()
+        self._send_notifications(sold_listing)
+    
+    def _get_listing(self):
+        return get_item_listing_by_item_id(
+            self.event[METADATA][ITEM_ID]
+        )
+    
+    def _update_or_create_transaction(self):
+        return TransactionService.update_or_create_item_transaction(self.event)
+    
+    @staticmethod
+    def _create_sold_listing(listing):
+        return ItemListingService.create_sold_listing(listing)
+    
+    @staticmethod
+    def _delete_listing(listing):
+        ItemListingService.delete_listing(listing)
+
+    @staticmethod
+    def _purchase_item(listing):
+        ItemService.purchase_item(listing.item)
+
+    @staticmethod
+    def _send_notifications(listing):
+        ListingEmailSender.send_listing_sold_email(listing)
+

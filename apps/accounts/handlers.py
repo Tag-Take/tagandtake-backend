@@ -18,11 +18,11 @@ from apps.common.constants import (
     ADDRESS,
     OPENING_HOURS,
 )
-from apps.common.abstract_classes import AbstractHandler
+from apps.common.abstract_classes import AbstractProcessor
 from apps.notifications.emails.services.email_senders import AccountEmailSender
 
 
-class StoreSignupHandler(AbstractHandler):
+class StoreSignupProcessor(AbstractProcessor):
     def __init__(self, validated_data: dict):
         self.validated_data = validated_data
         self.store_profile_data = validated_data.pop(STORE)
@@ -30,7 +30,7 @@ class StoreSignupHandler(AbstractHandler):
         self.opening_hours_data = validated_data.pop(OPENING_HOURS)
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         # 1. Create store user and related models
         user = self._create_store_user()
         store_profile = self._create_store_profile(user)
@@ -68,12 +68,12 @@ class StoreSignupHandler(AbstractHandler):
         AccountEmailSender(user).send_activation_email()
 
 
-class MemberSignupHandler(AbstractHandler):
+class MemberSignupProcessor(AbstractProcessor):
     def __init__(self, validated_data: dict):
         self.validated_data = validated_data
 
     @transaction.atomic
-    def handle(self):
+    def process(self):
         # 1. Create member user and related models
         user = self._create_store_user()
         member_profile = self.create_member_profile(user)

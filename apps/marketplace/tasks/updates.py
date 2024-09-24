@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.utils.timezone import now
 from apps.marketplace.models import RecalledItemListing
-from apps.marketplace.handlers import ItemListingAbandonedHandler
+from apps.marketplace.processors import ItemListingAbandonedProcessor
 
 
 @shared_task
@@ -16,5 +16,5 @@ def run_abandoned_item_updates():
 @shared_task
 def run_task_for_listing(recalled_listing_id):
     recalled_listing = RecalledItemListing.objects.get(id=recalled_listing_id)
-    handler = ItemListingAbandonedHandler(recalled_listing)
-    handler.handle()
+    handler = ItemListingAbandonedProcessor(recalled_listing)
+    handler.process()

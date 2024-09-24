@@ -22,7 +22,7 @@ from rest_framework_simplejwt.serializers import (
 from apps.accounts.models import User
 from apps.common.constants import *
 from apps.notifications.emails.services.email_senders import AccountEmailSender
-from apps.accounts.handlers import StoreSignupHandler, MemberSignupHandler
+from apps.accounts.handlers import StoreSignupProcessor, MemberSignupProcessor
 from apps.accounts.validators import UsernameValidator
 from apps.stores.serializers import (
     StoreProfileSerializer,
@@ -58,8 +58,8 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data[ROLE] = User.Roles.MEMBER
-        handler = MemberSignupHandler(validated_data)
-        return handler.handle()
+        handler = MemberSignupProcessor(validated_data)
+        return handler.process()
 
 
 class StoreSignUpSerializer(serializers.ModelSerializer):
@@ -98,8 +98,8 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: Dict[str, Any]):
         validated_data[ROLE] = User.Roles.STORE
-        handler = StoreSignupHandler(validated_data)
-        return handler.handle()
+        handler = StoreSignupProcessor(validated_data)
+        return handler.process()
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
