@@ -9,7 +9,7 @@ from apps.items.services import ItemService
 from apps.marketplace.models import ItemListing, RecalledItemListing, RecallReason
 from apps.marketplace.utils import get_item_listing_by_tag_id, get_item_listing_by_item_id
 from apps.payments.services.transaction_services import TransactionService
-from common.constants import METADATA, ITEM_ID
+from apps.common.constants import METADATA, ITEM_ID
 
 class ItemListingCreateProcessor(AbstractProcessor):
     def __init__(self, item: Item, tag: Tag):

@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
-from members.services import MemberService
-from apps.common.s3.s3_utils import S3Service
-from apps.common.s3.s3_config import get_member_profile_photo_key
+from apps.members.services import MemberService
 from apps.common.constants import *
 
 
@@ -27,6 +25,7 @@ class MemberProfileSerializer(serializers.ModelSerializer):
 
     def update(self, member: MemberProfile, validated_data: dict):
         member = MemberService.update_member_profile(member, validated_data)
+        return member
 
 
 class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):

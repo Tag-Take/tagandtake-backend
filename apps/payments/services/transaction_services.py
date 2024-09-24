@@ -15,7 +15,7 @@ from apps.payments.models.transactions import (
     FailedSuppliesPaymentTransaction,
 )
 from apps.stores.models import StoreProfile as Store
-from apps.payments.constants import EVENT_TYPE_ID_MAP, EVENT_STATUS_FIELD_MAP
+from apps.payments.constants import EVENT_TYPE_ID_MAP
 from apps.payments.utils import from_stripe_amount
 from apps.tagandtake.services import SuppliesHandler
 from apps.common.constants import *
