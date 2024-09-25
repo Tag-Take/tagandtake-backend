@@ -10,10 +10,7 @@ from apps.stores.models import (
     StoreItemConditions,
     StoreNotificationPreferences,
 )
-from apps.items.models import ItemCondition
 from apps.items.serializers import ItemCategorySerializer, ItemConditionSerializer
-from apps.common.s3.s3_utils import S3Service
-from apps.common.s3.s3_config import get_store_profile_photo_key
 from apps.common.constants import *
 from apps.stores.services.store_services import (
     StoreService,
@@ -106,10 +103,8 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         opening_hours_data = validated_data.pop(OPENING_HOURS, None)
 
         StoreService.update_store_profile(store, validated_data)
-
         if address_data:
             StoreService.update_store_address(store, address_data)
-
         if opening_hours_data:
             StoreService.update_store_opening_hours(store, opening_hours_data)
 
@@ -139,6 +134,8 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
         store = StoreService.get_store_by_id_and_user(store_id, user)
         StoreValidationService.validate_store_pin(store, pin)
         StoreItemCategoryValidationService.validate_category_ids(category_ids)
+
+        data[STORE] = store
         return data
 
     def update_categories(self):
@@ -172,6 +169,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
         StoreValidationService.validate_store_pin(store, pin)
         StoreItemConditionValidationService.validate_condition_ids(condition_ids)
 
+        data[STORE] = store
         return data
 
     def update_conditions(self):
@@ -224,7 +222,7 @@ class StoreProfileImageDeleteSerializer(serializers.Serializer):
 
     def save(self):
         store: StoreProfile = self.validated_data[STORE]
-        
+
         store = StoreService.delete_store_profile_photo(store)
 
         return store
