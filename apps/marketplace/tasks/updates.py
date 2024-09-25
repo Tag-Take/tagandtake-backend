@@ -16,5 +16,5 @@ def run_abandoned_item_updates():
 @shared_task
 def run_task_for_listing(recalled_listing_id):
     recalled_listing = RecalledItemListing.objects.get(id=recalled_listing_id)
-    handler = ItemListingAbandonedProcessor(recalled_listing)
-    handler.process()
+    processor = ItemListingAbandonedProcessor(recalled_listing)
+    processor.process()

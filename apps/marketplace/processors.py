@@ -7,9 +7,13 @@ from apps.items.models import Item
 from apps.stores.models import Tag
 from apps.items.services import ItemService
 from apps.marketplace.models import ItemListing, RecalledItemListing, RecallReason
-from apps.marketplace.utils import get_item_listing_by_tag_id, get_item_listing_by_item_id
+from apps.marketplace.utils import (
+    get_item_listing_by_tag_id,
+    get_item_listing_by_item_id,
+)
 from apps.payments.services.transaction_services import TransactionService
 from apps.common.constants import METADATA, ITEM_ID
+
 
 class ItemListingCreateProcessor(AbstractProcessor):
     def __init__(self, item: Item, tag: Tag):
@@ -190,19 +194,17 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
         self._delete_listing(listing)
         self._purchase_item()
         self._send_notifications(sold_listing)
-    
+
     def _get_listing(self):
-        return get_item_listing_by_item_id(
-            self.event[METADATA][ITEM_ID]
-        )
-    
+        return get_item_listing_by_item_id(self.event[METADATA][ITEM_ID])
+
     def update_or_create_transaction(self):
         return TransactionService.upsert_item_transaction(self.event)
-    
+
     @staticmethod
     def _create_sold_listing(listing):
         return ItemListingService.create_sold_listing(listing)
-    
+
     @staticmethod
     def _delete_listing(listing):
         ItemListingService.delete_listing(listing)
@@ -214,4 +216,3 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
     @staticmethod
     def _send_notifications(listing):
         ListingEmailSender.send_listing_sold_email(listing)
-

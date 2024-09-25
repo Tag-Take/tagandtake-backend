@@ -119,7 +119,7 @@ class PurchaseTagsView(APIView):
             )
 
         create_tags_task.delay(store_profile.id, group_size)
-        
+
         return create_success_response(
             "Tags purchased successfully.", {}, status.HTTP_200_OK
         )

@@ -2,8 +2,8 @@ from typing import Any, Dict
 from apps.marketplace.processors import ItemListingPurchaseProcessor
 from apps.stores.handlers import SuppliesPurchaseHandler
 from apps.payments.processors import (
-    ItemListingFailedPaymentProcessor, 
-    SuppliesFailedPaymentProcessor
+    ItemListingFailedPaymentProcessor,
+    SuppliesFailedPaymentProcessor,
 )
 from apps.common.constants import (
     METADATA,
@@ -11,6 +11,7 @@ from apps.common.constants import (
     ITEM,
     SUPPLIES,
 )
+
 
 class PaymentIntentSucceededHandler:
 

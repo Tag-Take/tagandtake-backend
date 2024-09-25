@@ -1,9 +1,11 @@
 from common.abstract_classes import AbstractProcessor
 
+
 class ItemListingFailedPaymentProcessor(AbstractProcessor):
-    def process(): 
+    def process():
         pass
 
+
 class SuppliesFailedPaymentProcessor(AbstractProcessor):
-    def process(): 
+    def process():
         pass

@@ -101,7 +101,7 @@ class ItemListingService:
             min_listing_days=listing.min_listing_days,
             reason=reason,
         )
-    
+
     def create_sold_listing(listing: ItemListing):
         return SoldItemListing.objects.create(
             tag=listing.tag,
@@ -164,6 +164,9 @@ class ItemListingValidationService:
         errors.update(ItemListingValidationService._validate_condition(item, tag))
         errors.update(ItemListingValidationService._validate_category(item, tag))
         errors.update(ItemListingValidationService._validate_price(item, tag))
+        errors.update(
+            ItemListingValidationService._validate_store_availability(tag.store)
+        )
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -194,4 +197,9 @@ class ItemListingValidationService:
             return {
                 PRICE: f"Item price is below {tag.store.store_name}'s minimum price requirement."
             }
+        return {}
+
+    def _validate_store_availability(store: StoreProfile):
+        if not store.accepting_listings:
+            return {"store": "Store is not currently accepting listings."}
         return {}

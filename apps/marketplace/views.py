@@ -78,8 +78,8 @@ class CreateItemAndListingView(generics.CreateAPIView):
             item: Item = item_serializer.save()
             tag = self.get_object()
             try:
-                handler = ItemListingCreateProcessor(item, tag)
-                listing = handler.process()
+                processor = ItemListingCreateProcessor(item, tag)
+                listing = processor.process()
                 listing_data = ItemListingSerializer(listing).data
                 return create_success_response(
                     "Item and listing created successfully",
@@ -196,8 +196,8 @@ class ReplaceTagView(generics.UpdateAPIView):
             return permission_error_response
         try:
             new_tag = TagService.get_tag(request.data.get(NEW_TAG_ID))
-            handler = ItemListingReplaceTagProcessor(listing, new_tag)
-            listing = handler.process()
+            processor = ItemListingReplaceTagProcessor(listing, new_tag)
+            listing = processor.process()
             serializer = self.get_serializer(listing)
             return create_success_response(
                 "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
@@ -231,8 +231,8 @@ class RecallListingView(generics.UpdateAPIView):
         try:
             reason_id = request.data.get(REASON)
             reason = ItemListingService().get_recall_reasons(reason_id)
-            handler = ItemListingRecallProcessor(listing, reason)
-            handler.process()
+            processor = ItemListingRecallProcessor(listing, reason)
+            processor.process()
             return create_success_response(
                 "ItemListing successfully recalled", {}, status_code=200
             )
@@ -257,8 +257,8 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
         if permission_error_response:
             return permission_error_response
         try:
-            handler = CollectionPinUpdateProcessor(recalled_listing)
-            handler.process()
+            processor = CollectionPinUpdateProcessor(recalled_listing)
+            processor.process()
             return create_success_response(
                 "New collection PIN successfully generated", {}, status_code=200
             )
@@ -287,8 +287,8 @@ class DelistListing(generics.UpdateAPIView):
         try:
             reason_id = request.data.get(REASON)
             reason = ItemListingService().get_recall_reasons(reason_id)
-            handler = ItemListingDelistProcessor(listing, reason)
-            handler.process()
+            processor = ItemListingDelistProcessor(listing, reason)
+            processor.process()
             return create_success_response(
                 "ItemListing successfully delisted", {}, status_code=200
             )
@@ -321,8 +321,8 @@ class CollectRecalledListingView(generics.UpdateAPIView):
                 "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
             )
         try:
-            handler = ItemListingCollectProcessor(recalled_listing)
-            handler.process()
+            processor = ItemListingCollectProcessor(recalled_listing)
+            processor.process()
             return create_success_response(
                 "Recalled listing successfully delisted", {}, status_code=200
             )

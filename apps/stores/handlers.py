@@ -1,5 +1,3 @@
-
-
 class SuppliesPurchaseHandler:
 
     def handle(self):

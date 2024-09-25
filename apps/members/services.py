@@ -30,14 +30,16 @@ class MemberService:
 
     @staticmethod
     def initialize_store_notifications(member: MemberProfile):
-        try: 
+        try:
             MemberNotificationPreferences.objects.create(member=member)
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to create member notifications: {e}")
+            raise serializers.ValidationError(
+                f"Failed to create member notifications: {e}"
+            )
 
     @staticmethod
     def update_member_profile(member: MemberProfile, validated_data: dict):
-        try: 
+        try:
             for key, value in validated_data.items():
                 setattr(member, key, value)
             member.save()
@@ -47,17 +49,18 @@ class MemberService:
 
     @staticmethod
     def update_member_notifications(
-            member_notifications: MemberNotificationPreferences, 
-            validated_data: dict
-        ):
-        try: 
+        member_notifications: MemberNotificationPreferences, validated_data: dict
+    ):
+        try:
             for attr, value in validated_data.items():
                 setattr(member_notifications, attr, value)
             member_notifications.save()
             return member_notifications
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to update member notifications: {e}")
-    
+            raise serializers.ValidationError(
+                f"Failed to update member notifications: {e}"
+            )
+
     @staticmethod
     def update_member_profile_photo(member: MemberProfile, file):
         image_url = MemberService.upload_profile_photo_to_s3(member, file)
@@ -72,7 +75,7 @@ class MemberService:
             return member
         except Exception as e:
             raise serializers.ValidationError(f"Failed to save profile photo url: {e}")
-    
+
     @staticmethod
     def upload_profile_photo_to_s3(member: MemberProfile, file):
         try:
@@ -80,21 +83,25 @@ class MemberService:
             image_url = S3Service().upload_image(file, key)
             return image_url
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to upload profile photo to s3: {e}")
-    
+            raise serializers.ValidationError(
+                f"Failed to upload profile photo to s3: {e}"
+            )
+
     @staticmethod
     def delete_member_profile_photo(member: MemberProfile):
         MemberService.delete_profile_photo_in_s3(member)
         member = MemberService.delete_profile_photo_url(member)
         return member
-    
+
     @staticmethod
     def delete_profile_photo_in_s3(member: MemberProfile):
         try:
             key = get_member_profile_photo_key(member)
             S3Service().delete_image(key)
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to delete profile photo in s3: {e}")
+            raise serializers.ValidationError(
+                f"Failed to delete profile photo in s3: {e}"
+            )
 
     @staticmethod
     def delete_profile_photo_url(member: MemberProfile):
@@ -103,4 +110,6 @@ class MemberService:
             member.save()
             return member
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to delete profile photo url: {e}")
+            raise serializers.ValidationError(
+                f"Failed to delete profile photo url: {e}"
+            )

@@ -40,7 +40,7 @@ class MemberProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "member_profile"
+        db_table = "member_profiles"
 
     @property
     def username(self):

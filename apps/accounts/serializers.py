@@ -58,8 +58,8 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data[ROLE] = User.Roles.MEMBER
-        handler = MemberSignupProcessor(validated_data)
-        return handler.process()
+        processor = MemberSignupProcessor(validated_data)
+        return processor.process()
 
 
 class StoreSignUpSerializer(serializers.ModelSerializer):
@@ -98,8 +98,8 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: Dict[str, Any]):
         validated_data[ROLE] = User.Roles.STORE
-        handler = StoreSignupProcessor(validated_data)
-        return handler.process()
+        processor = StoreSignupProcessor(validated_data)
+        return processor.process()
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

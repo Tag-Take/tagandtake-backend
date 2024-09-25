@@ -75,10 +75,10 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
 
     def update(self, item: Item, validated_data: dict):
         image = validated_data.pop(IMAGE, None)
-        
+
         with transaction.atomic():
-            if validated_data: 
-                item =  ItemService.update_item(item, validated_data)
+            if validated_data:
+                item = ItemService.update_item(item, validated_data)
             if image:
                 ItemImageService.update_and_replace_item_image(item, image)
 

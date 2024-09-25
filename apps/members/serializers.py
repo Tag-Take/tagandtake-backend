@@ -47,6 +47,7 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
         )
         return member_notifications
 
+
 class MemberProfileImageUploadSerializer(serializers.Serializer):
     profile_photo = serializers.ImageField()
 
@@ -58,7 +59,7 @@ class MemberProfileImageUploadSerializer(serializers.Serializer):
     def save(self):
         memeber: MemberProfile = self.validated_data[PROFILE]
         file = self.validated_data[PROFILE_PHOTO]
-        member = MemberService.update_member_profile_photo(memeber, file) 
+        member = MemberService.update_member_profile_photo(memeber, file)
         return member
 
 

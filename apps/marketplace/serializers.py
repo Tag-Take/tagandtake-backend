@@ -33,8 +33,8 @@ class CreateListingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         item = validated_data.get(ITEM)
         tag = validated_data.get(TAG)
-        handler = ItemListingCreateProcessor(item, tag)
-        return handler.process()
+        processor = ItemListingCreateProcessor(item, tag)
+        return processor.process()
 
 
 class ItemListingSerializer(serializers.ModelSerializer):
