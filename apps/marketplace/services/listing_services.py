@@ -37,6 +37,28 @@ class ItemListingService:
             return ItemListing.objects.get(id=listing_id)
         except ItemListing.DoesNotExist:
             raise serializers.ValidationError("Listing does not exist.")
+        
+    @staticmethod
+    def get_item_listing_by_tag_id(tag_id: int, listing_model=ItemListing):
+        try:
+            listing = listing_model.objects.get(tag__id=tag_id)
+            return listing
+        except Tag.DoesNotExist:
+            raise serializers.ValidationError("Tag not found")
+        except listing_model.DoesNotExist:
+            raise serializers.ValidationError(
+                f"{listing_model.__name__} not found for the provided tag ID"
+            )
+        
+    @staticmethod
+    def get_item_listing_by_item_id(item_id: int, listing_model=ItemListing):
+        try:
+            listing = listing_model.objects.get(item__id=item_id)
+            return listing
+        except listing_model.DoesNotExist:
+            raise serializers.ValidationError(
+                f"{listing_model.__name__} not found for the provided item ID"
+            )
 
     @staticmethod
     def get_recall_reasons(reason_id: int):

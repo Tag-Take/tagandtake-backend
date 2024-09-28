@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 
 from apps.common.utils.responses import create_success_response, create_error_response
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.utils import get_item_listing_by_tag_id
+from apps.marketplace.services.listing_services import ItemListingService
 from apps.payments.services.stripe_services import (
     create_stripe_account,
     create_stripe_account_session,
@@ -85,7 +85,7 @@ def create_stripe_account_session_view(request: Request):
 def create_stripe_item_checkout_secssion_view(request: Request):
     try:
         tag_id = request.data.get(TAG_ID)
-        item_listing = get_item_listing_by_tag_id(tag_id)
+        item_listing = ItemListingService.get_item_listing_by_tag_id(tag_id)
 
         if not tag_id:
             return create_error_response(
