@@ -1,4 +1,4 @@
-from common.abstract_classes import AbstractProcessor
+from apps.common.abstract_classes import AbstractProcessor
 
 
 class ItemListingFailedPaymentProcessor(AbstractProcessor):

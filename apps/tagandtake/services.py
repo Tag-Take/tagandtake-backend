@@ -22,7 +22,7 @@ class SuppliesHandler:
         except Exception as e:
             raise e
 
-    def save_supplies_checkout_session(supplies_checkout_session, store, line_items):
+    def create_supplies_checkout_session(supplies_checkout_session, store, line_items):
         try:
             for item_data in line_items:
                 supply = StoreSupply.objects.get(stripe_price_id=item_data[PRICE])

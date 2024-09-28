@@ -13,7 +13,7 @@ from apps.payments.services.stripe_services import (
     create_stripe_item_checkout_session,
     create_stripe_supplies_checkout_session,
 )
-from apps.payments.services.transaction_services import CheckoutSessionHandler
+from apps.payments.services.checkout_services import CheckoutSessionService
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
 from apps.common.constants import (
     BUSINESS_TYPE,
@@ -95,8 +95,8 @@ def create_stripe_item_checkout_secssion_view(request: Request):
             )
 
         session = create_stripe_item_checkout_session(item_listing, tag_id)
-
-        CheckoutSessionHandler.save_item_checkout_session(session, item_listing)
+        
+        CheckoutSessionService.create_item_checkout_session(session, item_listing)
 
         return create_success_response(
             "Checkout session created successfully.",
@@ -135,7 +135,7 @@ def create_stripe_supplies_checkout_session_view(request: Request):
         try:
             session = create_stripe_supplies_checkout_session(line_items, store_id)
 
-            CheckoutSessionHandler.save_supplies_checkout_session(
+            CheckoutSessionService.create_supplies_checkout_session(
                 session, store, line_items
             )
 

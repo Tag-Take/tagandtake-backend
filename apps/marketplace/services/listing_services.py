@@ -1,7 +1,5 @@
 from datetime import timedelta
-from django.db import transaction
 from django.utils.timezone import now
-from decimal import Decimal
 
 from rest_framework import serializers
 from rest_framework.request import Request
@@ -21,13 +19,12 @@ from apps.stores.models import (
     StoreProfile,
     StoreOpeningHours,
 )
-from apps.notifications.emails.services.email_senders import ListingEmailSender
 from apps.marketplace.permissions import IsTagOwner
 from apps.items.permissions import IsItemOwner
 from apps.stores.permissions import IsStoreUser
 from apps.common.constants import ROLE, CONDITION, CATEGORY, PRICE
 from apps.marketplace.constants import ListingRole
-from apps.common.abstract_classes import BaseTaskRunner
+from apps.payments.models.transactions import ItemPaymentTransaction
 
 
 COLLECTION_PERIOD_DAYS = 21
@@ -102,12 +99,13 @@ class ItemListingService:
             reason=reason,
         )
 
-    def create_sold_listing(listing: ItemListing):
+    def create_sold_listing(listing: ItemListing, transaction: ItemPaymentTransaction):
         return SoldItemListing.objects.create(
             tag=listing.tag,
             item=listing.item,
             store_commission=listing.store_commission,
             min_listing_days=listing.min_listing_days,
+            transaction=transaction,
         )
 
     @staticmethod

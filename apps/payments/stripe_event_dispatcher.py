@@ -1,7 +1,7 @@
 import importlib
 import logging
 
-from apps.common.constants import PALTFORM, CONNECT
+from apps.common.constants import PALTFORM, CONNECT 
 
 
 class StripeEventDispatcher:
@@ -9,8 +9,9 @@ class StripeEventDispatcher:
         self, event_type: str, event_data: dict, connected_account: str = None
     ):
         self.event_type = event_type
+        self.event_group = event_type.split(".")[0]
         self.event_data = event_data
-        self.connected_account = connected_account
+        self.account_type = CONNECT if connected_account else PALTFORM
 
     def dispatch(self):
         event_handler = self.get_handler()
@@ -22,10 +23,7 @@ class StripeEventDispatcher:
                 logging.error(f"Error handling event '{self.event_type}': {str(e)}")
 
     def get_handler(self):
-        event_group = self.event_type.split(".")[0]
-        account_type = CONNECT if self.connected_account else PALTFORM
-        module_path = f"apps.payments.stripe_handlers.{account_type}_events.{event_group}_handlers"
-
+        module_path = self._get_module_path(self.account_type, self.event_group)
         try:
             handler_module = importlib.import_module(module_path)
             handler_name = self._to_camel_case(self.event_type) + "Handler"
@@ -35,20 +33,25 @@ class StripeEventDispatcher:
                 return handler_class
             else:
                 logging.error(
-                    f"Handler class '{handler_name}' not found in module '{module_path}' for event type: {self.event_type}"
+                    f"Handler class '{handler_name}' not found in module '{module_path}' for {self.account_type} event, {self.event_type}"
                 )
                 return None
-
-        except ModuleNotFoundError:
-            logging.error(
-                f"Module '{module_path}' not found for event group: {event_group} in {account_type}"
-            )
-            return None
+            
         except AttributeError:
             logging.error(
-                f"Failed to find handler class '{handler_name}' in module '{module_path}' for event type: {self.event_type}"
+                f"Failed to find handler '{handler_name}' in module '{module_path}' for {self.account_type} event, {self.event_type}"
             )
             return None
+        
+        except ModuleNotFoundError:
+            logging.error(
+                f"No module found for {self.account_type} event, {self.event_type}"
+            )
+            return None
+
+    @staticmethod
+    def _get_module_path(account_type: str, event_group: str) -> str:
+        return f"apps.payments.stripe_handlers.{account_type}_events.{event_group}_handlers"
 
     @staticmethod
     def _to_camel_case(event_type: str) -> str:

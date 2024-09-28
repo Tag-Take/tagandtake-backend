@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.tagandtake.models import StoreSupply
 from apps.tagandtake.serializers import SupplyOrderItemSerializer
 from apps.common.constants import SUPPLIES, SUPPLY, QUANTITY, PRICE
 
@@ -12,10 +13,11 @@ class SuppliesCheckoutSessionSerializer(serializers.Serializer):
 
         for supply in supplies:
             supply_obj = supply[SUPPLY]
-            if not supply_obj.stripe_price_id:
-                raise serializers.ValidationError(
-                    f"Supply ID {supply_obj.id} is missing Stripe price ID."
-                )
+            supply = StoreSupply.objects.filter(
+                stripe_price_id=supply_obj.get(PRICE)
+            ).first()
+            if not supply:
+                raise serializers.ValidationError("Supply does not exist.")
 
         return data
 

@@ -1,6 +1,7 @@
 from typing import Any, Dict
 from apps.marketplace.processors import ItemListingPurchaseProcessor
 from apps.stores.handlers import SuppliesPurchaseHandler
+from apps.tagandtake.processors import SuppliesPurchaseProcessManager
 from apps.payments.processors import (
     ItemListingFailedPaymentProcessor,
     SuppliesFailedPaymentProcessor,
@@ -23,8 +24,8 @@ class PaymentIntentSucceededHandler:
             processor = ItemListingPurchaseProcessor(self.payment_intent)
             processor.process()
         elif self.payment_intent[METADATA][PURCHASE] == SUPPLIES:
-            handler = SuppliesPurchaseHandler(self.payment_intent)
-            handler.handle()
+            handler = SuppliesPurchaseProcessManager(self.payment_intent)
+            handler.process_supplies()
 
 
 class PaymentIntentFailedHandler:
