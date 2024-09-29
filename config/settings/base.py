@@ -212,6 +212,7 @@ STATICFILES_DIRS = ["./static/"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # APP URLS
+OPERATIONS_EMAIL = "info@tagandtake.com"
 LOGO_URL = "https://your-logo-url.com/logo.png"
 LOGIN_ROUTE = "/login"
 HOW_IT_WORKS_ROUTE = "/how-it-works"

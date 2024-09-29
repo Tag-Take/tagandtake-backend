@@ -7,12 +7,7 @@ from rest_framework.decorators import api_view
 from apps.common.responses import create_success_response, create_error_response
 from apps.stores.models import StoreProfile as Store
 from apps.marketplace.services.listing_services import ItemListingService
-from apps.payments.services.stripe_services import (
-    create_stripe_account,
-    create_stripe_account_session,
-    create_stripe_item_checkout_session,
-    create_stripe_supplies_checkout_session,
-)
+from apps.payments.services.stripe_services import StripeService
 from apps.payments.services.checkout_services import CheckoutSessionService
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
 from apps.common.constants import (
@@ -39,7 +34,7 @@ def create_stripe_account_view(request: Request):
             )
 
         try:
-            account = create_stripe_account()
+            account = StripeService.create_stripe_account()
             return create_success_response(
                 "Stripe account created successfully.",
                 {ACCOUNT: account.id},
@@ -65,7 +60,7 @@ def create_stripe_account_session_view(request: Request):
     try:
         connected_account_id = request.data.get(ACCOUNT)
 
-        account_session = create_stripe_account_session(connected_account_id)
+        account_session = StripeService.create_stripe_account_session(connected_account_id)
 
         return create_success_response(
             "Stripe account session created successfully.",
@@ -94,7 +89,7 @@ def create_stripe_item_checkout_secssion_view(request: Request):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        session = create_stripe_item_checkout_session(item_listing, tag_id)
+        session = StripeService.create_stripe_item_checkout_session(item_listing, tag_id)
 
         CheckoutSessionService.create_item_checkout_session(session, item_listing)
 
@@ -133,7 +128,7 @@ def create_stripe_supplies_checkout_session_view(request: Request):
         line_items = serializer.save()
 
         try:
-            session = create_stripe_supplies_checkout_session(line_items, store_id)
+            session = StripeService.create_stripe_supplies_checkout_session(line_items, store_id)
 
             CheckoutSessionService.create_supplies_checkout_session(
                 session, store, line_items

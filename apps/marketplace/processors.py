@@ -8,6 +8,7 @@ from apps.stores.models import Tag
 from apps.items.services import ItemService
 from apps.marketplace.models import ItemListing, RecalledItemListing, RecallReason
 from apps.payments.services.transaction_services import TransactionService
+from apps.payments.models.transactions import ItemPaymentTransaction
 from apps.common.constants import METADATA, ITEM_ID
 
 
@@ -179,38 +180,28 @@ class ItemListingAbandonedProcessor(AbstractProcessor):
 
 
 class ItemListingPurchaseProcessor(AbstractProcessor):
-    def __init__(self, purchase_event_obj: dict):
-        self.event = purchase_event_obj
+    def __init__(self, listing: ItemListing, payment_trasaction: ItemPaymentTransaction):
+        self.listing = listing,
+        self.transaction = payment_trasaction
+
 
     @transaction.atomic
     def process(self):
-        listing = self._get_listing()
-        transaction = self.update_or_create_transaction()
-        sold_listing = self._create_sold_listing(listing, transaction)
-        self._purchase_item(listing.item)
-        self._delete_listing(listing)
-        self._send_notifications(sold_listing)
+        sold_listing = self._create_sold_listing()
+        self._delete_listing()
+        self._purchase_item(sold_listing.item)
 
-    def _get_listing(self):
-        return ItemListingService.get_item_listing_by_item_id(
-            self.event[METADATA][ITEM_ID]
-        )
+        return sold_listing
 
-    def update_or_create_transaction(self):
-        return TransactionService().upsert_item_transaction(self.event)
 
-    @staticmethod
-    def _create_sold_listing(listing, transaction):
-        return ItemListingService.create_sold_listing(listing, transaction)
+    def _create_sold_listing(self):
+        return ItemListingService.create_sold_listing(self.listing, self.transaction)
 
-    @staticmethod
-    def _delete_listing(listing):
-        ItemListingService.delete_listing(listing)
+    def _delete_listing(self):
+        ItemListingService.delete_listing(self.listing)
 
     @staticmethod
     def _purchase_item(item):
         ItemService.purchase_item(item)
 
-    @staticmethod
-    def _send_notifications(listing):
-        ListingEmailSender.send_listing_sold_email(listing)
+

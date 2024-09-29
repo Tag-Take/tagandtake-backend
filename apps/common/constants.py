@@ -36,6 +36,7 @@ TYPE: str = "type"
 CODE: str = "code"
 OBJECT: str = "object"
 ACCOUNT: str = "account"
+INTERNAL: str = "internal"
 
 # ACCOUNTS
 USER: str = "user"
@@ -195,6 +196,9 @@ CLIENT_SECRET: str = "client_secret"
 SESSION_ID: str = "session_id"
 ACCOUNT_SESSION: str = "account_session"
 ACCEPTING_LISTINGS: str = "accepting_listings"
+CUSTOMER_DETAILS: str = "customer_details"
+PAYMENT_INTENT: str = "payment_intent"
+PAYMENT_INTENT_ID: str = "payment_intent_id"
 
 # TAGANDTAKE
 SUPPLY: str = "supply"

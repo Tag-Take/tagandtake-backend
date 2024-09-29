@@ -4,12 +4,12 @@ from django.utils.translation import gettext_lazy as _
 from apps.items.models import Item
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.payments.models.providers import PaymentProvider
-
 
 class BaseChekoutSession(models.Model):
 
     session_id = models.CharField(max_length=255, unique=True)
+    payment_intent_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    status = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -31,11 +31,11 @@ class BasePaymentTransaction(models.Model):
         SUCCEEDED = "succeeded", _("Succeeded")
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     payment_intent_id = models.CharField(
         max_length=255, unique=True, null=True, blank=True
     )
-    payment_status = models.CharField(max_length=50, choices=PaymentStatuses, null=True)
+    status = models.CharField(max_length=50, choices=PaymentStatuses, null=True)
+    processed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -73,13 +73,16 @@ class ItemPaymentTransaction(BasePaymentTransaction):
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="item_transactions"
     )
-    buyer_email = models.EmailField(null=True, blank=True)
-    seller = models.ForeignKey(
+    member = models.ForeignKey(
         Member, on_delete=models.CASCADE, related_name="item_transactions"
     )
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_item_transactions"
     )
+    store_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    member_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    transaction_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    buyer_email = models.EmailField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Transaction {self.id} - {self.status}"

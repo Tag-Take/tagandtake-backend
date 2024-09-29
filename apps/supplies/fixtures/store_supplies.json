@@ -1,6 +1,6 @@
 [
     {
-        "model": "tagandtake.StoreSupply",
+        "model": "supplies.StoreSupply",
         "pk": 1,
         "fields": {
             "name": "50 QR Security Tags",
@@ -10,7 +10,7 @@
         }
     },
     {
-        "model": "tagandtake.StoreSupply",
+        "model": "supplies.StoreSupply",
         "pk": 2,
         "fields": {
             "name": "Starter Pack",
@@ -20,7 +20,7 @@
         }
     },
     {
-        "model": "tagandtake.StoreSupply",
+        "model": "supplies.StoreSupply",
         "pk": 3,
         "fields": {
             "name": "Magnets",

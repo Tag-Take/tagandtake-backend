@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = "Sync store supplies from fixtures (JSON files)"
 
     def handle(self, *args, **options):
-        base_dir = "apps/tagandtake/fixtures"
+        base_dir = "apps/supplies/fixtures"
 
         # Sync store supplies
         store_supplies_file = os.path.join(base_dir, "store_supplies.json")

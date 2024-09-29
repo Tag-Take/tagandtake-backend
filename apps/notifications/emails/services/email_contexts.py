@@ -9,7 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from apps.common.constants import *
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing
+from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing, SoldItemListing
 
 
 class AccountEmailContextGenerator:
@@ -106,6 +106,16 @@ class ListingEmailContextGenerator:
             }
         )
         return base_context
+    
+    def generate_item_purchased_context(self, listing: SoldItemListing):
+        base_context = self.get_base_context(listing)
+        sale_price = listing.transaction.amount
+        base_context.update(
+            {
+                SALE_PRICE: sale_price,
+            }
+        )
+        return base_context
 
     def generate_item_recalled_context(
         self, listing: RecalledItemListing, recall_reason: RecallReason
@@ -136,21 +146,6 @@ class ListingEmailContextGenerator:
         base_context.update(
             {
                 STORE_NAME: self.store.store_name,
-            }
-        )
-        return base_context
-
-    def generate_initial_storage_fee_context(
-        self, recalled_listing: RecalledItemListing
-    ):
-        next_charge_at = recalled_listing.collection_deadline
-        base_context = self.get_base_context(recalled_listing)
-        base_context.update(
-            {
-                STORE_NAME: self.store.store_name,
-                STORAGE_FEE: f"{recalled_listing.last_fee_charge_amount}",
-                NEXT_CHARGE_TIME: next_charge_at.strftime("%H:%M %p"),
-                NEXT_CHARGE_DATE: next_charge_at.strftime("%B %d, %Y"),
             }
         )
         return base_context

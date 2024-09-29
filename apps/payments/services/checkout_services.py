@@ -9,10 +9,22 @@ from apps.supplies.models import (
 )
 from apps.marketplace.models import ItemListing
 from apps.stores.models import StoreProfile as Store
-from apps.common.constants import QUANTITY, PRICE, AMOUNT_TOTAL
+from apps.common.constants import QUANTITY, PRICE, AMOUNT_TOTAL, ID, STATUS, PAYMENT_INTENT
 
 
 class CheckoutSessionService:
+
+    @staticmethod
+    def create_item_checkout_session(
+        session: stripe.checkout.Session,
+        item_listing: ItemListing,
+    ):
+        ItemCheckoutSession.objects.create(
+            item=item_listing.item_details,
+            store=item_listing.store,
+            session_id=session.id,
+            
+        )
 
     @staticmethod
     def create_supplies_checkout_session(
@@ -24,17 +36,6 @@ class CheckoutSessionService:
 
         CheckoutSessionService.create_supply_checkout_items(
             supplies_checkout_session, store.id, line_items
-        )
-
-    @staticmethod
-    def create_item_checkout_session(
-        session: stripe.checkout.Session,
-        item_listing: ItemListing,
-    ):
-        ItemCheckoutSession.objects.create(
-            item=item_listing.item_details,
-            store=item_listing.store,
-            session_id=session.id,
         )
 
     @staticmethod
@@ -54,6 +55,18 @@ class CheckoutSessionService:
                     item_price=supply.price,
                     total_price=session[AMOUNT_TOTAL],
                 )
+
+        except Exception as e:
+            raise
+
+    @staticmethod
+    def update_item_checkout_session(event_data_obj: Dict[str, str]):
+        try:
+            session_id = event_data_obj[ID]
+            session = ItemCheckoutSession.objects.get(session_id=session_id)
+            session.status = event_data_obj[STATUS]
+            session.payment_intent_id = event_data_obj[PAYMENT_INTENT]
+            session.save()
 
         except Exception as e:
             raise

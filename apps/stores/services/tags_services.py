@@ -1,5 +1,6 @@
 import qrcode
 from io import BytesIO
+import zipfile
 
 from django.conf import settings
 from django.db import transaction
@@ -11,6 +12,7 @@ from apps.common.constants import LISTING
 from apps.common.s3.s3_utils import S3Service
 from apps.common.s3.s3_config import get_tag_image_key
 from apps.common.constants import LISTING
+from apps.notifications.emails.services.email_senders import OperationsEmailSender
 
 
 class TagService:
@@ -65,3 +67,24 @@ class TagService:
             listing_url = TagService.get_listing_url(tag)
             tag_image = TagService.generate_tag_image(listing_url)
             TagService.upload_tag_image(tag, tag_image)
+
+    @staticmethod
+    def generate_tag_group_images_zipfile(tag_group):
+        tags = tag_group.tags.all()
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for tag in tags:
+                listing_url = TagService.get_listing_url(tag)
+                tag_image = TagService.generate_tag_image(listing_url)
+                filename = f"tag_{tag.id}.png"
+                zip_file.writestr(filename, tag_image.read())
+        zip_buffer.seek(0)
+        return zip_buffer
+
+    @staticmethod
+    def send_tag_images_email(tag_group):
+        zip_file = TagService.generate_tag_group_images_zipfile(tag_group)
+
+        attachment = (f"tag_images_{tag_group.id}.zip", zip_file.read(), "application/zip")
+
+        OperationsEmailSender.send_tag_images_email(tag_group, attachment)

@@ -9,7 +9,7 @@ from django.utils.html import strip_tags
 
 
 def send_email(
-    subject: str, to: str, template_name: str, context=None, from_email=None
+    subject: str, to: str, template_name: str, context=None, from_email=None, attachment=None
 ):
     """
     Generic function to send emails using Django's built-in email backend.
@@ -21,12 +21,12 @@ def send_email(
     :param context: Context to render the template with.
     :param from_email: Sender's email address. Defaults to settings.DEFAULT_FROM_EMAIL.
     """
-    send_email_task.delay(subject, to, template_name, context, from_email)
+    send_email_task.delay(subject, to, template_name, context, from_email, attachment)
 
 
 @shared_task
 def send_email_task(
-    subject: str, to: str, template_name: str, context=None, from_email=None
+    subject: str, to: str, template_name: str, context=None, from_email=None, attachment=None
 ):
     """
     Celery task to send emails using Django's built-in email backend.
@@ -66,4 +66,9 @@ def send_email_task(
         to=[to],
     )
     email_message.attach_alternative(html_message, "text/html")
+
+    if attachment:
+        filename, file_content, mime_type = attachment
+        email_message.attach(filename, file_content, mime_type)
+
     email_message.send()

@@ -1,7 +1,8 @@
 # emails/senders.py
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
-from apps.common.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS
+from apps.common.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS, INTERNAL
 from apps.notifications.emails.services.email_service import send_email
 from apps.notifications.emails.services.email_contexts import (
     AccountEmailContextGenerator,
@@ -12,7 +13,7 @@ from apps.notifications.emails.services.email_contexts import (
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import ItemListing, RecalledItemListing
+from apps.marketplace.models import ItemListing, RecalledItemListing, SoldItemListing
 
 
 class AccountEmailSender:
@@ -109,6 +110,17 @@ class ListingEmailSender(ListingEmailContextGenerator):
             context=context,
         )
 
+    def send_listing_purchased_email(listing: SoldItemListing):
+        context_generator = ListingEmailContextGenerator()
+        context = context_generator.generate_item_purchased_context(listing)
+        item = listing.item.name
+        send_email(
+            subject=f"Purchase Confirmation - {item}",  
+            to=listing.transaction.buyer_email,
+            template_name=f"{ACTION_TRIGGERED}/item_purchased.html",
+            context=context,
+        )
+
     def send_listing_recalled_email(listing: ItemListing, recall_reason: int):
         context_generator = ListingEmailContextGenerator()
         context = context_generator.generate_item_recalled_context(
@@ -179,4 +191,16 @@ class ListingEmailSender(ListingEmailContextGenerator):
             to=recalled_listing.item.owner.email,
             template_name=f"{ACTION_TRIGGERED}/new_collection_pin.html",
             context=context,
+        )
+
+
+class OperationsEmailSender:
+
+    def send_tag_images_email(tag_group, attachment): 
+        send_email(
+            subject=f"Tag Images - Group {tag_group.id}",
+            to=settings.OPERATIONS_EMAIL,
+            template_name=f"{INTERNAL}/tag_images.html",
+            context={"tag_group": tag_group.id},
+            attachment=attachment,
         )
