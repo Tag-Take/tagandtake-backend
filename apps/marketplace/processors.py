@@ -181,7 +181,7 @@ class ItemListingAbandonedProcessor(AbstractProcessor):
 
 class ItemListingPurchaseProcessor(AbstractProcessor):
     def __init__(self, listing: ItemListing, payment_trasaction: ItemPaymentTransaction):
-        self.listing = listing,
+        self.listing = listing
         self.transaction = payment_trasaction
 
 

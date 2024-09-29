@@ -8,6 +8,7 @@ from apps.supplies.models import (
     SuppliesCheckoutSession,
 )
 from apps.marketplace.models import ItemListing
+from apps.payments.utils import from_stripe_amount
 from apps.stores.models import StoreProfile as Store
 from apps.common.constants import QUANTITY, PRICE, AMOUNT_TOTAL, ID, STATUS, PAYMENT_INTENT
 
@@ -35,12 +36,12 @@ class CheckoutSessionService:
         )
 
         CheckoutSessionService.create_supply_checkout_items(
-            supplies_checkout_session, store.id, line_items
+            supplies_checkout_session, store, line_items
         )
 
     @staticmethod
     def create_supply_checkout_items(
-        session: SuppliesCheckoutSession, store_id, line_items: list[Dict[str, str]]
+        session: SuppliesCheckoutSession, store, line_items: list[Dict[str, str]]
     ):
         try:
             for item_data in line_items:
@@ -48,16 +49,16 @@ class CheckoutSessionService:
                 quantity = item_data[QUANTITY]
 
                 SupplyCheckoutItem.objects.create(
-                    session=session,
-                    store=store_id,
+                    checkout_session=session,
+                    store=store,
                     supply=supply,
                     quantity=quantity,
                     item_price=supply.price,
-                    total_price=session[AMOUNT_TOTAL],
                 )
 
         except Exception as e:
             raise
+
 
     @staticmethod
     def update_item_checkout_session(event_data_obj: Dict[str, str]):

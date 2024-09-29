@@ -20,18 +20,22 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Successfully synced store supplies"))
 
+
     def sync_store_supplies(self, store_supplies_data: dict):
         existing_supplies = StoreSupply.objects.values_list(NAME, flat=True)
         new_supplies = [supply[FIELDS][NAME] for supply in store_supplies_data]
 
-        # Add new supplies
-        for supply_name in new_supplies:
-            if supply_name not in existing_supplies:
-                supply_data = next(
-                    s[FIELDS]
-                    for s in store_supplies_data
-                    if s[FIELDS][NAME] == supply_name
+        for supply in store_supplies_data:
+            supply_data = supply[FIELDS]
+            supply_name = supply_data[NAME]
+
+            if supply_name in existing_supplies:
+                StoreSupply.objects.filter(name=supply_name).update(
+                    description=supply_data[DESCRIPTION],
+                    stripe_price_id=supply_data[STRIPE_PRICE_ID],
+                    price=supply_data[PRICE],
                 )
+            else:
                 StoreSupply.objects.create(
                     name=supply_data[NAME],
                     description=supply_data[DESCRIPTION],
@@ -39,7 +43,7 @@ class Command(BaseCommand):
                     price=supply_data[PRICE],
                 )
 
-        # Remove old supplies
         for supply_name in existing_supplies:
             if supply_name not in new_supplies:
                 StoreSupply.objects.filter(name=supply_name).delete()
+

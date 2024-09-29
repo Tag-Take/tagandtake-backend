@@ -14,7 +14,7 @@ class SuppliesCheckoutSessionSerializer(serializers.Serializer):
         for supply in supplies:
             supply_obj = supply[SUPPLY]
             supply = StoreSupply.objects.filter(
-                stripe_price_id=supply_obj.get(PRICE)
+                stripe_price_id=supply_obj.stripe_price_id
             ).first()
             if not supply:
                 raise serializers.ValidationError("Supply does not exist.")

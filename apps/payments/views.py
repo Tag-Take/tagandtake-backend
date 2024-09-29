@@ -113,7 +113,9 @@ def create_stripe_item_checkout_secssion_view(request: Request):
 def create_stripe_supplies_checkout_session_view(request: Request):
     user = request.user
     if user.is_anonymous:
-        store_id = 1
+        # get first store 
+        store = Store.objects.first()
+        store_id = store.id
     else:
         try:
             store = Store.objects.get(user=user)

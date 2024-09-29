@@ -1,4 +1,5 @@
 from typing import Dict
+import json 
 from django.conf import settings
 import stripe
 import stripe.checkout
@@ -67,9 +68,9 @@ class StripeService:
     def create_stripe_supplies_checkout_session(
         line_items: list[Dict[str, str]], store_id: str
     ):
-        metadata = {PURCHASE: SUPPLIES, STORE_ID: store_id, LINE_ITEMS: line_items}
+        metadata = {PURCHASE: SUPPLIES, STORE_ID: store_id, LINE_ITEMS: json.dumps(line_items)}
         return stripe.checkout.Session.create(
-            payment_method_types=["card"],
+            ui_mode="embedded",
             line_items=line_items,
             mode="payment",
             payment_intent_data={METADATA: metadata},
@@ -79,6 +80,7 @@ class StripeService:
     
     def get_buyer_email_from_payment_intent(payment_intent_id: str):
         checkout_sessions = stripe.checkout.Session.list(payment_intent=payment_intent_id)
-        if checkout_sessions:
-            return checkout_sessions[0].customer_details.email 
+        if checkout_sessions.data:
+            return checkout_sessions.data[0].customer_details.email
         return None
+

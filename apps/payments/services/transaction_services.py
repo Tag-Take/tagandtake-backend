@@ -58,8 +58,8 @@ class TransactionService:
     @staticmethod
     def _get_base_item_transaction_data(event_data_obj: Dict[str, Any]):
         amount = from_stripe_amount(event_data_obj[AMOUNT])
-        item = ItemService.get_item(id=event_data_obj[METADATA][ITEM_ID])
-        store = StoreService.get_store(id=event_data_obj[METADATA][STORE_ID])
+        item = ItemService.get_item(event_data_obj[METADATA][ITEM_ID])
+        store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
         buyer_email = StripeService.get_buyer_email_from_payment_intent(event_data_obj[ID])
         return {
             AMOUNT: amount,
