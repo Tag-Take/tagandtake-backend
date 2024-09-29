@@ -60,7 +60,9 @@ def create_stripe_account_session_view(request: Request):
     try:
         connected_account_id = request.data.get(ACCOUNT)
 
-        account_session = StripeService.create_stripe_account_session(connected_account_id)
+        account_session = StripeService.create_stripe_account_session(
+            connected_account_id
+        )
 
         return create_success_response(
             "Stripe account session created successfully.",
@@ -89,7 +91,9 @@ def create_stripe_item_checkout_secssion_view(request: Request):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        session = StripeService.create_stripe_item_checkout_session(item_listing, tag_id)
+        session = StripeService.create_stripe_item_checkout_session(
+            item_listing, tag_id
+        )
 
         CheckoutSessionService.create_item_checkout_session(session, item_listing)
 
@@ -113,7 +117,7 @@ def create_stripe_item_checkout_secssion_view(request: Request):
 def create_stripe_supplies_checkout_session_view(request: Request):
     user = request.user
     if user.is_anonymous:
-        # get first store 
+        # get first store
         store = Store.objects.first()
         store_id = store.id
     else:
@@ -130,7 +134,9 @@ def create_stripe_supplies_checkout_session_view(request: Request):
         line_items = serializer.save()
 
         try:
-            session = StripeService.create_stripe_supplies_checkout_session(line_items, store_id)
+            session = StripeService.create_stripe_supplies_checkout_session(
+                line_items, store_id
+            )
 
             CheckoutSessionService.create_supplies_checkout_session(
                 session, store, line_items

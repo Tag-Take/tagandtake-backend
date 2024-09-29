@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, Dict, List
 
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -9,7 +10,13 @@ from django.contrib.auth.tokens import default_token_generator
 from apps.common.constants import *
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListing, SoldItemListing
+from apps.supplies.models import StoreSupply
+from apps.marketplace.models import (
+    ItemListing,
+    RecallReason,
+    RecalledItemListing,
+    SoldItemListing,
+)
 
 
 class AccountEmailContextGenerator:
@@ -106,7 +113,7 @@ class ListingEmailContextGenerator:
             }
         )
         return base_context
-    
+
     def generate_item_purchased_context(self, listing: SoldItemListing):
         base_context = self.get_base_context(listing)
         sale_price = listing.transaction.amount
@@ -183,3 +190,38 @@ class ListingEmailContextGenerator:
         base_context = self.get_base_context(recalled_listing)
         base_context.update({COLLECTION_PIN: collection_pin})
         return base_context
+
+
+class SuppliesEmailContextGenerator:
+    def __init__(self, store: Store, line_items: List[Dict[str, Any]]):
+        self.store = store
+        self.line_items = line_items
+
+    def generate_supplies_purchase_context(self):
+        supplies_details = []
+        order_total = 0
+
+        for item in self.line_items:
+            supply = StoreSupply.objects.get(stripe_price_id=item.get(PRICE))
+            quantity = item.get(QUANTITY, 1)
+            item_price = supply.price
+            total_price = item_price * quantity
+
+            supplies_details.append(
+                {
+                    NAME: supply.name,
+                    QUANTITY: quantity,
+                    PRICE: item_price,
+                    TOTAL_PRICE: total_price,
+                }
+            )
+
+            order_total += total_price
+
+        context = {
+            STORE_NAME: self.store.store_name,
+            SUPPLIES: supplies_details,
+            ORDER_TOTAL: order_total,
+            CURRENT_YEAR: datetime.now().year,
+        }
+        return context

@@ -8,9 +8,8 @@ from apps.supplies.models import (
     SuppliesCheckoutSession,
 )
 from apps.marketplace.models import ItemListing
-from apps.payments.utils import from_stripe_amount
 from apps.stores.models import StoreProfile as Store
-from apps.common.constants import QUANTITY, PRICE, AMOUNT_TOTAL, ID, STATUS, PAYMENT_INTENT
+from apps.common.constants import QUANTITY, PRICE, ID, STATUS, PAYMENT_INTENT
 
 
 class CheckoutSessionService:
@@ -24,7 +23,6 @@ class CheckoutSessionService:
             item=item_listing.item_details,
             store=item_listing.store,
             session_id=session.id,
-            
         )
 
     @staticmethod
@@ -59,7 +57,6 @@ class CheckoutSessionService:
         except Exception as e:
             raise
 
-
     @staticmethod
     def update_item_checkout_session(event_data_obj: Dict[str, str]):
         try:
@@ -72,3 +69,14 @@ class CheckoutSessionService:
         except Exception as e:
             raise
 
+    @staticmethod
+    def update_supplies_checkout_session(event_data_obj: Dict[str, str]):
+        try:
+            session_id = event_data_obj[ID]
+            session = SuppliesCheckoutSession.objects.get(session_id=session_id)
+            session.status = event_data_obj[STATUS]
+            session.payment_intent_id = event_data_obj[PAYMENT_INTENT]
+            session.save()
+
+        except Exception as e:
+            raise

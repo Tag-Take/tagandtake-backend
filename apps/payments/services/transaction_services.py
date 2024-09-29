@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from django.db import transaction   
+from django.db import transaction
 
 from apps.payments.models.transactions import SuppliesPaymentTransaction
 from apps.payments.models.transactions import (
@@ -36,7 +36,7 @@ class TransactionService:
             transaction.save()
 
         return transaction
-    
+
     @transaction.atomic
     def upsert_supplies_transaction(self, event_data_obj: Dict[str, Any]):
         event_id = {PAYMENT_INTENT_ID: event_data_obj[ID]}
@@ -60,7 +60,9 @@ class TransactionService:
         amount = from_stripe_amount(event_data_obj[AMOUNT])
         item = ItemService.get_item(event_data_obj[METADATA][ITEM_ID])
         store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
-        buyer_email = StripeService.get_buyer_email_from_payment_intent(event_data_obj[ID])
+        buyer_email = StripeService.get_buyer_email_from_payment_intent(
+            event_data_obj[ID]
+        )
         return {
             AMOUNT: amount,
             ITEM: item,
@@ -76,9 +78,11 @@ class TransactionService:
 
     @staticmethod
     def _get_supplies_transaction_data(event_data_obj: Dict[str, Any]):
+        amount = from_stripe_amount(event_data_obj[AMOUNT])
+        store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
         return {
-            AMOUNT: event_data_obj[METADATA][AMOUNT],
-            STORE: Store.objects.get(id=event_data_obj[METADATA][STORE_ID]),
+            AMOUNT: amount,
+            STORE: store,
             STATUS: event_data_obj[STATUS],
         }
 
@@ -101,5 +105,3 @@ class TransactionService:
             error_message=payment_intent[LAST_PAYMENT_ERROR][MESSAGE],
             error_code=payment_intent[LAST_PAYMENT_ERROR][CODE],
         )
-    
-

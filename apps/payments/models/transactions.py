@@ -5,10 +5,13 @@ from apps.items.models import Item
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
 
+
 class BaseChekoutSession(models.Model):
 
     session_id = models.CharField(max_length=255, unique=True)
-    payment_intent_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    payment_intent_id = models.CharField(
+        max_length=255, unique=True, null=True, blank=True
+    )
     status = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -79,7 +82,9 @@ class ItemPaymentTransaction(BasePaymentTransaction):
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_item_transactions"
     )
-    store_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    store_commission = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00
+    )
     member_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     transaction_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     buyer_email = models.EmailField(max_length=255, blank=True, null=True)

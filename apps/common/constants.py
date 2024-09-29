@@ -37,6 +37,8 @@ CODE: str = "code"
 OBJECT: str = "object"
 ACCOUNT: str = "account"
 INTERNAL: str = "internal"
+TOTAL_PRICE: str = "total_price"
+ORDER_TOTAL: str = "order_total"
 
 # ACCOUNTS
 USER: str = "user"

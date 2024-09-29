@@ -46,10 +46,8 @@ class SupplyOrderItem(models.Model):
         related_name="supply_order",
         on_delete=models.CASCADE,
     )
-    store = (
-        models.ForeignKey(
-            Store, on_delete=models.CASCADE, related_name="store_supply_order"
-        ),
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="store_supply_order"
     )
     supply = models.ForeignKey(StoreSupply, on_delete=models.CASCADE)
     quantity = models.IntegerField()

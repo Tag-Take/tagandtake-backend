@@ -1,5 +1,5 @@
 from typing import Dict
-import json 
+import json
 from django.conf import settings
 import stripe
 import stripe.checkout
@@ -10,7 +10,7 @@ from apps.common.constants import *
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
-class StripeService: 
+class StripeService:
     def create_stripe_account(business_type: str):
         return stripe.Account.create(
             business_type=business_type,
@@ -24,7 +24,6 @@ class StripeService:
             country="GB",
         )
 
-
     def create_stripe_account_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
@@ -32,7 +31,6 @@ class StripeService:
                 "account_onboarding": {"enabled": True},
             },
         )
-
 
     def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id: str):
         metadata = {
@@ -64,23 +62,27 @@ class StripeService:
             metadata=metadata,
         )
 
-
     def create_stripe_supplies_checkout_session(
         line_items: list[Dict[str, str]], store_id: str
     ):
-        metadata = {PURCHASE: SUPPLIES, STORE_ID: store_id, LINE_ITEMS: json.dumps(line_items)}
+        metadata = {
+            PURCHASE: SUPPLIES,
+            STORE_ID: store_id,
+            LINE_ITEMS: json.dumps(line_items),
+        }
         return stripe.checkout.Session.create(
             ui_mode="embedded",
             line_items=line_items,
-            mode="payment",
             payment_intent_data={METADATA: metadata},
             metadata=metadata,
+            mode="payment",
             return_url=f"{settings.FRONTEND_URL}/store/supplies/return?session_id={{CHECKOUT_SESSION_ID}}",
         )
-    
+
     def get_buyer_email_from_payment_intent(payment_intent_id: str):
-        checkout_sessions = stripe.checkout.Session.list(payment_intent=payment_intent_id)
+        checkout_sessions = stripe.checkout.Session.list(
+            payment_intent=payment_intent_id
+        )
         if checkout_sessions.data:
             return checkout_sessions.data[0].customer_details.email
         return None
-

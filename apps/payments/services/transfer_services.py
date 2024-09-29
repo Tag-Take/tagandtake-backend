@@ -31,7 +31,7 @@ class TransferService:
         try:
             account = TransferService.get_member_payment_account(
                 event_data_obj[METADATA][MEMBER_ID]
-                )
+            )
             stripe_amount = to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS])
             stripe.Transfer.create(
                 amount=stripe_amount,
@@ -56,7 +56,7 @@ class TransferService:
             account = TransferService.get_store_payment_account(
                 event_data_obj[METADATA][STORE_ID]
             )
-            stripe_amount=to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT]),
+            stripe_amount = (to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT]),)
             stripe.Transfer.create(
                 amount=stripe_amount,
                 currency="gbp",
@@ -75,6 +75,6 @@ class TransferService:
     @staticmethod
     def get_member_payment_account(member_id: str):
         return MemberPaymentAccount.objects.get(member__id=member_id)
-    
+
     def get_store_payment_account(store_id: str):
         return StorePaymentAccount.objects.get(store__id=store_id)

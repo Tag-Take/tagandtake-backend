@@ -1,5 +1,5 @@
 from apps.payments.models.transactions import SuppliesPaymentTransaction
-from apps.supplies.models import StoreSupply, SupplyCheckoutItem, SupplyOrderItem
+from apps.supplies.models import StoreSupply, SupplyOrderItem
 from apps.common.constants import QUANTITY, PRICE
 
 
@@ -14,7 +14,7 @@ class SuppliesServices:
 
     @staticmethod
     def create_supplies_order_items(
-        transaction: SuppliesPaymentTransaction, store_id, line_items
+        transaction: SuppliesPaymentTransaction, store, line_items
     ):
         try:
             for item_data in line_items:
@@ -23,7 +23,7 @@ class SuppliesServices:
 
                 SupplyOrderItem.objects.create(
                     order=transaction,
-                    store=store_id,
+                    store=store,
                     supply=supply,
                     quantity=quantity,
                     item_price=supply.price,

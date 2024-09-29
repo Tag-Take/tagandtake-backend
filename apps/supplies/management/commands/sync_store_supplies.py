@@ -20,7 +20,6 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Successfully synced store supplies"))
 
-
     def sync_store_supplies(self, store_supplies_data: dict):
         existing_supplies = StoreSupply.objects.values_list(NAME, flat=True)
         new_supplies = [supply[FIELDS][NAME] for supply in store_supplies_data]
@@ -46,4 +45,3 @@ class Command(BaseCommand):
         for supply_name in existing_supplies:
             if supply_name not in new_supplies:
                 StoreSupply.objects.filter(name=supply_name).delete()
-

@@ -180,10 +180,11 @@ class ItemListingAbandonedProcessor(AbstractProcessor):
 
 
 class ItemListingPurchaseProcessor(AbstractProcessor):
-    def __init__(self, listing: ItemListing, payment_trasaction: ItemPaymentTransaction):
+    def __init__(
+        self, listing: ItemListing, payment_trasaction: ItemPaymentTransaction
+    ):
         self.listing = listing
         self.transaction = payment_trasaction
-
 
     @transaction.atomic
     def process(self):
@@ -192,7 +193,6 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
         self._purchase_item(sold_listing.item)
 
         return sold_listing
-
 
     def _create_sold_listing(self):
         return ItemListingService.create_sold_listing(self.listing, self.transaction)
@@ -203,5 +203,3 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
     @staticmethod
     def _purchase_item(item):
         ItemService.purchase_item(item)
-
-

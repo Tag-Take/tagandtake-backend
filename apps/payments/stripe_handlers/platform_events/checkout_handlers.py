@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from apps.payments.services.transaction_services import TransactionService
+from apps.payments.services.checkout_services import CheckoutSessionService
 from apps.common.constants import METADATA, PURCHASE, ITEM, SUPPLIES, ID
 
 
@@ -12,9 +12,10 @@ class CheckoutSessionCompletedHandler:
     def handle(self):
 
         if self.purchase_type == ITEM:
-            print(f"Item purchase. Upserting item transaction for checkout session: {self.checkout_session[ID]}")
-            TransactionService().upsert_item_transaction(self.checkout_session)
+            CheckoutSessionService.update_item_checkout_session(self.checkout_session)
         elif self.purchase_type == SUPPLIES:
-            TransactionService().upsert_supplies_transaction(self.checkout_session)
+            CheckoutSessionService.update_supplies_checkout_session(
+                self.checkout_session
+            )
         else:
             raise ValueError(f"Invalid purchase type{self.purchase_type}")

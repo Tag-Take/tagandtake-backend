@@ -72,7 +72,7 @@ class TagService:
     def generate_tag_group_images_zipfile(tag_group):
         tags = tag_group.tags.all()
         zip_buffer = BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for tag in tags:
                 listing_url = TagService.get_listing_url(tag)
                 tag_image = TagService.generate_tag_image(listing_url)
@@ -85,6 +85,10 @@ class TagService:
     def send_tag_images_email(tag_group):
         zip_file = TagService.generate_tag_group_images_zipfile(tag_group)
 
-        attachment = (f"tag_images_{tag_group.id}.zip", zip_file.read(), "application/zip")
+        attachment = (
+            f"tag_images_{tag_group.id}.zip",
+            zip_file.read(),
+            "application/zip",
+        )
 
         OperationsEmailSender.send_tag_images_email(tag_group, attachment)

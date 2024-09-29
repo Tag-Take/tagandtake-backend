@@ -9,6 +9,7 @@ from apps.notifications.emails.services.email_contexts import (
     MemberEmailContextGenerator,
     StoreEmailContextGenerator,
     ListingEmailContextGenerator,
+    SuppliesEmailContextGenerator,
 )
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
@@ -115,7 +116,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         context = context_generator.generate_item_purchased_context(listing)
         item = listing.item.name
         send_email(
-            subject=f"Purchase Confirmation - {item}",  
+            subject=f"Purchase Confirmation - {item}",
             to=listing.transaction.buyer_email,
             template_name=f"{ACTION_TRIGGERED}/item_purchased.html",
             context=context,
@@ -194,9 +195,22 @@ class ListingEmailSender(ListingEmailContextGenerator):
         )
 
 
-class OperationsEmailSender:
+class SuppliesEmailSender:
+    @staticmethod
+    def send_supplies_purchased_email(store: Store, supplies):
+        context_generator = SuppliesEmailContextGenerator(store, supplies)
+        context = context_generator.generate_supplies_purchase_context()
+        send_email(
+            subject="Supplies Purchase Confirmation",
+            to=store.user.email,
+            template_name=f"{ACTION_TRIGGERED}/supplies_purchased.html",
+            context=context,
+        )
 
-    def send_tag_images_email(tag_group, attachment): 
+
+class OperationsEmailSender:
+    @staticmethod
+    def send_tag_images_email(tag_group, attachment):
         send_email(
             subject=f"Tag Images - Group {tag_group.id}",
             to=settings.OPERATIONS_EMAIL,

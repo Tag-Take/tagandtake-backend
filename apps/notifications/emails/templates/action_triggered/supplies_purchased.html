@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>{{ css }}</style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h2>Congratulations on Your Supplies Purchase!</h2>
+            <p>We’re thrilled to see you stocking up with the supplies you need to make your store even more amazing!</p>
+            <p>Here are the details of your recent order:</p>
+            <ul>
+                {% for item in purchased_supplies %}
+                <li>
+                    <strong>{{ item.name }}</strong> - Quantity: {{ item.quantity }}, Unit Price: £{{ item.price }}, Total: £{{ item.total_price }}
+                </li>
+                {% endfor %}
+            </ul>
+            <p><strong>Order Total: £{{ order_total }}</strong></p>
+            <p>We’re excited for you to receive these items, and you’ll soon receive a tracking link for your shipment!</p>
+            <p>If you have any questions or need assistance, feel free to reach out to us. We’re always here to help.</p>
+            <p>Keep up the amazing work, and thank you for being a valued part of our community!</p>
+            <p>Best regards,<br />The Tag&Take Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} Tag&Take. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
