@@ -12,8 +12,8 @@ class CheckoutSessionCompletedHandler:
     def handle(self):
 
         if self.purchase_type == ITEM:
-            TransactionService().upsert_item_transaction(self.checkout_session)    
+            TransactionService().upsert_item_transaction(self.checkout_session)
         elif self.purchase_type == SUPPLIES:
             TransactionService().upsert_supplies_transaction(self.checkout_session)
-        else: 
+        else:
             raise ValueError(f"Invalid purchase type{self.purchase_type}")

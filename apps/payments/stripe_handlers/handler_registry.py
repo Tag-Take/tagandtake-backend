@@ -1,15 +1,15 @@
 from apps.payments.stripe_handlers.platform_events.payment_intent_handlers import (
     PaymentIntentSucceededHandler,
-    PaymentIntentFailedHandler
+    PaymentIntentFailedHandler,
 )
 
 PAYMENT_HANDLERS = {
-    'payment_intent.succeeded': PaymentIntentSucceededHandler,
-    'payment_intent.failed': PaymentIntentFailedHandler,
-    }
+    "payment_intent.succeeded": PaymentIntentSucceededHandler,
+    "payment_intent.failed": PaymentIntentFailedHandler,
+}
 
 STRIPE_HANDLER_REGISTRY = {
-    'platform': {
+    "platform": {
         **PAYMENT_HANDLERS,
     }
 }

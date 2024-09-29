@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
@@ -19,11 +19,12 @@ from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
 )
+
 from apps.accounts.models import User
 from apps.common.constants import *
 from apps.notifications.emails.services.email_senders import AccountEmailSender
-from apps.accounts.handlers import StoreSignupProcessor, MemberSignupProcessor
-from apps.accounts.validators import UsernameValidator
+from apps.accounts.processors import StoreSignupProcessor, MemberSignupProcessor
+from apps.accounts.services import UsernameValidatorService
 from apps.stores.serializers import (
     StoreProfileSerializer,
     StoreAddressSerializer,
@@ -34,7 +35,7 @@ User = get_user_model()
 
 
 class MemberSignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(validators=[UsernameValidator()])
+    username = serializers.CharField(validators=[UsernameValidatorService()])
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(
         write_only=True, required=True, label="Confirm Password"
@@ -63,7 +64,7 @@ class MemberSignUpSerializer(serializers.ModelSerializer):
 
 
 class StoreSignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(validators=[UsernameValidator()])
+    username = serializers.CharField(validators=[UsernameValidatorService()])
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(
         write_only=True, required=True, label="Confirm Password"

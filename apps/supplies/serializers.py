@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.tagandtake.models import StoreSupply, SupplyOrderItem
+from apps.supplies.models import StoreSupply, SupplyOrderItem
 
 
 class StoreSupplySerializer(serializers.ModelSerializer):

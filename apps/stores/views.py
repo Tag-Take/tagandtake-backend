@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from apps.common.utils.responses import create_error_response, create_success_response
+from apps.common.responses import create_error_response, create_success_response
 from apps.stores.utils import generate_pin
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import (

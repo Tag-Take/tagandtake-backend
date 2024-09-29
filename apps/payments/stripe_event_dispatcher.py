@@ -1,7 +1,7 @@
 import importlib
 import logging
 
-from apps.common.constants import PALTFORM, CONNECT 
+from apps.common.constants import PALTFORM, CONNECT
 
 
 class StripeEventDispatcher:
@@ -36,13 +36,13 @@ class StripeEventDispatcher:
                     f"Handler class '{handler_name}' not found in module '{module_path}' for {self.account_type} event, {self.event_type}"
                 )
                 return None
-            
+
         except AttributeError:
             logging.error(
                 f"Failed to find handler '{handler_name}' in module '{module_path}' for {self.account_type} event, {self.event_type}"
             )
             return None
-        
+
         except ModuleNotFoundError:
             logging.error(
                 f"No module found for {self.account_type} event, {self.event_type}"

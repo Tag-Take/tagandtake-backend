@@ -192,7 +192,9 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
         self._send_notifications(sold_listing)
 
     def _get_listing(self):
-        return ItemListingService.get_item_listing_by_item_id(self.event[METADATA][ITEM_ID])
+        return ItemListingService.get_item_listing_by_item_id(
+            self.event[METADATA][ITEM_ID]
+        )
 
     def update_or_create_transaction(self):
         return TransactionService().upsert_item_transaction(self.event)

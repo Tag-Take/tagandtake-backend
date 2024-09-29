@@ -4,7 +4,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
-from apps.common.utils.responses import create_error_response, create_success_response
+from apps.common.responses import create_error_response, create_success_response
 from apps.accounts.models import User
 from apps.members.permissions import IsMemberUser
 from apps.members.models import MemberProfile, MemberNotificationPreferences

@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from apps.marketplace.processors import ItemListingPurchaseProcessor
 from apps.stores.handlers import SuppliesPurchaseHandler
-from apps.tagandtake.processors import SuppliesPurchaseProcessManager
+from apps.supplies.processors import SuppliesPurchaseProcessManager
 from apps.payments.processors import (
     ItemListingFailedPaymentProcessor,
     SuppliesFailedPaymentProcessor,

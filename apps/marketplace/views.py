@@ -19,7 +19,7 @@ from apps.items.serializers import ItemCreateSerializer
 from apps.items.models import Item
 from apps.members.permissions import IsMemberUser
 from apps.stores.permissions import IsStoreUser
-from apps.common.utils.responses import (
+from apps.common.responses import (
     create_error_response,
     create_success_response,
 )
@@ -177,7 +177,9 @@ class ReplaceTagView(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             item_id = self.kwargs.get(ID)
-            listing = ItemListingService.get_item_listing_by_item_id(item_id, ItemListing)
+            listing = ItemListingService.get_item_listing_by_item_id(
+                item_id, ItemListing
+            )
         except serializers.ValidationError as e:
             return create_error_response(
                 "ItemListing not found", {str(e.detail[0])}, status.HTTP_404_NOT_FOUND
@@ -242,7 +244,9 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
     def update(self, request: Request, *args, **kwargs):
         try:
             item_id = self.kwargs.get(ID)
-            recalled_listing = ItemListingService.get_item_listing_by_item_id(item_id, RecalledItemListing)
+            recalled_listing = ItemListingService.get_item_listing_by_item_id(
+                item_id, RecalledItemListing
+            )
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
         permission_error_response = check_listing_member_permissions(

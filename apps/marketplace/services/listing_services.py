@@ -37,7 +37,7 @@ class ItemListingService:
             return ItemListing.objects.get(id=listing_id)
         except ItemListing.DoesNotExist:
             raise serializers.ValidationError("Listing does not exist.")
-        
+
     @staticmethod
     def get_item_listing_by_tag_id(tag_id: int, listing_model=ItemListing):
         try:
@@ -49,7 +49,7 @@ class ItemListingService:
             raise serializers.ValidationError(
                 f"{listing_model.__name__} not found for the provided tag ID"
             )
-        
+
     @staticmethod
     def get_item_listing_by_item_id(item_id: int, listing_model=ItemListing):
         try:

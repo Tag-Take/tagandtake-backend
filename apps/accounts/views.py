@@ -28,7 +28,7 @@ from apps.accounts.serializers import (
 from apps.stores.models import StoreProfile as Store
 from apps.accounts.signals import user_activated
 from apps.notifications.emails.services.email_senders import AccountEmailSender
-from apps.common.utils.responses import (
+from apps.common.responses import (
     create_success_response,
     create_error_response,
     JWTCookieHandler,

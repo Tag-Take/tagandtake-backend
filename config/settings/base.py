@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "apps.members",
     "apps.payments",
     "apps.stores",
-    "apps.tagandtake",
+    "apps.supplies",
 ]
 
 REST_FRAMEWORK = {

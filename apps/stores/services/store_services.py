@@ -24,7 +24,7 @@ class StoreService:
             return StoreProfile.objects.get(id=store_id)
         except StoreProfile.DoesNotExist:
             raise serializers.ValidationError("Store does not exist.")
-        
+
     @staticmethod
     def get_store_by_user(user: User):
         try:
@@ -89,13 +89,13 @@ class StoreService:
             raise serializers.ValidationError(
                 f"Failed to update store opening hours: {e}"
             )
-        
+
     @staticmethod
     def upload_store_profile_photo(store: StoreProfile, file):
         profile_photo_url = StoreService.upload_profile_photo_to_s3(store, file)
         store = StoreService.save_profile_photo_url(store, profile_photo_url)
         return store
-    
+
     @staticmethod
     def save_profile_photo_url(store: StoreProfile, image_url: str):
         try:
@@ -104,7 +104,7 @@ class StoreService:
             return store
         except Exception as e:
             raise serializers.ValidationError(f"Failed to save profile photo url: {e}")
-        
+
     @staticmethod
     def upload_profile_photo_to_s3(store: StoreProfile, file):
         try:
@@ -121,7 +121,6 @@ class StoreService:
         StoreService.delete_profile_photo_from_s3(store)
         store = StoreService.delete_profile_photo_url(store)
         return store
-        
 
     @staticmethod
     def delete_profile_photo_url(store: StoreProfile):
@@ -130,8 +129,10 @@ class StoreService:
             store.save()
             return store
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to delete profile photo url: {e}")
-        
+            raise serializers.ValidationError(
+                f"Failed to delete profile photo url: {e}"
+            )
+
     @staticmethod
     def delete_profile_photo_from_s3(store: StoreProfile):
         try:

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.tagandtake.models import StoreSupply
-from apps.tagandtake.serializers import SupplyOrderItemSerializer
+from apps.supplies.models import StoreSupply
+from apps.supplies.serializers import SupplyOrderItemSerializer
 from apps.common.constants import SUPPLIES, SUPPLY, QUANTITY, PRICE
 
 

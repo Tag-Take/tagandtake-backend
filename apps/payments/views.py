@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 
-from apps.common.utils.responses import create_success_response, create_error_response
+from apps.common.responses import create_success_response, create_error_response
 from apps.stores.models import StoreProfile as Store
 from apps.marketplace.services.listing_services import ItemListingService
 from apps.payments.services.stripe_services import (
@@ -95,7 +95,7 @@ def create_stripe_item_checkout_secssion_view(request: Request):
             )
 
         session = create_stripe_item_checkout_session(item_listing, tag_id)
-        
+
         CheckoutSessionService.create_item_checkout_session(session, item_listing)
 
         return create_success_response(

@@ -2,7 +2,7 @@ from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from apps.common.utils.responses import create_error_response
+from apps.common.responses import create_error_response
 from apps.items.models import Item
 
 

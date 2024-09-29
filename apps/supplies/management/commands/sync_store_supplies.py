@@ -2,7 +2,7 @@ import json
 import os
 
 from django.core.management.base import BaseCommand
-from apps.tagandtake.models import StoreSupply
+from apps.supplies.models import StoreSupply
 from apps.common.constants import NAME, FIELDS, STRIPE_PRICE_ID, PRICE, DESCRIPTION
 
 

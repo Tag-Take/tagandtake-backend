@@ -2,10 +2,9 @@ import datetime
 from datetime import datetime
 
 from django.conf import settings
-from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework.response import Response
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from apps.common.constants import (

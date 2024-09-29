@@ -8,16 +8,14 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
-from rest_framework import serializers
 from rest_framework.decorators import api_view
 
-from apps.common.utils.responses import create_success_response, create_error_response
+from apps.common.responses import create_success_response, create_error_response
 from apps.stores.permissions import IsStoreUser
 from apps.stores.models import StoreProfile
-from apps.stores.tasks import create_tags_task
+from apps.supplies.processors import TagsPurchaseProcessor
 from apps.stores.models import StoreProfile
-from apps.common.utils.responses import create_success_response
-from apps.marketplace.services.listing_services import ItemListingService
+from apps.common.responses import create_success_response
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -118,7 +116,8 @@ class PurchaseTagsView(APIView):
                 "Invalid tag count provided.", {}, status.HTTP_400_BAD_REQUEST
             )
 
-        create_tags_task.delay(store_profile.id, group_size)
+        processor = TagsPurchaseProcessor(store_profile.id, group_size)
+        processor.process()
 
         return create_success_response(
             "Tags purchased successfully.", {}, status.HTTP_200_OK

@@ -2,8 +2,11 @@ import stripe
 from typing import Dict
 
 from apps.payments.models.transactions import ItemCheckoutSession
-from apps.payments.models.transactions import SuppliesPaymentTransaction
-from apps.tagandtake.models import StoreSupply, SupplyCheckoutItem, SupplyOrderItem, SuppliesCheckoutSession
+from apps.supplies.models import (
+    StoreSupply,
+    SupplyCheckoutItem,
+    SuppliesCheckoutSession,
+)
 from apps.marketplace.models import ItemListing
 from apps.stores.models import StoreProfile as Store
 from apps.common.constants import QUANTITY, PRICE, AMOUNT_TOTAL
@@ -11,6 +14,7 @@ from apps.common.constants import QUANTITY, PRICE, AMOUNT_TOTAL
 
 class CheckoutSessionService:
 
+    @staticmethod
     def create_supplies_checkout_session(
         session: stripe.checkout.Session, store: Store, line_items: list[Dict[str, str]]
     ):
@@ -18,10 +22,11 @@ class CheckoutSessionService:
             store=store, session_id=session.id
         )
 
-        CheckoutSessionService().create_supply_checkout_items(
+        CheckoutSessionService.create_supply_checkout_items(
             supplies_checkout_session, store.id, line_items
         )
 
+    @staticmethod
     def create_item_checkout_session(
         session: stripe.checkout.Session,
         item_listing: ItemListing,
@@ -34,8 +39,8 @@ class CheckoutSessionService:
 
     @staticmethod
     def create_supply_checkout_items(
-            session: SuppliesCheckoutSession, store_id, line_items: list[Dict[str, str]]
-        ):
+        session: SuppliesCheckoutSession, store_id, line_items: list[Dict[str, str]]
+    ):
         try:
             for item_data in line_items:
                 supply = StoreSupply.objects.get(stripe_price_id=item_data[PRICE])
@@ -51,25 +56,5 @@ class CheckoutSessionService:
                 )
 
         except Exception as e:
-            raise 
-
-    @staticmethod
-    def create_supply_order_items(transaction: SuppliesPaymentTransaction, store_id, line_items):
-        try:
-            for item_data in line_items:
-                supply = StoreSupply.objects.get(stripe_price_id=item_data[PRICE])
-                quantity = item_data[QUANTITY]
-
-                SupplyOrderItem.objects.create(
-                    order=transaction,
-                    store=store_id,
-                    supply=supply,
-                    quantity=quantity,
-                    item_price=supply.price,
-                    total_price=transaction.amount,
-                )
-
-        except Exception as e:
-            raise e
-
+            raise
 

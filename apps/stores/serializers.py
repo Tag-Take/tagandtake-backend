@@ -141,7 +141,7 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
     def update_categories(self):
         store: StoreProfile = self.validated_data[STORE]
         categories = self.validated_data[CATEGORIES]
-        
+
         StoreItemCategoryService.update_store_categories(store, categories)
 
 
@@ -177,6 +177,7 @@ class StoreItemConditionUpdateSerializer(serializers.Serializer):
         conditions = self.validated_data[CONDITIONS]
 
         StoreItemConditionService.update_store_conditions(store, conditions)
+
 
 class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
