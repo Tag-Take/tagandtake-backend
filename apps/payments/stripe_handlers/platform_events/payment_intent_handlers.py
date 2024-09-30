@@ -31,6 +31,7 @@ from apps.common.constants import (
     LINE_ITEMS,
 )
 
+
 class PaymentIntentSucceededHandler:
 
     def __init__(self, event_data_obj: Dict[str, Any]):
@@ -76,7 +77,6 @@ class PaymentIntentSucceededHandler:
     ):
         processor = SuppliesPurchaseProcessManager(transaction, store, supplies)
         return processor.process_supplies()
-
 
     @staticmethod
     def _send_item_notifications(sold_listing):

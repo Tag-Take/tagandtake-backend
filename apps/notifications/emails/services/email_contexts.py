@@ -192,7 +192,6 @@ class ListingEmailContextGenerator:
         return base_context
 
 
-
 class SuppliesEmailContextGenerator:
     def __init__(self, store: Store, line_items: List[Dict[str, str]]):
         self.store = store
@@ -205,15 +204,15 @@ class SuppliesEmailContextGenerator:
         for item in self.line_items:
             supply = SuppliesServices.get_supply(item.get(PRICE))
             quantity = item.get(QUANTITY, 1)
-            item_price = float(supply.price)  
-            total_price = float(item_price * quantity) 
+            item_price = float(supply.price)
+            total_price = float(item_price * quantity)
 
             supplies_details.append(
                 {
                     NAME: supply.name,
                     QUANTITY: quantity,
-                    PRICE: item_price,  
-                    TOTAL_PRICE: total_price,  
+                    PRICE: item_price,
+                    TOTAL_PRICE: total_price,
                 }
             )
 
@@ -221,7 +220,7 @@ class SuppliesEmailContextGenerator:
 
         context = {
             STORE_NAME: self.store.store_name,
-            PURCHASED_SUPPLIES: supplies_details,  
+            PURCHASED_SUPPLIES: supplies_details,
             ORDER_TOTAL: order_total,
             CURRENT_YEAR: datetime.now().year,
         }

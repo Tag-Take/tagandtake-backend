@@ -18,15 +18,15 @@ class SuppliesPurchaseProcessManager:
 
     @transaction.atomic
     def process_supplies(self):
-        try: 
+        try:
             self._create_supplies_order_items()
 
             for supply in self.supplies:
                 processor_class = self._get_processor_class(supply[PRICE])
                 if processor_class:
                     processor = processor_class(
-                        store = self.store, multiplier = supply[QUANTITY]
-                        )
+                        store=self.store, multiplier=supply[QUANTITY]
+                    )
                     processor.process()
         except Exception as e:
             raise f"Error processing supplies: {str(e)}"

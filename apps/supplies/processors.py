@@ -5,6 +5,7 @@ from apps.stores.services.tags_services import TagService
 from apps.stores.services.store_services import StoreService
 from apps.stores.models import StoreProfile as Store
 
+
 class TagsPurchaseProcessor(AbstractProcessor):
 
     def __init__(self, store: Store, multiplier: int = 1, base_quantity: int = 50):
