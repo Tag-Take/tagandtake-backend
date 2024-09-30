@@ -4,6 +4,7 @@ from django.conf import settings
 import stripe
 import stripe.checkout
 from apps.marketplace.models import ItemListing
+from apps.supplies.models import StoreSupply
 from apps.payments.utils import to_stripe_amount
 from apps.common.constants import *
 

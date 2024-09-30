@@ -10,7 +10,7 @@ from django.contrib.auth.tokens import default_token_generator
 from apps.common.constants import *
 from apps.members.models import MemberProfile as Member
 from apps.stores.models import StoreProfile as Store
-from apps.supplies.models import StoreSupply
+from apps.supplies.services import SuppliesServices
 from apps.marketplace.models import (
     ItemListing,
     RecallReason,
@@ -192,8 +192,9 @@ class ListingEmailContextGenerator:
         return base_context
 
 
+
 class SuppliesEmailContextGenerator:
-    def __init__(self, store: Store, line_items: List[Dict[str, Any]]):
+    def __init__(self, store: Store, line_items: List[Dict[str, str]]):
         self.store = store
         self.line_items = line_items
 
@@ -202,17 +203,17 @@ class SuppliesEmailContextGenerator:
         order_total = 0
 
         for item in self.line_items:
-            supply = StoreSupply.objects.get(stripe_price_id=item.get(PRICE))
+            supply = SuppliesServices.get_supply(item.get(PRICE))
             quantity = item.get(QUANTITY, 1)
-            item_price = supply.price
-            total_price = item_price * quantity
+            item_price = float(supply.price)  
+            total_price = float(item_price * quantity) 
 
             supplies_details.append(
                 {
                     NAME: supply.name,
                     QUANTITY: quantity,
-                    PRICE: item_price,
-                    TOTAL_PRICE: total_price,
+                    PRICE: item_price,  
+                    TOTAL_PRICE: total_price,  
                 }
             )
 
@@ -220,7 +221,7 @@ class SuppliesEmailContextGenerator:
 
         context = {
             STORE_NAME: self.store.store_name,
-            SUPPLIES: supplies_details,
+            PURCHASED_SUPPLIES: supplies_details,  
             ORDER_TOTAL: order_total,
             CURRENT_YEAR: datetime.now().year,
         }

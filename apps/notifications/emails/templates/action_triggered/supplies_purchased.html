@@ -6,19 +6,37 @@
 </head>
 <body>
     <div class="container">
+        <div class="header">
+            <img src="{{ logo_url }}" alt="Tag&Take Logo" />
+        </div>
         <div class="content">
             <h2>Congratulations on Your Supplies Purchase!</h2>
             <p>We’re thrilled to see you stocking up with the supplies you need to make your store even more amazing!</p>
             <p>Here are the details of your recent order:</p>
-            <ul>
-                {% for item in purchased_supplies %}
-                <li>
-                    <strong>{{ item.name }}</strong> - Quantity: {{ item.quantity }}, Unit Price: £{{ item.price }}, Total: £{{ item.total_price }}
-                </li>
-                {% endfor %}
-            </ul>
+            
+            <table class="order-table">
+                <thead>
+                    <tr class="order-header">
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in purchased_supplies %}
+                    <tr class="order-row">
+                        <td data-label="Item">{{ item.name }}</td>
+                        <td data-label="Quantity">{{ item.quantity }}</td>
+                        <td data-label="Unit Price">£{{ item.price }}</td>
+                        <td data-label="Total">£{{ item.total_price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             <p><strong>Order Total: £{{ order_total }}</strong></p>
             <p>We’re excited for you to receive these items, and you’ll soon receive a tracking link for your shipment!</p>
+            <a href="{{ tracking_link }}" class="button">Track Your Order</a>
             <p>If you have any questions or need assistance, feel free to reach out to us. We’re always here to help.</p>
             <p>Keep up the amazing work, and thank you for being a valued part of our community!</p>
             <p>Best regards,<br />The Tag&Take Team</p>
