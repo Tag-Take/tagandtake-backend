@@ -1,5 +1,4 @@
 # emails/senders.py
-from django.contrib.auth import get_user_model
 from django.conf import settings
 
 from apps.common.constants import ACTION_TRIGGERED, NOTIFICATIONS, REMINDERS, INTERNAL
@@ -13,8 +12,14 @@ from apps.notifications.emails.services.email_contexts import (
 )
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
-from apps.stores.models import StoreProfile as Store
+from apps.stores.models import StoreProfile as Store, TagGroup
 from apps.marketplace.models import ItemListing, RecalledItemListing, SoldItemListing
+from apps.common.constants import (
+    TAG_GROUP,
+    STORE,
+    EMAIL,
+    ADDRESS,
+)
 
 
 class AccountEmailSender:
@@ -210,11 +215,20 @@ class SuppliesEmailSender:
 
 class OperationsEmailSender:
     @staticmethod
-    def send_tag_images_email(tag_group, attachment):
+    def send_tag_images_email(tag_group: TagGroup, attachment):
+        store = tag_group.store
+        email = store.user.email
+        address = store.store_address
+        address = f"{address.street_address}, {address.city}, {address.state}, {address.postal_code}"
         send_email(
             subject=f"Tag Images - Group {tag_group.id}",
             to=settings.OPERATIONS_EMAIL,
             template_name=f"{INTERNAL}/tag_images.html",
-            context={"tag_group": tag_group.id},
+            context={
+                TAG_GROUP: tag_group.id,
+                STORE: store.store_name,
+                EMAIL: email,
+                ADDRESS: address,
+            },
             attachment=attachment,
         )
