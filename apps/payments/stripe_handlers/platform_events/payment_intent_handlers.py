@@ -57,7 +57,7 @@ class PaymentIntentSucceededHandler:
                 self.payment_intent
             )
 
-            supplies = self._process_supplies_purchased(transaction, store, supplies)
+            self._process_supplies_purchased(transaction, store, supplies)
 
             self._send_supplies_notifications(store, supplies)
 
