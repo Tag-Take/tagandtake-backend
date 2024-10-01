@@ -9,6 +9,7 @@ from apps.notifications.emails.services.email_contexts import (
     StoreEmailContextGenerator,
     ListingEmailContextGenerator,
     SuppliesEmailContextGenerator,
+    OperationsEmailContextGenerator,
 )
 from apps.accounts.models import User
 from apps.members.models import MemberProfile as Member
@@ -216,19 +217,23 @@ class SuppliesEmailSender:
 class OperationsEmailSender:
     @staticmethod
     def send_tag_images_email(tag_group: TagGroup, attachment):
-        store = tag_group.store
-        email = store.user.email
-        address = store.store_address
-        address = f"{address.street_address}, {address.city}, {address.state}, {address.postal_code}"
+        context = OperationsEmailContextGenerator.generate_tag_images_context(tag_group)
         send_email(
             subject=f"Tag Images - Group {tag_group.id}",
             to=settings.OPERATIONS_EMAIL,
             template_name=f"{INTERNAL}/tag_images.html",
-            context={
-                TAG_GROUP: tag_group.id,
-                STORE: store.store_name,
-                EMAIL: email,
-                ADDRESS: address,
-            },
+            context=context,
             attachment=attachment,
+        )
+
+    @staticmethod
+    def send_supplies_ordered_email(store: Store, supplies):
+        context = OperationsEmailContextGenerator.generate_supplies_ordered_context(
+            store, supplies
+        )
+        send_email(
+            subject="Supplies Purchase Confirmation",
+            to=store.user.email,
+            template_name=f"{INTERNAL}/supplies_order.html",
+            context=context,
         )

@@ -9,6 +9,7 @@ from apps.marketplace.services.listing_services import ItemListingService
 from apps.notifications.emails.services.email_senders import (
     ListingEmailSender,
     SuppliesEmailSender,
+    OperationsEmailSender
 )
 from apps.payments.models.transactions import (
     SuppliesPaymentTransaction,
@@ -36,47 +37,52 @@ class PaymentIntentSucceededHandler:
 
     def __init__(self, event_data_obj: Dict[str, Any]):
         self.payment_intent = event_data_obj
+        self.purchase_type = self.payment_intent[METADATA][PURCHASE]
 
     def handle(self):
-        if self.payment_intent[METADATA][PURCHASE] == ITEM:
-            listing = ItemListingService.get_item_listing_by_item_id(
-                self.payment_intent[METADATA][ITEM_ID]
-            )
-            transaction = TransactionService().upsert_item_transaction(
-                self.payment_intent
-            )
-
+        if self.purchase_type == ITEM:
+            listing = self._get_listing()
+            transaction = self._create_item_transaction()
             sold_listing = self._process_item_purchased(listing, transaction)
-
             self._send_item_notifications(sold_listing)
 
-        elif self.payment_intent[METADATA][PURCHASE] == SUPPLIES:
-            store = StoreService.get_store(self.payment_intent[METADATA][STORE_ID])
-            supplies = json.loads(self.payment_intent[METADATA][LINE_ITEMS])
-            transaction = TransactionService().upsert_supplies_transaction(
-                self.payment_intent
-            )
-
+        elif self.purchase_type == SUPPLIES:
+            store, supplies = self._get_store_and_supplies()
+            transaction = self._create_supplies_transaction()
             self._process_supplies_purchased(transaction, store, supplies)
-
             self._send_supplies_notifications(store, supplies)
+
+    def _get_listing(self):
+        return ItemListingService.get_item_listing_by_item_id(
+            self.payment_intent[METADATA][ITEM_ID]
+            )
+    
+    def _get_store_and_supplies(self):
+        store = StoreService.get_store(self.payment_intent[METADATA][STORE_ID])
+        supplies = json.loads(self.payment_intent[METADATA][LINE_ITEMS])
+        return store, supplies
+    
+    def _create_item_transaction(self):
+        return TransactionService().upsert_item_transaction(self.payment_intent)    
+    
+    def _create_supplies_transaction(self):
+        return TransactionService().upsert_supplies_transaction(self.payment_intent)
 
     @staticmethod
     def _process_item_purchased(
         listing: ItemListing, transaction: ItemPaymentTransaction
     ):
-        processor = ItemListingPurchaseProcessor(
-            listing,
-            transaction,
-        )
-        return processor.process()
+        return ItemListingPurchaseProcessor(
+            listing,transaction,
+        ).process()
 
     @staticmethod
     def _process_supplies_purchased(
-        transaction: SuppliesPaymentTransaction, store: Store, supplies
+        transaction: SuppliesPaymentTransaction, store: Store, supplies: Dict[str, str]
     ):
-        processor = SuppliesPurchaseProcessManager(transaction, store, supplies)
-        return processor.process_supplies()
+        return SuppliesPurchaseProcessManager(
+            transaction, store, supplies
+        ).process_supplies()
 
     @staticmethod
     def _send_item_notifications(sold_listing):
@@ -84,11 +90,9 @@ class PaymentIntentSucceededHandler:
         ListingEmailSender.send_listing_purchased_email(sold_listing)
 
     @staticmethod
-    def _send_supplies_notifications(store: Store, supplies):
+    def _send_supplies_notifications(store: Store, supplies: Dict[str, str]):
+        OperationsEmailSender.send_supplies_ordered_email(store, supplies)
         SuppliesEmailSender.send_supplies_purchased_email(store, supplies)
-        # TODO:
-        # Notify Us with the supplies that were purchased
-
 
 class PaymentIntentFailedHandler:
 

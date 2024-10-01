@@ -6,7 +6,7 @@ from apps.common.constants import QUANTITY, PRICE
 class SuppliesServices:
 
     @staticmethod
-    def get_supply(price_id: str):
+    def get_supply_by_stripe_id(price_id: str):
         try:
             return StoreSupply.objects.get(stripe_price_id=price_id)
         except StoreSupply.DoesNotExist:
@@ -18,7 +18,7 @@ class SuppliesServices:
     ):
         try:
             for item_data in line_items:
-                supply = SuppliesServices.get_supply(item_data[PRICE])
+                supply = SuppliesServices.get_supply_by_stripe_id(item_data[PRICE])
                 quantity = item_data[QUANTITY]
 
                 SupplyOrderItem.objects.create(

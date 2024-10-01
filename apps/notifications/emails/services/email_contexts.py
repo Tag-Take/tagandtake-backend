@@ -9,7 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 
 from apps.common.constants import *
 from apps.members.models import MemberProfile as Member
-from apps.stores.models import StoreProfile as Store
+from apps.stores.models import StoreProfile as Store, TagGroup
 from apps.supplies.services import SuppliesServices
 from apps.marketplace.models import (
     ItemListing,
@@ -202,7 +202,7 @@ class SuppliesEmailContextGenerator:
         order_total = 0
 
         for item in self.line_items:
-            supply = SuppliesServices.get_supply(item.get(PRICE))
+            supply = SuppliesServices.get_supply_by_stripe_id(item.get(PRICE))
             quantity = item.get(QUANTITY, 1)
             item_price = float(supply.price)
             total_price = float(item_price * quantity)
@@ -222,6 +222,60 @@ class SuppliesEmailContextGenerator:
             STORE_NAME: self.store.store_name,
             PURCHASED_SUPPLIES: supplies_details,
             ORDER_TOTAL: order_total,
+            CURRENT_YEAR: datetime.now().year,
+        }
+        return context
+
+
+class OperationsEmailContextGenerator:
+
+    @staticmethod
+    def generate_tag_images_context(tag_group: TagGroup):
+        store = tag_group.store
+        email = store.user.email
+        address = store.store_address
+        address = f"{address.street_address}, {address.city}, {address.state}, {address.postal_code}"
+        return {
+            TAG_GROUP: tag_group.id,
+            STORE: store.store_name,
+            EMAIL: email,
+            ADDRESS: address,
+        }
+
+    @staticmethod
+    def generate_supplies_ordered_context(store: Store, supplies: List[Dict[str, str]]):
+        email = store.user.email
+        address_obj = store.store_address
+        address = f"{address_obj.street_address}, {address_obj.city}, {address_obj.state}, {address_obj.postal_code}"
+
+        supplies_details = []
+        order_total = 0
+
+        for item in supplies:
+            supply = SuppliesServices.get_supply_by_stripe_id(item.get(PRICE))
+            quantity = item.get(QUANTITY, 1)
+            item_price = float(supply.price)
+            total_price = float(item_price * quantity)
+
+            supplies_details.append(
+                {
+                    NAME: supply.name,
+                    QUANTITY: quantity,
+                    PRICE: item_price,
+                    TOTAL_PRICE: total_price,
+                }
+            )
+
+            order_total += total_price
+
+        context = {
+            STORE: store.store_name,
+            EMAIL: email,
+            ADDRESS: address,
+            STORE_NAME: store.store_name,
+            PURCHASED_SUPPLIES: supplies_details,
+            ORDER_TOTAL: order_total,
+            ORDER_DATE: datetime.now().strftime("%B %-d, %Y"),
             CURRENT_YEAR: datetime.now().year,
         }
         return context

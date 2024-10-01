@@ -6,13 +6,16 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="{{ logo_url }}" alt="Tag&Take Logo" />
-        </div>
         <div class="content">
-            <h2>Tag&Take Supplies Purchased!</h2>
-            <p>We’re thrilled to see you stocking up with the supplies you need to make your space even more amazing!</p>
-            <p>Here are the details of your order:</p>
+            <h2>Supplies Purchased</h2>
+            Store supplies purchased for:
+            <div class="content">
+                <p> Store: {{ store }} </p>
+                <p> Email: {{ email }} </p>       
+                <p> Address: {{ address }} </p>
+            </div>
+            <p> Order date: {{ order_date }} </p>
+            <h3>Supplies summary:</h3>
             <table class="order-table">
                 <thead>
                     <tr class="order-header">
@@ -33,10 +36,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <p><strong>Order Total: £{{ order_total }}</strong></p>
-            <p>You should receive a tracking link for your shipment soon.</p>
-            <p>If you do not recieve the tracking link, or need any other assistance, feel free to reach out to us.</p>
-            <p>Best regards,<br />The Tag&Take Team</p>
         </div>
         <div class="footer">
             <p>&copy; {{ current_year }} Tag&Take. All rights reserved.</p>
