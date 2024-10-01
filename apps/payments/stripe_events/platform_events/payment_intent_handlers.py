@@ -44,12 +44,14 @@ class PaymentIntentSucceededHandler:
             listing = self._get_listing()
             transaction = self._create_item_transaction()
             sold_listing = self._process_item_purchased(listing, transaction)
+            self._update_item_transaction_as_processed(transaction)
             self._send_item_notifications(sold_listing)
 
         elif self.purchase_type == SUPPLIES:
             store, supplies = self._get_store_and_supplies()
             transaction = self._create_supplies_transaction()
             self._process_supplies_purchased(transaction, store, supplies)
+            self._update_supplies_transaction_as_processed(transaction)
             self._send_supplies_notifications(store, supplies)
 
     def _get_listing(self):
@@ -84,6 +86,14 @@ class PaymentIntentSucceededHandler:
         return SuppliesPurchaseProcessManager(
             transaction, store, supplies
         ).process_supplies()
+    
+    @staticmethod
+    def _update_item_transaction_as_processed(transaction):
+        return TransactionService().process_item_transaction(transaction)  
+    
+    @staticmethod
+    def _update_supplies_transaction_as_processed(transaction):
+        return TransactionService().process_supplies_transaction(transaction)
 
     @staticmethod
     def _send_item_notifications(sold_listing):

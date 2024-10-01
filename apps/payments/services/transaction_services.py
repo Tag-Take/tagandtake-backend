@@ -85,6 +85,16 @@ class TransactionService:
             STORE: store,
             STATUS: event_data_obj[STATUS],
         }
+    
+    @staticmethod
+    def process_item_transaction(transaction: ItemPaymentTransaction):
+        transaction.processed = True
+        transaction.save()
+
+    @staticmethod
+    def process_supplies_transaction(transaction: SuppliesPaymentTransaction):
+        transaction.processed = True
+        transaction.save()
 
     @staticmethod
     def create_filed_item_transaction(
