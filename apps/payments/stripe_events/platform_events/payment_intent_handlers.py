@@ -9,7 +9,7 @@ from apps.marketplace.services.listing_services import ItemListingService
 from apps.notifications.emails.services.email_senders import (
     ListingEmailSender,
     SuppliesEmailSender,
-    OperationsEmailSender
+    OperationsEmailSender,
 )
 from apps.payments.models.transactions import (
     SuppliesPaymentTransaction,
@@ -55,16 +55,16 @@ class PaymentIntentSucceededHandler:
     def _get_listing(self):
         return ItemListingService.get_item_listing_by_item_id(
             self.payment_intent[METADATA][ITEM_ID]
-            )
-    
+        )
+
     def _get_store_and_supplies(self):
         store = StoreService.get_store(self.payment_intent[METADATA][STORE_ID])
         supplies = json.loads(self.payment_intent[METADATA][LINE_ITEMS])
         return store, supplies
-    
+
     def _create_item_transaction(self):
-        return TransactionService().upsert_item_transaction(self.payment_intent)    
-    
+        return TransactionService().upsert_item_transaction(self.payment_intent)
+
     def _create_supplies_transaction(self):
         return TransactionService().upsert_supplies_transaction(self.payment_intent)
 
@@ -73,7 +73,8 @@ class PaymentIntentSucceededHandler:
         listing: ItemListing, transaction: ItemPaymentTransaction
     ):
         return ItemListingPurchaseProcessor(
-            listing,transaction,
+            listing,
+            transaction,
         ).process()
 
     @staticmethod
@@ -93,6 +94,7 @@ class PaymentIntentSucceededHandler:
     def _send_supplies_notifications(store: Store, supplies: Dict[str, str]):
         OperationsEmailSender.send_supplies_ordered_email(store, supplies)
         SuppliesEmailSender.send_supplies_purchased_email(store, supplies)
+
 
 class PaymentIntentFailedHandler:
 

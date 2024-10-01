@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
-from apps.payments.stripe_handlers.webhook_handlers import route_stripe_webhook
+from apps.payments.stripe_events.stripe_webhook_handler import route_stripe_webhook
 
 
 @csrf_exempt

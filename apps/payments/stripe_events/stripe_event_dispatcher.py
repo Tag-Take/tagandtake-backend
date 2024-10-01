@@ -51,7 +51,9 @@ class StripeEventDispatcher:
 
     @staticmethod
     def _get_module_path(account_type: str, event_group: str) -> str:
-        return f"apps.payments.stripe_handlers.{account_type}_events.{event_group}_handlers"
+        return (
+            f"apps.payments.stripe_events.{account_type}_events.{event_group}_handlers"
+        )
 
     @staticmethod
     def _to_camel_case(event_type: str) -> str:

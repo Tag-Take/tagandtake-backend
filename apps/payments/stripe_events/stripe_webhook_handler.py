@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 import stripe
 
-from apps.payments.stripe_event_dispatcher import StripeEventDispatcher
+from apps.payments.stripe_events.stripe_event_dispatcher import StripeEventDispatcher
 from apps.common.constants import TYPE, DATA, OBJECT, ACCOUNT
 
 
