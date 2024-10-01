@@ -12,9 +12,9 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class StripeService:
-    def create_stripe_account(business_type: str):
+    def create_member_stripe_account():
         return stripe.Account.create(
-            business_type=business_type,
+            business_type='individual',
             controller={
                 "stripe_dashboard": {
                     "type": "express",
@@ -22,7 +22,30 @@ class StripeService:
                 "fees": {"payer": "application"},
                 "losses": {"payments": "application"},
             },
-            country="GB",
+            business_profile={
+                "url": "https://www.tagandtake.com",
+                "product_description": "Individual Second Hand clothing seller",
+            },
+            country="gb",
+            metadata={
+                ACCOUNT_TYPE: MEMBER,
+            }
+        )
+    
+    def create_store_stripe_account():
+        return stripe.Account.create(
+            business_type='company',
+            controller={
+                "stripe_dashboard": {
+                    "type": "express",
+                },
+                "fees": {"payer": "application"},
+                "losses": {"payments": "application"},
+            },
+            country="gb",
+            metadata={
+                ACCOUNT_TYPE: STORE,
+            }
         )
 
     def create_stripe_account_session(connected_account_id: str):
@@ -79,6 +102,10 @@ class StripeService:
             mode="payment",
             return_url=f"{settings.FRONTEND_URL}/store/supplies/return?session_id={{CHECKOUT_SESSION_ID}}",
         )
+    
+    def get_account_type_from_stripe_acct_id(connected_account_id: str):
+        account = stripe.Account.retrieve(connected_account_id)
+        return account.metadata.get(ACCOUNT_TYPE)
 
     def get_buyer_email_from_payment_intent(payment_intent_id: str):
         checkout_sessions = stripe.checkout.Session.list(

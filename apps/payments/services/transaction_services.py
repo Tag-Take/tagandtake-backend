@@ -12,7 +12,6 @@ from apps.payments.models.transactions import (
 from apps.items.services import ItemService
 from apps.stores.services.store_services import StoreService
 from apps.payments.services.stripe_services import StripeService
-from apps.stores.models import StoreProfile as Store
 from apps.payments.utils import from_stripe_amount
 from apps.common.constants import *
 
@@ -97,21 +96,20 @@ class TransactionService:
         transaction.save()
 
     @staticmethod
-    def create_filed_item_transaction(
-        payment_intent: Dict[str, Any], transaction: ItemPaymentTransaction
-    ):
+    def create_failed_item_transaction(payment_intent: Dict[str, Any]):
         return FailedItemPaymentTransaction.objects.create(
-            payment_transaction=transaction,
+            payment_intent_id=payment_intent[ID],
+            item_id=payment_intent[METADATA][ITEM_ID],
+            store_id=payment_intent[METADATA][STORE_ID],
             error_message=payment_intent[LAST_PAYMENT_ERROR][MESSAGE],
             error_code=payment_intent[LAST_PAYMENT_ERROR][CODE],
         )
 
     @staticmethod
-    def create_failed_supplies_transaction(
-        payment_intent, transaction: SuppliesPaymentTransaction
-    ):
+    def create_failed_supplies_transaction(payment_intent):
         return FailedSuppliesPaymentTransaction.objects.create(
-            payment_transaction=transaction,
+            payment_intent_id=payment_intent[ID],
+            store_id=payment_intent[METADATA][STORE_ID],
             error_message=payment_intent[LAST_PAYMENT_ERROR][MESSAGE],
             error_code=payment_intent[LAST_PAYMENT_ERROR][CODE],
         )

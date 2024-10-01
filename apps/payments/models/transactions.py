@@ -47,6 +47,7 @@ class BasePaymentTransaction(models.Model):
 
 
 class BaseFailedPaymentTransaction(models.Model):
+    payment_intent_id = models.CharField(max_length=255)
     error_message = models.TextField()
     error_code = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,19 +101,20 @@ class ItemPaymentTransaction(BasePaymentTransaction):
 
 
 class FailedItemPaymentTransaction(BaseFailedPaymentTransaction):
-    payment_transaction = models.OneToOneField(
-        ItemPaymentTransaction,
-        on_delete=models.CASCADE,
-        related_name="failed_item_transaction",
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="failed_item_transactions"
+    )
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="failed_item_transactions"
     )
 
     def __str__(self):
-        return f"Failed Item Transaction {self.payment_transaction.id} - {self.error_message}"
+        return f"Failed Item Transaction {self.error_message}"
 
     class Meta:
         verbose_name = "Failed Item Transaction"
         verbose_name_plural = "Failed Item Transactions"
-        db_table = "failed_item_transaction"
+        db_table = "failed_item_transactions"
 
 
 class SuppliesCheckoutSession(BaseChekoutSession):
@@ -144,14 +146,12 @@ class SuppliesPaymentTransaction(BasePaymentTransaction):
 
 
 class FailedSuppliesPaymentTransaction(BaseFailedPaymentTransaction):
-    payment_transaction = models.OneToOneField(
-        SuppliesPaymentTransaction,
-        on_delete=models.CASCADE,
-        related_name="failed_supplies_transaction",
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="failed_supply_transactions"
     )
 
     def __str__(self):
-        return f"Failed Supply Transaction {self.payment_transaction.id} - {self.error_message}"
+        return f"Failed Supply Transaction - {self.error_message}"
 
     class Meta:
         verbose_name = "Failed Supply Transaction"

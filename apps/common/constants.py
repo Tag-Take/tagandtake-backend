@@ -201,6 +201,7 @@ ACCEPTING_LISTINGS: str = "accepting_listings"
 CUSTOMER_DETAILS: str = "customer_details"
 PAYMENT_INTENT: str = "payment_intent"
 PAYMENT_INTENT_ID: str = "payment_intent_id"
+ACCOUNT_TYPE: str = "account_type"
 
 # TAGANDTAKE
 SUPPLY: str = "supply"

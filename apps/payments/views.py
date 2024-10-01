@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 
+from apps.accounts.models import User
 from apps.common.responses import create_success_response, create_error_response
 from apps.stores.models import StoreProfile as Store
 from apps.marketplace.services.listing_services import ItemListingService
@@ -11,48 +12,56 @@ from apps.payments.services.stripe_services import StripeService
 from apps.payments.services.checkout_services import CheckoutSessionService
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
 from apps.common.constants import (
-    BUSINESS_TYPE,
     ACCOUNT,
     TAG_ID,
     STATUS,
     CLIENT_SECRET,
     SESSION_ID,
-    ACCOUNT_SESSION,
 )
 
 
 @api_view(["POST"])
 def create_stripe_account_view(request: Request):
-    try:
-        business_type = request.query_params.get(BUSINESS_TYPE)
+    
+    # TODO: add permissions and remove
+    if request.user.is_anonymous:
+        role = User.Roles.MEMBER
+    else:
+        role = request.user.role
 
-        if not business_type:
-            return create_error_response(
-                "query param 'business_type' is required.",
-                {"error": "No business type provided."},
-                status.HTTP_400_BAD_REQUEST,
-            )
+    try: 
+        if role == User.Roles.STORE:
 
-        try:
-            account = StripeService.create_stripe_account()
+            account = StripeService.create_store_stripe_account()
             return create_success_response(
                 "Stripe account created successfully.",
                 {ACCOUNT: account.id},
                 status.HTTP_200_OK,
             )
-
-        except Exception as e:
-            return create_error_response(
-                "An error occurred when calling the Stripe API to create an account: ",
-                {str(e)},
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
+        
+        elif role == User.Roles.MEMBER:
+            account = StripeService.create_member_stripe_account()
+            return create_success_response(
+                "Stripe account created successfully.",
+                {ACCOUNT: account.id},
+                status.HTTP_200_OK,
             )
-    except:
+        
+        else:
+            # TODO: turn this into a custom exception
+            return create_error_response(
+                "Invalid role.",
+                {"error": "Invalid role."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+        
+    except Exception as e:
         return create_error_response(
-            "An error occurred when creating the Stripe account: ",
+            "An error occurred when calling the Stripe API to create an account: ",
             {str(e)},
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
 
 
 @api_view(["POST"])
@@ -60,13 +69,13 @@ def create_stripe_account_session_view(request: Request):
     try:
         connected_account_id = request.data.get(ACCOUNT)
 
-        account_session = StripeService.create_stripe_account_session(
+        session = StripeService.create_stripe_account_session(
             connected_account_id
         )
 
         return create_success_response(
             "Stripe account session created successfully.",
-            {ACCOUNT_SESSION: account_session.id},
+            {CLIENT_SECRET: session.client_secret},
             status.HTTP_200_OK,
         )
 

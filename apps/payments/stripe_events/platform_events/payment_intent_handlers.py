@@ -106,7 +106,7 @@ class PaymentIntentSucceededHandler:
         SuppliesEmailSender.send_supplies_purchased_email(store, supplies)
 
 
-class PaymentIntentFailedHandler:
+class PaymentIntentPaymentFailedHandler:
 
     def __init__(self, event_data_obj: Dict[str, Any]):
         self.payment_intent = event_data_obj
@@ -118,3 +118,13 @@ class PaymentIntentFailedHandler:
         elif self.payment_intent[METADATA][PURCHASE] == SUPPLIES:
             processor = SuppliesFailedPaymentProcessor(self.payment_intent)
             processor.process()
+
+    def _get_listing(self):
+        return ItemListingService.get_item_listing_by_item_id(
+            self.payment_intent[METADATA][ITEM_ID]
+        )
+
+    def _get_store_and_supplies(self):
+        store = StoreService.get_store(self.payment_intent[METADATA][STORE_ID])
+        supplies = json.loads(self.payment_intent[METADATA][LINE_ITEMS])
+        return store, supplies

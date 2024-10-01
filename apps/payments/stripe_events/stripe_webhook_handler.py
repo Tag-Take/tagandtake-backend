@@ -21,6 +21,9 @@ def route_stripe_webhook(request: Request, secret: str):
     event_data = event[DATA][OBJECT]
     connected_account = event.get(ACCOUNT, None)
 
+    if event_type == "capability.updated" or event_type == "account.updated":
+        print(event_data)
+
     dispatcher = StripeEventDispatcher(event_type, event_data, connected_account)
     dispatcher.dispatch()
 
