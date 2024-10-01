@@ -1,5 +1,6 @@
 from apps.payments.services.stripe_services import StripeService
 
+
 class CapabilityUpdatedHandler:
 
     def __init__(self, event_data_obj: Dict[str, Any]):

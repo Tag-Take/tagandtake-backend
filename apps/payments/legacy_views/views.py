@@ -10,6 +10,7 @@ from apps.supplies.processors import TagsPurchaseProcessor
 from apps.stores.models import StoreProfile
 from apps.common.responses import create_success_response
 
+
 class PurchaseTagsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreUser]
 

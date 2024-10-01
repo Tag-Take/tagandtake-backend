@@ -86,11 +86,11 @@ class PaymentIntentSucceededHandler:
         return SuppliesPurchaseProcessManager(
             transaction, store, supplies
         ).process_supplies()
-    
+
     @staticmethod
     def _update_item_transaction_as_processed(transaction):
-        return TransactionService().process_item_transaction(transaction)  
-    
+        return TransactionService().process_item_transaction(transaction)
+
     @staticmethod
     def _update_supplies_transaction_as_processed(transaction):
         return TransactionService().process_supplies_transaction(transaction)

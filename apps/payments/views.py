@@ -22,14 +22,14 @@ from apps.common.constants import (
 
 @api_view(["POST"])
 def create_stripe_account_view(request: Request):
-    
+
     # TODO: add permissions and remove
     if request.user.is_anonymous:
         role = User.Roles.MEMBER
     else:
         role = request.user.role
 
-    try: 
+    try:
         if role == User.Roles.STORE:
 
             account = StripeService.create_store_stripe_account()
@@ -38,7 +38,7 @@ def create_stripe_account_view(request: Request):
                 {ACCOUNT: account.id},
                 status.HTTP_200_OK,
             )
-        
+
         elif role == User.Roles.MEMBER:
             account = StripeService.create_member_stripe_account()
             return create_success_response(
@@ -46,7 +46,7 @@ def create_stripe_account_view(request: Request):
                 {ACCOUNT: account.id},
                 status.HTTP_200_OK,
             )
-        
+
         else:
             # TODO: turn this into a custom exception
             return create_error_response(
@@ -54,7 +54,7 @@ def create_stripe_account_view(request: Request):
                 {"error": "Invalid role."},
                 status.HTTP_400_BAD_REQUEST,
             )
-        
+
     except Exception as e:
         return create_error_response(
             "An error occurred when calling the Stripe API to create an account: ",
@@ -63,15 +63,12 @@ def create_stripe_account_view(request: Request):
         )
 
 
-
 @api_view(["POST"])
 def create_stripe_account_session_view(request: Request):
     try:
         connected_account_id = request.data.get(ACCOUNT)
 
-        session = StripeService.create_stripe_account_session(
-            connected_account_id
-        )
+        session = StripeService.create_stripe_account_session(connected_account_id)
 
         return create_success_response(
             "Stripe account session created successfully.",

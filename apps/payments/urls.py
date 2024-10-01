@@ -12,9 +12,7 @@ from apps.payments.webhooks import (
     stripe_platform_event_webhook,
 )
 
-from apps.payments.legacy_views.views import (
-    PurchaseTagsView
-)
+from apps.payments.legacy_views.views import PurchaseTagsView
 
 
 urlpatterns = [
@@ -58,5 +56,5 @@ urlpatterns = [
         "tags/",
         PurchaseTagsView.as_view(),
         name="purchase-tags",
-    )
+    ),
 ]

@@ -12,20 +12,16 @@ class ItemListingFailedPaymentProcessor(AbstractProcessor):
         self._create_failed_transaction()
 
     def _create_failed_transaction(self):
-        TransactionService.create_failed_item_transaction(
-            self.payment_intent
-        )
+        TransactionService.create_failed_item_transaction(self.payment_intent)
 
 
 class SuppliesFailedPaymentProcessor(AbstractProcessor):
-    
+
     def __init__(self, event_data_obj: Dict[str, Any]):
         self.payment_intent = event_data_obj
 
     def process(self):
         self._create_failed_transaction()
 
-    def _create_failed_transaction(self): 
-        TransactionService.create_failed_supplies_transaction(
-            self.payment_intent
-        )
+    def _create_failed_transaction(self):
+        TransactionService.create_failed_supplies_transaction(self.payment_intent)
