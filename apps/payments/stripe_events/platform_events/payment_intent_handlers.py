@@ -5,6 +5,7 @@ from apps.marketplace.processors import ItemListingPurchaseProcessor
 from apps.supplies.process_manager import SuppliesPurchaseProcessManager
 from apps.stores.services.store_services import StoreService
 from apps.payments.services.transaction_services import TransactionService
+from apps.payments.services.transfer_services import TransferService
 from apps.marketplace.services.listing_services import ItemListingService
 from apps.notifications.emails.services.email_senders import (
     ListingEmailSender,
@@ -45,6 +46,7 @@ class PaymentIntentSucceededHandler:
             transaction = self._create_item_transaction()
             sold_listing = self._process_item_purchased(listing, transaction)
             self._update_item_transaction_as_processed(transaction)
+            self._run_post_success_transfers()
             self._send_item_notifications(sold_listing)
 
         elif self.purchase_type == SUPPLIES:
@@ -94,6 +96,9 @@ class PaymentIntentSucceededHandler:
     @staticmethod
     def _update_supplies_transaction_as_processed(transaction):
         return TransactionService().process_supplies_transaction(transaction)
+
+    def _run_post_success_transfers(self):
+        TransferService.run_post_success_transfers(self.payment_intent)
 
     @staticmethod
     def _send_item_notifications(sold_listing):

@@ -102,6 +102,17 @@ class StripeService:
             mode="payment",
             return_url=f"{settings.FRONTEND_URL}/store/supplies/return?session_id={{CHECKOUT_SESSION_ID}}",
         )
+    
+    @staticmethod
+    def trasfer_to_connected_account(
+        account_id: str, amount = str, latest_charge: str = None
+        ): 
+        return stripe.Transfer.create(
+            amount=amount,
+            currency="gbp",
+            source_transaction=latest_charge,
+            destination=account_id,
+        )
 
     def get_account_type_from_stripe_acct_id(connected_account_id: str):
         account = stripe.Account.retrieve(connected_account_id)
