@@ -36,7 +36,7 @@ class TransferService:
                 pending_transfer.member
             ) 
             amount = to_stripe_amount(pending_transfer.amount)
-            transfer = StripeService.trasfer_to_connected_account(
+            StripeService.trasfer_to_connected_account(
                 account.stripe_account_id, amount, pending_transfer.latest_charge
             )
         except: 
@@ -45,13 +45,13 @@ class TransferService:
 
 
     @staticmethod
-    def run_pending_member_transfer(pending_transfer: PendingMemberTransfer): 
+    def run_pending_store_transfer(pending_transfer: PendingStoreTransfer): 
         try: 
             account = TransferService.get_store_payment_account(
-                pending_transfer.member
+                pending_transfer.store
             ) 
             amount = to_stripe_amount(pending_transfer.amount)
-            transfer = StripeService.trasfer_to_connected_account(
+            StripeService.trasfer_to_connected_account(
                 account.stripe_account_id, amount, pending_transfer.latest_charge
             )
         except: 
@@ -67,7 +67,7 @@ class TransferService:
             )
             amount = to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS])
             latest_charge = event_data_obj[LATEST_CHARGE]
-            transfer = StripeService.trasfer_to_connected_account(
+            StripeService.trasfer_to_connected_account(
                 account.stripe_account_id, amount, latest_charge
             )
 
@@ -77,10 +77,7 @@ class TransferService:
             payment_intent_id=event_data_obj[ID]
             latest_charge=event_data_obj[LATEST_CHARGE]            
             TransferService.create_pending_member_trasnfer(
-                member=member,
-                amount=amount,
-                payment_intent_id=payment_intent_id,
-                latest_charge=latest_charge,
+                member, amount, payment_intent_id, latest_charge,
             )
 
     @staticmethod
@@ -91,11 +88,9 @@ class TransferService:
                 event_data_obj[METADATA][STORE_ID]
             )
             stripe_amount = to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT])
-            stripe.Transfer.create(
-                amount=stripe_amount,
-                currency="gbp",
-                source_transaction=event_data_obj[LATEST_CHARGE],
-                destination=account.stripe_account_id,
+            latest_charge = event_data_obj[LATEST_CHARGE]
+            transfer = StripeService.trasfer_to_connected_account(
+                account.stripe_account_id, stripe_amount, latest_charge
             )
         except:
             store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
