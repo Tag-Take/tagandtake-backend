@@ -149,7 +149,10 @@ venv.bak/
 /site
 
 # excess static files in staticfiles directory
-staticfiles/
+admin/
+django_extensions/
+images/
+rest_framework/
 
 # mypy
 .mypy_cache/

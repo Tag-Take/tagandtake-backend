@@ -1,0 +1,141 @@
+body {
+    font-family: Roboto, Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+.header {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #eaeaec;
+}
+.header img {
+    width: 200px; 
+}
+.content {
+    padding: 20px;
+    text-align: center;
+}
+.content h1, .content h2 {
+    color: #1a1a1a;
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+.content p {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+.button {
+    display: inline-block;
+    padding: 12px 24px;
+    margin: 20px 0;
+    background-color: #5E9060;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+}
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #eaeaec;
+    font-size: 14px;
+    color: #888888;
+}
+.pin {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 20px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #5E9060;
+    border-radius: 5px;
+}
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+    .header img {
+        width: 150px
+    }
+    .content {
+        padding: 10px;
+    }
+    .button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    .order-table thead {
+        display: none; 
+    }
+    .order-table tbody tr {
+        display: block;
+        margin-bottom: 10px;
+        border: 1px solid #eaeaec;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .order-row td {
+        display: block;
+        text-align: left;
+        padding: 8px 0;
+        font-size: 14px;
+    }
+    .order-row td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: inline-block;
+        width: 40%;
+    }
+}
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.order-header th {
+    border-bottom: 2px solid #eaeaec;
+    padding: 10px 0;
+    font-size: 16px;
+    color: #1a1a1a;
+    text-align: left;
+}
+
+.order-row td {
+    border-bottom: 1px solid #eaeaec;
+    padding: 8px 0;
+    font-size: 15px;
+}
+
+.order-row td:first-child {
+    text-align: left;
+}
+
+.order-row td:not(:first-child) {
+    text-align: center;
+}
+
+/* Emphasizing Order Total */
+.content p strong {
+    font-size: 18px;
+    color: #1a1a1a;
+}
