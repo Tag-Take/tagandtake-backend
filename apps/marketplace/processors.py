@@ -7,9 +7,7 @@ from apps.items.models import Item
 from apps.stores.models import Tag
 from apps.items.services import ItemService
 from apps.marketplace.models import ItemListing, RecalledItemListing, RecallReason
-from apps.payments.services.transaction_services import TransactionService
 from apps.payments.models.transactions import ItemPaymentTransaction
-from apps.common.constants import METADATA, ITEM_ID
 
 
 class ItemListingCreateProcessor(AbstractProcessor):
