@@ -4,7 +4,6 @@ from django.conf import settings
 import stripe
 import stripe.checkout
 from apps.marketplace.models import ItemListing
-from apps.supplies.models import StoreSupply
 from apps.payments.utils import to_stripe_amount
 from apps.common.constants import *
 
@@ -12,6 +11,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class StripeService:
+    @staticmethod
     def create_member_stripe_account():
         return stripe.Account.create(
             business_type="individual",
@@ -32,6 +32,7 @@ class StripeService:
             },
         )
 
+    @staticmethod
     def create_store_stripe_account():
         return stripe.Account.create(
             business_type="company",
@@ -48,6 +49,7 @@ class StripeService:
             },
         )
 
+    @staticmethod
     def create_stripe_account_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
@@ -55,7 +57,28 @@ class StripeService:
                 "account_onboarding": {"enabled": True},
             },
         )
+    
+    def create_stripe_dashboard_session(connected_account_id: str):
+        return stripe.AccountSession.create(
+            account=connected_account_id,
+            components={
+            "payments": {
+                "enabled": True,
+                "features": {
+                "refund_management": False,
+                "dispute_management": False,
+                "capture_payments": True
+                }
+            },
+            },
+        )
+    
+    @staticmethod
+    def is_account_fully_onboarded(connected_account_id: str) -> bool:
+        account = stripe.Account.retrieve(connected_account_id)
+        return account.payouts_enabled
 
+    @staticmethod
     def create_stripe_item_checkout_session(item_listing: ItemListing, tag_id: str):
         metadata = {
             PURCHASE: ITEM,
@@ -86,6 +109,7 @@ class StripeService:
             metadata=metadata,
         )
 
+    @staticmethod
     def create_stripe_supplies_checkout_session(
         line_items: list[Dict[str, str]], store_id: str
     ):
@@ -114,10 +138,12 @@ class StripeService:
             destination=account_id,
         )
 
+    @staticmethod
     def get_account_type_from_stripe_acct_id(connected_account_id: str):
         account = stripe.Account.retrieve(connected_account_id)
         return account.metadata.get(ACCOUNT_TYPE)
 
+    @staticmethod
     def get_buyer_email_from_payment_intent(payment_intent_id: str):
         checkout_sessions = stripe.checkout.Session.list(
             payment_intent=payment_intent_id

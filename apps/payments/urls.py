@@ -1,8 +1,7 @@
 from django.urls import path
 
 from apps.payments.views import (
-    create_stripe_account_view,
-    create_stripe_account_session_view,
+    manage_stripe_account_view,
     create_stripe_item_checkout_secssion_view,
     create_stripe_supplies_checkout_session_view,
     get_stripe_session_status_view,
@@ -17,14 +16,9 @@ from apps.payments.legacy_views.views import PurchaseTagsView
 
 urlpatterns = [
     path(
-        "create-stripe-account/",
-        create_stripe_account_view,
+        "manage-stripe-account/",
+        manage_stripe_account_view,
         name="create-member-stripe-account",
-    ),
-    path(
-        "create-stripe-account-session/",
-        create_stripe_account_session_view,
-        name="create-stripe-account-session",
     ),
     path(
         "create-stripe-item-checkout-session/",
