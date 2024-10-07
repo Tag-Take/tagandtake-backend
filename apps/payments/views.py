@@ -16,7 +16,6 @@ from apps.payments.services.checkout_services import CheckoutSessionService
 from apps.payments.serializers import SuppliesCheckoutSessionSerializer
 from apps.payments.models.accounts import MemberPaymentAccount, StorePaymentAccount
 from apps.common.constants import (
-    ACCOUNT,
     TAG_ID,
     STATUS,
     CLIENT_SECRET,
@@ -26,52 +25,55 @@ from apps.common.constants import (
 
 @api_view(["POST"])
 def manage_stripe_account_view(request: Request):
-    # TODO: remove the if statement and add permissions
     if request.user.is_anonymous:
         role = User.Roles.MEMBER
-        user = User.objects.first()
+        user = User.objects.first()  # Placeholder for testing
     else:
         user = request.user
         role = user.role
 
     try:
-        # Step 1: Get or create and payment account.
         if role == User.Roles.MEMBER:
             try:
-                payment_account = MemberPaymentAccount.objects.get(member=MemberService.get_member_by_user(user))
+                payment_account = MemberPaymentAccount.objects.get(
+                    member=MemberService.get_member_by_user(user)
+                )
             except MemberPaymentAccount.DoesNotExist:
                 stripe_account = StripeService.create_member_stripe_account()
                 payment_account = MemberPaymentAccount.objects.create(
                     member=MemberService.get_member_by_user(user),
-                    stripe_account_id=stripe_account.id
+                    stripe_account_id=stripe_account.id,
                 )
-
         elif role == User.Roles.STORE:
             try:
-                payment_account = StorePaymentAccount.objects.get(store=StoreService.get_store_by_user(user))
+                payment_account = StorePaymentAccount.objects.get(
+                    store=StoreService.get_store_by_user(user)
+                )
             except StorePaymentAccount.DoesNotExist:
                 stripe_account = StripeService.create_store_stripe_account()
                 payment_account = StorePaymentAccount.objects.create(
                     store=StoreService.get_store_by_user(user),
-                    stripe_account_id=stripe_account.id
+                    stripe_account_id=stripe_account.id,
                 )
 
         connected_account_id = payment_account.stripe_account_id
 
-        # Step 2: Check Onboarding Status
-        onboarding_required = not StripeService.is_account_fully_onboarded(connected_account_id)
-
-        # Step 3: Create Account Session (Onboarding or Dashboard)
-        if onboarding_required:
-            session = StripeService.create_stripe_account_session(connected_account_id)
-            ui_component = "onboarding"
+        # Step 2: Check the status of the Stripe account to determine session type
+        account = stripe.Account.retrieve(connected_account_id)
+        if account.details_submitted:
+            # Account fully onboarded, create dashboard session
+            session = StripeService.create_stripe_payments_session(connected_account_id)
+            ui = "dashboard"
         else:
-            session = StripeService.create_stripe_dashboard_session(connected_account_id)
-            ui_component = "dashboard"
+            # Onboarding not completed, create onboarding session
+            session = StripeService.create_stripe_account_onboarding_session(
+                connected_account_id
+            )
+            ui = "onboarding"
 
         return create_success_response(
-            "Stripe account session created successfully.",
-            {CLIENT_SECRET: session.client_secret, "ui_component": ui_component},
+            f"Stripe account session created successfully. - {ui}",
+            {"client_secret": session.client_secret},
             status.HTTP_200_OK,
         )
 
@@ -81,6 +83,7 @@ def manage_stripe_account_view(request: Request):
             {str(e)},
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
 
 @api_view(["POST"])
 def create_stripe_item_checkout_secssion_view(request: Request):

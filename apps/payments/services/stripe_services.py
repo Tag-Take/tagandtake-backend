@@ -50,7 +50,7 @@ class StripeService:
         )
 
     @staticmethod
-    def create_stripe_account_session(connected_account_id: str):
+    def create_stripe_account_onboarding_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
             components={
@@ -58,21 +58,60 @@ class StripeService:
             },
         )
     
-    def create_stripe_dashboard_session(connected_account_id: str):
+    @staticmethod
+    def create_stripe_account_management_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
             components={
-            "payments": {
+                "account_management": {
                 "enabled": True,
-                "features": {
-                "refund_management": False,
-                "dispute_management": False,
-                "capture_payments": True
-                }
-            },
+                "features": {"external_account_collection": True},
+                },
             },
         )
     
+    @staticmethod
+    def create_stripe_account_balances_session(connected_account_id: str):
+        return stripe.AccountSession.create(
+            account=connected_account_id,
+            components={
+                "balances": {
+                "enabled": True,
+                "features": {
+                    "instant_payouts": True,
+                    "standard_payouts": True,
+                    "edit_payout_schedule": True,
+                },
+                },
+            },
+        )
+    
+    @staticmethod
+    def create_stripe_account_notifications_session(connected_account_id: str):
+        return stripe.AccountSession.create(
+            account=connected_account_id,
+            components={
+                "notification_banner": {
+                "enabled": True,
+                "features": {"external_account_collection": True},
+                },
+            },
+        )
+    def create_stripe_payments_session(connected_account_id: str):
+        return stripe.AccountSession.create(
+            account=connected_account_id,
+            components={
+                "payments": {
+                    "enabled": True,
+                    "features": {
+                        "refund_management": False,
+                        "dispute_management": False,
+                        "capture_payments": True,
+                    },
+                },
+            },
+        )
+
     @staticmethod
     def is_account_fully_onboarded(connected_account_id: str) -> bool:
         account = stripe.Account.retrieve(connected_account_id)
@@ -126,11 +165,11 @@ class StripeService:
             mode="payment",
             return_url=f"{settings.FRONTEND_URL}/store/supplies/return?session_id={{CHECKOUT_SESSION_ID}}",
         )
-    
+
     @staticmethod
     def trasfer_to_connected_account(
-        account_id: str, amount = str, latest_charge: str = None
-        ): 
+        account_id: str, amount=str, latest_charge: str = None
+    ):
         return stripe.Transfer.create(
             amount=amount,
             currency="gbp",
