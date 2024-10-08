@@ -22,5 +22,5 @@ def is_time_to_remind(recalled_listing: RecalledItemListing):
     return (
         now() < recalled_listing.collection_deadline
         and now().date() != recalled_listing.collection_deadline.date()
-        and now().date() != recalled_listing.created_at.date() != now().date()
+        and now().date() != recalled_listing.created_at.date()
     )
