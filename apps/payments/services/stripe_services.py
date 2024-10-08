@@ -97,7 +97,23 @@ class StripeService:
                 },
             },
         )
-    def create_stripe_payments_session(connected_account_id: str):
+
+    def create_stripe_account_payments_session(connected_account_id: str):
+        return stripe.AccountSession.create(
+            account=connected_account_id,
+            components={
+                "payments": {
+                    "enabled": True,
+                    "features": {
+                        "refund_management": False,
+                        "dispute_management": False,
+                        "capture_payments": True,
+                    },
+                },
+            },
+        )
+    
+    def create_stripe_account_payments_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
             components={
