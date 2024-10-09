@@ -11,11 +11,11 @@ CELERY_SCHEDULES = {
     },
     "run-item-transaction-cleanup-every-10-minutes": {
         "task": "apps.payments.tasks.transaction_cleanup_tasks.run_item_transaction_cleanup",
-        "schedule": crontab(minute="*/10"),
+        "schedule": crontab(minute="*/1"),
     },
     "run-transaction-update-every-10-minutes": {
         "task": "apps.payments.tasks.transaction_cleanup_tasks.run_transaction_update",
-        "schedule": crontab(minute="*/10"),
+        "schedule": crontab(minute="*/1"),
     },
     "run-pending-member-transfers-every-hour": {
         "task": "apps.payments.tasks.pending_transfer_tasks.run_pending_transfers",

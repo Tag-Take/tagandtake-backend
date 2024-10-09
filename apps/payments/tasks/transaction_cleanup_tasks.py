@@ -1,20 +1,16 @@
 import stripe 
+import os 
 
 from celery import shared_task
 
-from django.conf import settings
-
 from apps.payments.models.transactions import (
     ItemCheckoutSession, 
-    ItemPaymentTransaction, 
-    PendingMemberTransfer, 
-    PendingStoreTransfer
+    ItemPaymentTransaction
 )
 from apps.payments.stripe_events.platform_events.payment_intent_handlers import PaymentIntentSucceededHandler
 from apps.payments.services.transfer_services import TransferService
 
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 @shared_task
@@ -22,6 +18,8 @@ def run_item_transaction_cleanup():
     """
     This task ensures that all transactions that should exist do exist
     """
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
     checkouts = ItemCheckoutSession.objects.filter(checkout_status_checked=False)
     for checkout in checkouts:
         checkout_session = stripe.checkout.Session.retrieve(checkout.session_id)
@@ -45,9 +43,11 @@ def run_transaction_update():
     """ 
     This tasks ensures that all transactions are up to date
     """
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
     transactions = ItemPaymentTransaction.objects.filter(payment_status_checked=False)
     for transaction in transactions:
-        payment_intent = stripe.PaymentIntent.retrieve(transaction.latest_charge)
+        payment_intent = stripe.PaymentIntent.retrieve(transaction.payment_intent_id)
         if payment_intent.status != transaction.status:
             if payment_intent.status == ItemPaymentTransaction.statuses.SUCCEEDED:
                 handler = PaymentIntentSucceededHandler(payment_intent)
