@@ -1,5 +1,4 @@
 from typing import Any, Dict
-import stripe
 from apps.payments.models.accounts import MemberPaymentAccount, StorePaymentAccount
 from apps.payments.models.transactions import (
     PendingMemberTransfer,
@@ -31,47 +30,52 @@ class TransferService:
 
     @staticmethod
     def run_pending_member_transfer(pending_transfer: PendingMemberTransfer): 
-        try:
-            account = TransferService.get_store_payment_account(
-                pending_transfer.member
-            ) 
-            amount = to_stripe_amount(pending_transfer.amount)
-            StripeService.trasfer_to_connected_account(
-                account.stripe_account_id, amount, pending_transfer.latest_charge
-            )
-        except: 
-            # TODO: implement this 
-            pass
+        account = TransferService.get_store_payment_account(
+            pending_transfer.member
+        ) 
+        amount = to_stripe_amount(pending_transfer.amount)
+        if account.stripe_account_id:
+            try: 
+                transfer = StripeService.trasfer_to_connected_account(
+                    account.stripe_account_id, amount, pending_transfer.latest_charge
+                )
+                if transfer:
+                    pending_transfer.delete()
+            except Exception as e:
+                raise e
+        else:
+            raise Exception("Member has no connected account")
 
 
     @staticmethod
     def run_pending_store_transfer(pending_transfer: PendingStoreTransfer): 
-        try: 
-            account = TransferService.get_store_payment_account(
-                pending_transfer.store
-            ) 
-            amount = to_stripe_amount(pending_transfer.amount)
-            StripeService.trasfer_to_connected_account(
-                account.stripe_account_id, amount, pending_transfer.latest_charge
-            )
-        except: 
-            # TODO: implement this 
-            pass
+        account = TransferService.get_store_payment_account(
+            pending_transfer.store
+        ) 
+        amount = to_stripe_amount(pending_transfer.amount)
+        if account.stripe_account_id:
+            try:
+                transfer = StripeService.trasfer_to_connected_account(
+                    account.stripe_account_id, amount, pending_transfer.latest_charge
+                )
+                if transfer:
+                    pending_transfer.delete
+            except Exception as e:
+                raise e
+        else: 
+            raise Exception("Store has no connected account")
 
     @staticmethod
     def post_success_transfer_to_member(event_data_obj: Dict[str, Any]):
-
-        try:
-            account = TransferService.get_member_payment_account(
-                event_data_obj[METADATA][MEMBER_ID]
-            )
-            amount = to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS])
-            latest_charge = event_data_obj[LATEST_CHARGE]
-            StripeService.trasfer_to_connected_account(
-                account.stripe_account_id, amount, latest_charge
-            )
-
-        except:
+        account = TransferService.get_member_payment_account(
+            event_data_obj[METADATA][MEMBER_ID]
+        )
+        amount = to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS])
+        latest_charge = event_data_obj[LATEST_CHARGE]
+        transfer = StripeService.trasfer_to_connected_account(
+            account.stripe_account_id, amount, latest_charge
+        )
+        if not transfer:
             member = MemberService.get_member(event_data_obj[METADATA][MEMBER_ID])
             amount=event_data_obj[METADATA][MEMBER_EARNINGS]
             payment_intent_id=event_data_obj[ID]
@@ -82,17 +86,15 @@ class TransferService:
 
     @staticmethod
     def post_success_transfer_to_store(event_data_obj: Dict[str, Any]):
-
-        try:
-            account = TransferService.get_store_payment_account(
-                event_data_obj[METADATA][STORE_ID]
-            )
-            stripe_amount = to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT])
-            latest_charge = event_data_obj[LATEST_CHARGE]
-            transfer = StripeService.trasfer_to_connected_account(
-                account.stripe_account_id, stripe_amount, latest_charge
-            )
-        except:
+        account = TransferService.get_store_payment_account(
+            event_data_obj[METADATA][STORE_ID]
+        )
+        stripe_amount = to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT])
+        latest_charge = event_data_obj[LATEST_CHARGE]
+        transfer = StripeService.trasfer_to_connected_account(
+            account.stripe_account_id, stripe_amount, latest_charge
+        )
+        if not transfer:
             store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
             amount=event_data_obj[METADATA][STORE_AMOUNT]
             payment_intent_id=event_data_obj[ID]

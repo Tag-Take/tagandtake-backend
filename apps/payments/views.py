@@ -59,11 +59,15 @@ def manage_stripe_account_view(request: Request):
             session = StripeService.create_stripe_account_onboarding_session(
                 connected_account_id
             )
+            pending_transfers = member.pending_transfers if member else store.pending_transfers
             ui = "onboarding"
 
         return create_success_response(
             f"Stripe account session created successfully. - {ui}",
-            {"client_secret": session.client_secret},
+            {
+                "client_secret": session.client_secret,
+                "pending_transfers": pending_transfers
+            },
             status.HTTP_200_OK,
         )
 

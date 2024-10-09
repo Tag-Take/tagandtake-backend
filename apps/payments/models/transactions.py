@@ -57,12 +57,14 @@ class BaseFailedPaymentTransaction(models.Model):
 
 
 class ItemCheckoutSession(BaseChekoutSession):
+
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="item_checkout_sessions"
     )
     store = models.ForeignKey(
         Store, on_delete=models.CASCADE, related_name="store_item_checkout_sessions"
     )
+    checkout_status_checked = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Checkout Session {self.id}"
@@ -90,6 +92,7 @@ class ItemPaymentTransaction(BasePaymentTransaction):
     transaction_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     buyer_email = models.EmailField(max_length=255, blank=True, null=True)
     latest_charge = models.CharField(max_length=255, unique=True, null=True)
+    payment_status_checked = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Transaction {self.id} - {self.status}"

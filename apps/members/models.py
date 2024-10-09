@@ -1,12 +1,13 @@
 from decimal import Decimal
 
+from django.apps import apps
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
 )
-from django.apps import apps
+
 
 User = get_user_model()
 
@@ -58,6 +59,11 @@ class MemberProfile(models.Model):
         except StripeAccount.DoesNotExist:
             return None
 
+    @property 
+    def pending_transfers(self):
+        PendingMemberTransfer = apps.get_model("payments", "PendingMemberTransfer")
+        transfers = PendingMemberTransfer.objects.filter(member=self.id)
+        return sum([trasnfer.amount for trasnfer in transfers])
 
 class MemberNotificationPreferences(models.Model):
     member = models.OneToOneField(

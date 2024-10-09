@@ -76,6 +76,12 @@ class StoreProfile(models.Model):
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
+    
+    @property 
+    def pending_transfers(self):
+        PendingStoreTransfer = apps.get_model("payments", "PendingStoreTransfer")
+        transfers = PendingStoreTransfer.objects.filter(store=self.id)
+        return sum([trasnfer.amount for trasnfer in transfers])
 
 
 class StoreAddress(models.Model):

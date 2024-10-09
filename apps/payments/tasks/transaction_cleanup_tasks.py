@@ -1,14 +1,60 @@
-# TODO:
-### Daily task updating transactions based on payment_intent_id at checkout
-# get checkout session and see if there is an associateed payment_intent that hasn't succeeded
-# for those who:
-# - no payment intent id
-# - payment intent != canelled or succeeded
-# get payment_intent obj from_db and update
-# TODO
-# get all transaction objects with no checkout_session_id
-# get all matching checkout_session related objects from ceckouts table
-# fill data in transaction based on checout objecte
-# listinghandler - sold listing
-# TODO
-# attempt to transfer funds from wallet to bank account
+import stripe 
+
+from celery import shared_task
+
+from django.conf import settings
+
+from apps.payments.models.transactions import (
+    ItemCheckoutSession, 
+    ItemPaymentTransaction, 
+    PendingMemberTransfer, 
+    PendingStoreTransfer
+)
+from apps.payments.stripe_events.platform_events.payment_intent_handlers import PaymentIntentSucceededHandler
+from apps.payments.services.transfer_services import TransferService
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+@shared_task
+def run_item_transaction_cleanup():
+    """
+    This task ensures that all transactions that should exist do exist
+    """
+    checkouts = ItemCheckoutSession.objects.filter(checkout_status_checked=False)
+    for checkout in checkouts:
+        checkout_session = stripe.checkout.Session.retrieve(checkout.session_id)
+        if checkout_session.payment_status == "completed":
+
+            if not checkout.payment_intent_id:
+                checkout.payment_intent_id = checkout_session.payment_intent
+                checkout.save()
+
+            if not ItemPaymentTransaction.objects.filter(checkout_session=checkout).exists():
+                payment_intent = stripe.PaymentIntent.retrieve(checkout.payment_intent_id)
+                handler = PaymentIntentSucceededHandler(payment_intent)
+                handler.handle()
+
+        checkout.checkout_status_checked = True
+        checkout.save()                
+
+
+@shared_task
+def run_transaction_update():
+    """ 
+    This tasks ensures that all transactions are up to date
+    """
+    transactions = ItemPaymentTransaction.objects.filter(payment_status_checked=False)
+    for transaction in transactions:
+        payment_intent = stripe.PaymentIntent.retrieve(transaction.latest_charge)
+        if payment_intent.status != transaction.status:
+            if payment_intent.status == ItemPaymentTransaction.statuses.SUCCEEDED:
+                handler = PaymentIntentSucceededHandler(payment_intent)
+                handler.handle()
+            else:
+                transaction.status = payment_intent.status
+                transaction.save()
+
+        transaction.payment_status_checked = True
+        transaction.save()
