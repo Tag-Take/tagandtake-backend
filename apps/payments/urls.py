@@ -1,10 +1,16 @@
 from django.urls import path
 
 from apps.payments.views import (
-    manage_stripe_account_view,
     create_stripe_item_checkout_secssion_view,
     create_stripe_supplies_checkout_session_view,
     get_stripe_session_status_view,
+    get_stripe_session_status_view,
+    account_status_view,
+    create_onboarding_session_view,
+    create_management_session_view,
+    create_payouts_session_view,
+    create_payments_session_view,
+    fetch_notifications_view,
 )
 from apps.payments.webhooks import (
     stripe_connect_event_webhook,
@@ -16,32 +22,57 @@ from apps.payments.legacy_views.views import PurchaseTagsView
 
 urlpatterns = [
     path(
-        "manage-stripe-account/",
-        manage_stripe_account_view,
-        name="create-member-stripe-account",
+        "stripe/account-status/",
+        account_status_view,
+        name="stripe-account-status",
     ),
     path(
-        "create-stripe-item-checkout-session/",
+        "stripe/create-onboarding-session/",
+        create_onboarding_session_view,
+        name="stripe-create-onboarding-session",
+    ),
+    path(
+        "stripe/create-management-session/",
+        create_management_session_view,
+        name="stripe-create-management-session",
+    ),
+    path(
+        "stripe/create-payouts-session/",
+        create_payouts_session_view,
+        name="stripe-create-payouts-session",
+    ),
+    path(
+        "stripe/create-payments-session/",
+        create_payments_session_view,
+        name="stripe-create-payments-session",
+    ),
+    path(
+        "stripe/notifications-session/",
+        fetch_notifications_view,
+        name="stripe-fetch-notifications",
+    ),
+    path(
+        "stripe/item-checkout-session/",
         create_stripe_item_checkout_secssion_view,
         name="create-stripe-item-checkout-session",
     ),
     path(
-        "create-stripe-supplies-checkout-session/",
+        "stripe/supplies-checkout-session/",
         create_stripe_supplies_checkout_session_view,
         name="create-stripe-supplies-checkout-session",
     ),
     path(
-        "stripe-session-status/",
+        "stripe/checkout-session-status/",
         get_stripe_session_status_view,
         name="stripe-session-status",
     ),
     path(
-        "stripe-platform-webhook/",
+        "stripe/platform-webhook/",
         stripe_platform_event_webhook,
         name="stripe-platform-webhook",
     ),
     path(
-        "stripe-connect-webhook/",
+        "stripe/connect-webhook/",
         stripe_connect_event_webhook,
         name="stripe-connect-webhook",
     ),
