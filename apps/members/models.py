@@ -53,17 +53,24 @@ class MemberProfile(models.Model):
 
     @property
     def stripe_account(self):
-        StripeAccount = apps.get_model("payments", "StripeAccount")
+        StripeAccount = apps.get_model("payments", "MemberPaymentAccount")
         try:
-            return StripeAccount.objects.get(user=self.user)
+            return StripeAccount.objects.get(member=self).stripe_account_id
         except StripeAccount.DoesNotExist:
             return None
 
     @property 
-    def pending_transfers(self):
+    def pending_balance(self):
         PendingMemberTransfer = apps.get_model("payments", "PendingMemberTransfer")
-        transfers = PendingMemberTransfer.objects.filter(member=self.id)
-        return sum([trasnfer.amount for trasnfer in transfers])
+
+        transfers = PendingMemberTransfer.objects.filter(member=self)
+        if not transfers:
+            return 0
+
+        total = sum([float(transfer.amount) for transfer in transfers])
+        return total
+
+
 
 class MemberNotificationPreferences(models.Model):
     member = models.OneToOneField(

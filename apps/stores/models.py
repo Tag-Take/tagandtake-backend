@@ -76,12 +76,24 @@ class StoreProfile(models.Model):
     @property
     def remaining_stock(self):
         return self.stock_limit - self.active_listings_count
+
+    @property
+    def stripe_account(self):
+        StripeAccount = apps.get_model("payments", "StorePaymentAccount")
+        try:
+            return StripeAccount.objects.get(store=self).stripe_account_id
+        except StripeAccount.DoesNotExist:
+            return None
     
     @property 
-    def pending_transfers(self):
+    def pending_balance(self):
         PendingStoreTransfer = apps.get_model("payments", "PendingStoreTransfer")
         transfers = PendingStoreTransfer.objects.filter(store=self.id)
-        return sum([trasnfer.amount for trasnfer in transfers])
+        if not transfers:
+            return 0
+
+        total = sum([float(transfer.amount) for transfer in transfers])
+        return total
 
 
 class StoreAddress(models.Model):
