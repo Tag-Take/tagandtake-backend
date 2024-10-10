@@ -3,7 +3,7 @@ from decimal import Decimal
 
 def to_stripe_amount(amount: Decimal) -> int:
     """Converts a decimal amount to Stripe's integer format."""
-    return int(round(amount * 100))
+    return int(round(float(amount) * 100))
 
 
 def from_stripe_amount(stripe_amount: str) -> Decimal:

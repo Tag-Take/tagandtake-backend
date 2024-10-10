@@ -67,15 +67,24 @@ class TransferService:
 
     @staticmethod
     def post_success_transfer_to_member(event_data_obj: Dict[str, Any]):
-        account = TransferService.get_member_payment_account(
-            event_data_obj[METADATA][MEMBER_ID]
-        )
-        amount = to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS])
-        latest_charge = event_data_obj[LATEST_CHARGE]
-        transfer = StripeService.trasfer_to_connected_account(
-            account.stripe_account_id, amount, latest_charge
-        )
-        if not transfer:
+        try:
+            account = TransferService.get_member_payment_account(
+                event_data_obj[METADATA][MEMBER_ID]
+            )
+            amount = to_stripe_amount(event_data_obj[METADATA][MEMBER_EARNINGS])
+            latest_charge = event_data_obj[LATEST_CHARGE]
+            transfer = StripeService.trasfer_to_connected_account(
+                account.stripe_account_id, amount, latest_charge
+            )
+            if not transfer:
+                member = MemberService.get_member(event_data_obj[METADATA][MEMBER_ID])
+                amount=event_data_obj[METADATA][MEMBER_EARNINGS]
+                payment_intent_id=event_data_obj[ID]
+                latest_charge=event_data_obj[LATEST_CHARGE]
+                TransferService.create_pending_member_trasnfer(
+                    member, amount, payment_intent_id, latest_charge
+                )
+        except Exception as e:
             member = MemberService.get_member(event_data_obj[METADATA][MEMBER_ID])
             amount=event_data_obj[METADATA][MEMBER_EARNINGS]
             payment_intent_id=event_data_obj[ID]
@@ -86,22 +95,32 @@ class TransferService:
 
     @staticmethod
     def post_success_transfer_to_store(event_data_obj: Dict[str, Any]):
-        account = TransferService.get_store_payment_account(
-            event_data_obj[METADATA][STORE_ID]
-        )
-        stripe_amount = to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT])
-        latest_charge = event_data_obj[LATEST_CHARGE]
-        transfer = StripeService.trasfer_to_connected_account(
-            account.stripe_account_id, stripe_amount, latest_charge
-        )
-        if not transfer:
+        try:
+            account = TransferService.get_store_payment_account(
+                event_data_obj[METADATA][STORE_ID]
+            )
+            stripe_amount = to_stripe_amount(event_data_obj[METADATA][STORE_AMOUNT])
+            latest_charge = event_data_obj[LATEST_CHARGE]
+            transfer = StripeService.trasfer_to_connected_account(
+                account.stripe_account_id, stripe_amount, latest_charge
+            )
+            if not transfer:
+                store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
+                amount=event_data_obj[METADATA][STORE_AMOUNT]
+                payment_intent_id=event_data_obj[ID]
+                latest_charge=event_data_obj[LATEST_CHARGE]
+                TransferService.create_pending_store_trasnfer(
+                    store, amount, payment_intent_id, latest_charge
+                )
+                            
+        except Exception as e:
             store = StoreService.get_store(event_data_obj[METADATA][STORE_ID])
             amount=event_data_obj[METADATA][STORE_AMOUNT]
             payment_intent_id=event_data_obj[ID]
             latest_charge=event_data_obj[LATEST_CHARGE]
             TransferService.create_pending_store_trasnfer(
                 store, amount, payment_intent_id, latest_charge
-            )          
+            )    
 
     @staticmethod
     def get_member_payment_account(member_id: str):

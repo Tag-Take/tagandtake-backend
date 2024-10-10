@@ -8,9 +8,6 @@ from apps.payments.models.transactions import (
     ItemPaymentTransaction
 )
 from apps.payments.stripe_events.platform_events.payment_intent_handlers import PaymentIntentSucceededHandler
-from apps.payments.services.transfer_services import TransferService
-
-
 
 
 @shared_task

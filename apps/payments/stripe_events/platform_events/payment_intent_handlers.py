@@ -98,7 +98,7 @@ class PaymentIntentSucceededHandler:
         return TransactionService().process_supplies_transaction(transaction)
 
     def _run_post_success_transfers(self):
-        TransferService.run_post_success_transfers(self.payment_intent)
+        TransferService().run_post_success_transfers(self.payment_intent)
 
     @staticmethod
     def _send_item_notifications(sold_listing):
