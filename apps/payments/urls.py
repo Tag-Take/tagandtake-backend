@@ -52,7 +52,7 @@ urlpatterns = [
         name="stripe-fetch-notifications",
     ),
     path(
-        "stripe/item-checkout-session/",
+        "stripe/create-item-checkout-session/",
         create_stripe_item_checkout_secssion_view,
         name="create-stripe-item-checkout-session",
     ),
