@@ -51,6 +51,7 @@ class TagService:
 
     @staticmethod
     def generate_tag_image(url: str):
+        # TODO: add tag number to the image
         qr: qrcode = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)

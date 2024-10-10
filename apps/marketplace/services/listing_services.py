@@ -76,8 +76,6 @@ class ItemListingService:
             data[ROLE] = ListingRole.HOST_STORE
         elif IsItemOwner().has_object_permission(request, view, listing.item):
             data[ROLE] = ListingRole.ITEM_OWNER
-        elif IsStoreUser().has_permission(request, view):
-            data[ROLE] = ListingRole.GUEST_STORE
         else:
             data[ROLE] = ListingRole.GUEST
         return data

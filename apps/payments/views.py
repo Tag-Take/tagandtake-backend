@@ -21,7 +21,7 @@ from apps.common.constants import (
     SESSION_ID,
 )
 
-
+# TODO: Add permissions
 @api_view(["POST"])
 def manage_stripe_account_view(request: Request):
     if request.user.is_anonymous:
@@ -79,6 +79,7 @@ def manage_stripe_account_view(request: Request):
         )
 
 
+# TODO: Add permissions
 @api_view(["POST"])
 def create_payments_session_view(request: Request):
     try:
@@ -111,6 +112,7 @@ def create_payments_session_view(request: Request):
         )
 
 
+# TODO: Add permissions
 @api_view(["POST"])
 def create_payouts_session_view(request: Request):
     try:
@@ -174,8 +176,6 @@ def create_stripe_item_checkout_secssion_view(request: Request):
         )
 
 
-# TODO: Add permissions
-# @permission_classes([permissions.IsAuthenticated])  # Add IsStoreUser if necessary
 @api_view(["POST"])
 def create_stripe_supplies_checkout_session_view(request: Request):
     user = request.user
