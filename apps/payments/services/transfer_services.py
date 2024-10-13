@@ -30,8 +30,8 @@ class TransferService:
 
     @staticmethod
     def run_pending_member_transfer(pending_transfer: PendingMemberTransfer): 
-        account = TransferService.get_store_payment_account(
-            pending_transfer.member
+        account = TransferService.get_member_payment_account(
+            pending_transfer.member.id
         ) 
         amount = to_stripe_amount(pending_transfer.amount)
         if account.stripe_account_id:
@@ -50,7 +50,7 @@ class TransferService:
     @staticmethod
     def run_pending_store_transfer(pending_transfer: PendingStoreTransfer): 
         account = TransferService.get_store_payment_account(
-            pending_transfer.store
+            pending_transfer.store.id
         ) 
         amount = to_stripe_amount(pending_transfer.amount)
         if account.stripe_account_id:
