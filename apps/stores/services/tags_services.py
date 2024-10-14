@@ -1,3 +1,4 @@
+from PIL import Image, ImageDraw, ImageFont
 import qrcode
 from io import BytesIO
 import zipfile
@@ -50,15 +51,32 @@ class TagService:
         return f"{settings.FRONTEND_URL}/{LISTING}/{tag.id}"
 
     @staticmethod
-    def generate_tag_image(url: str):
-        # TODO: add tag number to the image
+    def generate_tag_image(url: str, tag_id: str):
         qr: qrcode = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
+
+        # Make sure QR Code image is in RGB format as Pillow works best adding textual elements to this format
+        qr_img = qr_img.convert("RGB")
+        
+        # Set up Pillow's drawing context
+        draw = ImageDraw.Draw(qr_img)
+
+        # Set the x co-ord of tag_id to be half the image width to centre the text
+        tag_id_x = qr_img.getWidth()
+
+        # y co-ord set to 0 otherwise the text may obscure the QR Code
+        draw.text((tag_id_x,0), tag_id, fill="black")
+
+        # Create in-memory buffer to handle image data without having to save to disk
         img_io = BytesIO()
+
         qr_img.save(img_io, format="PNG")
+
+        # Return file pointer to beginning of buffer to ensure any future image reads start from beginning of data
         img_io.seek(0)
+
         return img_io
 
     @staticmethod
@@ -66,7 +84,7 @@ class TagService:
         tags = tag_group.tags.all()
         for tag in tags:
             listing_url = TagService.get_listing_url(tag)
-            tag_image = TagService.generate_tag_image(listing_url)
+            tag_image = TagService.generate_tag_image(listing_url, tag.id)
             TagService.upload_tag_image(tag, tag_image)
 
     @staticmethod
@@ -76,7 +94,7 @@ class TagService:
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for tag in tags:
                 listing_url = TagService.get_listing_url(tag)
-                tag_image = TagService.generate_tag_image(listing_url)
+                tag_image = TagService.generate_tag_image(listing_url, tag.id)
                 filename = f"tag_{tag.id}.png"
                 zip_file.writestr(filename, tag_image.read())
         zip_buffer.seek(0)
