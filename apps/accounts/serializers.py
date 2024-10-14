@@ -145,7 +145,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             ACCESS: str(refresh.access_token),
         }
 
-        data[USER] = {ID: user.id, USERNAME: user.username, ROLE: user.role}
+        data[USER] = user
 
         return data
 

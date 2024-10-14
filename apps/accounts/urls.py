@@ -11,6 +11,7 @@ from apps.accounts.views import (
     PasswordResetView,
     PasswordResetConfirmView,
     DeleteAccountView,
+    get_auth_status
 )
 
 urlpatterns = [
@@ -29,6 +30,7 @@ urlpatterns = [
     path("tokens/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("tokens/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("auth-status/", get_auth_status, name="auth_status"),
     path("password-reset/", PasswordResetView.as_view(), name="password_reset"),
     path(
         "password-reset/confirm",

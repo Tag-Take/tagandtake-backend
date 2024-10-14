@@ -7,6 +7,7 @@ from django.utils.encoding import force_str
 
 from rest_framework.throttling import ScopedRateThrottle
 
+from rest_framework.decorators import api_view
 from rest_framework import generics, status, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -170,7 +171,24 @@ class LogoutView(APIView):
             return create_error_response(
                 "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
             )
-
+        
+@api_view(['GET'])
+def get_auth_status(request: Request):
+    user = request.user
+    if user.is_authenticated:
+        return create_success_response(
+            "User is authenticated", {
+                USER: user.username,
+                ISLOGGEDIN: True,
+                ROLE: user.role
+            }, status.HTTP_200_OK
+        )
+    return create_success_response(
+        "User is not authenticated", {
+            ISLOGGEDIN: False,
+            ROLE: None
+            }, status.HTTP_200_OK
+    )
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -191,7 +209,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         refresh_token = serializer.validated_data[REFRESH]
 
         response = create_success_response(
-            "Authentication successful.", {USER: user}, status.HTTP_200_OK
+            "Authentication successful.", {
+                USERNAME: user.username,
+                ISLOGGEDIN: True,
+                ROLE: user.role
+            }, status.HTTP_200_OK
         )
 
         return JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)

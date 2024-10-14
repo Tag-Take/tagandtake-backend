@@ -39,6 +39,7 @@ ACCOUNT: str = "account"
 INTERNAL: str = "internal"
 TOTAL_PRICE: str = "total_price"
 ORDER_TOTAL: str = "order_total"
+ISLOGGEDIN: str = "isLoggedIn"
 
 # ACCOUNTS
 USER: str = "user"
