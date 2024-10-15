@@ -53,43 +53,40 @@ class TagService:
     @staticmethod
     def generate_tag_image(url: str, tag_id: int):
         # Generate QR code
-        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr = qrcode.QRCode(version=2, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
-        
-        # Convert QR code to an image
+
+        # Generate QR code image
         qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
         
-        # Create a new blank image that's taller to accommodate the tag_id text
         img_width, img_height = qr_img.size
-        total_height = img_height + 50  # Extra space below the QR code for the tag ID
+        total_height = img_height + 50  
 
-        # Create a new blank image
         new_img = Image.new("RGB", (img_width, total_height), "white")
 
-        # Paste the QR code image onto the new image
         new_img.paste(qr_img, (0, 0))
 
-        # Set up drawing context for the tag ID
         draw = ImageDraw.Draw(new_img)
         tag_text = str(tag_id)
 
-        # Get the text bounding box (textbbox returns a tuple of bounding box coordinates)
-        bbox = draw.textbbox((0, 0), tag_text)
+        font_num = 40
+
+        bbox = draw.textbbox((0, 0), tag_text, font_size=font_num) 
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
-        # Center the tag text below the QR code
         x_position = (img_width - text_width) // 2
+        y_position = total_height - text_height- ( (50) // 2) - 17
 
-        # Draw the tag ID below the QR code
-        draw.text((x_position, img_height + 10), tag_text, fill="black")
+        draw.text((x_position, y_position), tag_text, fill="black", align="center", font_size=font_num)    
 
-        # Save the image to an in-memory buffer
         img_io = BytesIO()
         new_img.save(img_io, format="PNG")
-        img_io.seek(0)  # Rewind the file for further use
+        img_io.seek(0) 
+
         return img_io
+
 
     @staticmethod
     def create_and_upload_tag_group_images(tag_group: TagGroup):
