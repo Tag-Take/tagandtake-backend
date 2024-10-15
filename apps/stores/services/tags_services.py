@@ -51,32 +51,44 @@ class TagService:
         return f"{settings.FRONTEND_URL}/{LISTING}/{tag.id}"
 
     @staticmethod
-    def generate_tag_image(url: str, tag_id: str):
-        qr: qrcode = qrcode.QRCode(version=1, box_size=10, border=4)
+    def generate_tag_image(url: str, tag_id: int):
+        # Generate QR code
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white")
-
-        # Make sure QR Code image is in RGB format as Pillow works best adding textual elements to this format
-        qr_img = qr_img.convert("RGB")
         
-        # Set up Pillow's drawing context
-        draw = ImageDraw.Draw(qr_img)
+        # Convert QR code to an image
+        qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+        
+        # Create a new blank image that's taller to accommodate the tag_id text
+        img_width, img_height = qr_img.size
+        total_height = img_height + 50  # Extra space below the QR code for the tag ID
 
-        # Set the x co-ord of tag_id to be half the image width to centre the text
-        tag_id_x = qr_img.getWidth()
+        # Create a new blank image
+        new_img = Image.new("RGB", (img_width, total_height), "white")
 
-        # y co-ord set to 0 otherwise the text may obscure the QR Code
-        draw.text((tag_id_x,0), tag_id, fill="black")
+        # Paste the QR code image onto the new image
+        new_img.paste(qr_img, (0, 0))
 
-        # Create in-memory buffer to handle image data without having to save to disk
+        # Set up drawing context for the tag ID
+        draw = ImageDraw.Draw(new_img)
+        tag_text = str(tag_id)
+
+        # Get the text bounding box (textbbox returns a tuple of bounding box coordinates)
+        bbox = draw.textbbox((0, 0), tag_text)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        # Center the tag text below the QR code
+        x_position = (img_width - text_width) // 2
+
+        # Draw the tag ID below the QR code
+        draw.text((x_position, img_height + 10), tag_text, fill="black")
+
+        # Save the image to an in-memory buffer
         img_io = BytesIO()
-
-        qr_img.save(img_io, format="PNG")
-
-        # Return file pointer to beginning of buffer to ensure any future image reads start from beginning of data
-        img_io.seek(0)
-
+        new_img.save(img_io, format="PNG")
+        img_io.seek(0)  # Rewind the file for further use
         return img_io
 
     @staticmethod
