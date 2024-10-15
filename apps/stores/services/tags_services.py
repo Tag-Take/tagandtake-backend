@@ -1,3 +1,4 @@
+from PIL import Image, ImageDraw, ImageFont
 import qrcode
 from io import BytesIO
 import zipfile
@@ -50,23 +51,49 @@ class TagService:
         return f"{settings.FRONTEND_URL}/{LISTING}/{tag.id}"
 
     @staticmethod
-    def generate_tag_image(url: str):
-        # TODO: add tag number to the image
-        qr: qrcode = qrcode.QRCode(version=1, box_size=10, border=4)
+    def generate_tag_image(url: str, tag_id: int):
+        # Generate QR code
+        qr = qrcode.QRCode(version=2, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white")
+
+        # Generate QR code image
+        qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+        
+        img_width, img_height = qr_img.size
+        total_height = img_height + 50  
+
+        new_img = Image.new("RGB", (img_width, total_height), "white")
+
+        new_img.paste(qr_img, (0, 0))
+
+        draw = ImageDraw.Draw(new_img)
+        tag_text = str(tag_id)
+
+        font_num = 40
+
+        bbox = draw.textbbox((0, 0), tag_text, font_size=font_num) 
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        x_position = (img_width - text_width) // 2
+        y_position = total_height - text_height- ( (50) // 2) - 17
+
+        draw.text((x_position, y_position), tag_text, fill="black", align="center", font_size=font_num)    
+
         img_io = BytesIO()
-        qr_img.save(img_io, format="PNG")
-        img_io.seek(0)
+        new_img.save(img_io, format="PNG")
+        img_io.seek(0) 
+
         return img_io
+
 
     @staticmethod
     def create_and_upload_tag_group_images(tag_group: TagGroup):
         tags = tag_group.tags.all()
         for tag in tags:
             listing_url = TagService.get_listing_url(tag)
-            tag_image = TagService.generate_tag_image(listing_url)
+            tag_image = TagService.generate_tag_image(listing_url, tag.id)
             TagService.upload_tag_image(tag, tag_image)
 
     @staticmethod
@@ -76,7 +103,7 @@ class TagService:
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for tag in tags:
                 listing_url = TagService.get_listing_url(tag)
-                tag_image = TagService.generate_tag_image(listing_url)
+                tag_image = TagService.generate_tag_image(listing_url, tag.id)
                 filename = f"tag_{tag.id}.png"
                 zip_file.writestr(filename, tag_image.read())
         zip_buffer.seek(0)
