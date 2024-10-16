@@ -202,6 +202,8 @@ STATIC_URL = "/static/"
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = ["./static/"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+TAG_FONT = STATICFILES_DIRS[0] + 'fonts/Nunito-Bold.ttf'
+
 
 # APP URLS
 OPERATIONS_EMAIL = "info@tagandtake.com"

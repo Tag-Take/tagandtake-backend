@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageFont, ImageDraw
 import qrcode
 from io import BytesIO
 import zipfile
@@ -56,34 +56,36 @@ class TagService:
         qr = qrcode.QRCode(version=2, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
-
-        # Generate QR code image
+        
         qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
         
         img_width, img_height = qr_img.size
-        total_height = img_height + 50  
+        total_height = img_height + 30  # Extra space below the QR code for the tag ID
 
         new_img = Image.new("RGB", (img_width, total_height), "white")
-
         new_img.paste(qr_img, (0, 0))
 
         draw = ImageDraw.Draw(new_img)
-        tag_text = str(tag_id)
+        tag_text = 'TAG: '+str(tag_id)
 
-        font_num = 40
+        font_size = 24
+        font = ImageFont.truetype(settings.TAG_FONT, font_size)  
 
-        bbox = draw.textbbox((0, 0), tag_text, font_size=font_num) 
+        # Calculate text position
+        bbox = draw.textbbox((0, 0), tag_text, font=font) 
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
         x_position = (img_width - text_width) // 2
-        y_position = total_height - text_height- ( (50) // 2) - 17
+        y_position = total_height - text_height - 32
 
-        draw.text((x_position, y_position), tag_text, fill="black", align="center", font_size=font_num)    
+        # Draw the text using the Nunito-Bold font
+        draw.text((x_position, y_position), tag_text, fill="black", align="center", font=font)    
 
+        # Save the image to a BytesIO object
         img_io = BytesIO()
         new_img.save(img_io, format="PNG")
-        img_io.seek(0) 
+        img_io.seek(0)
 
         return img_io
 
