@@ -20,7 +20,7 @@ class TagsPurchaseProcessor(AbstractProcessor):
         self._send_tag_images_email(tag_group)
 
     def _get_store(self):
-        store = StoreService.get_store(self.store_id)
+        store = StoreService.get_store(self.store.id)
         return store
 
     def _create_tag_group(self):

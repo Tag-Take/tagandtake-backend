@@ -1,10 +1,8 @@
 from typing import Dict, Any
-import json
 
 from django.db import transaction
 
 from apps.supplies.services import SuppliesServices
-from apps.payments.services.transaction_services import TransactionService
 from apps.stores.models import StoreProfile as Store
 from apps.supplies.processor_registry import PROCESSOR_REGISTRY
 from apps.common.constants import PRICE, QUANTITY
