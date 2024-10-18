@@ -6,11 +6,11 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 
-from apps.accounts.models import User
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+
 from apps.common.responses import create_success_response, create_error_response
 from apps.stores.models import StoreProfile as Store
-from apps.members.services import MemberService
-from apps.stores.services.store_services import StoreService
 from apps.marketplace.services.listing_services import ItemListingService
 from apps.payments.services.stripe_services import StripeService
 from apps.payments.services.checkout_services import CheckoutSessionService
@@ -22,8 +22,6 @@ from apps.common.constants import (
     CLIENT_SECRET,
     SESSION_ID,
 )
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import permission_classes
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])  
