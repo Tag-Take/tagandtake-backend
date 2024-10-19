@@ -13,20 +13,20 @@ from apps.marketplace.urls import urlpatterns as marketplace_urls
 API_VERSION = "v1"
 
 urlpatterns = [
-    # Admin
-    path("admin/", admin.site.urls),
+    # Django Admin
+    path(f"{API_VERSION}/admin/", admin.site.urls),
     # API Documentation
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(f"{API_VERSION}/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "api/schema/docs/",
+        f"{API_VERSION}/schema/docs/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
-    # API Endpoints
-    path(f"api/{API_VERSION}/accounts/", include(account_urls)),
-    path(f"api/{API_VERSION}/stores/", include(store_urls)),
-    path(f"api/{API_VERSION}/members/", include(member_urls)),
-    path(f"api/{API_VERSION}/items/", include(item_urls)),
-    path(f"api/{API_VERSION}/payments/", include(payment_urls)),
-    path(f"api/{API_VERSION}/marketplace/", include(marketplace_urls)),
+    # App Endpoints
+    path(f"{API_VERSION}/", include(account_urls)),
+    path(f"{API_VERSION}/stores/", include(store_urls)),
+    path(f"{API_VERSION}/members/", include(member_urls)),
+    path(f"{API_VERSION}/items/", include(item_urls)),
+    path(f"{API_VERSION}/payments/", include(payment_urls)),
+    path(f"{API_VERSION}/marketplace/", include(marketplace_urls)),
 ]
