@@ -9,29 +9,9 @@ from apps.items.views import (
 )
 
 urlpatterns = [
-    path(
-        "create/",
-        ItemCreateView.as_view(),
-        name="create_item",
-    ),
-    path(
-        "<int:pk>/",
-        ItemDetailView.as_view(),
-        name="item_detail",
-    ),
-    path(
-        "member/",
-        MemberItemListView.as_view(),
-        name="member_item_list",
-    ),
-    path(
-        "categories/",
-        ItemCategoryListView.as_view(),
-        name="item_category_list",
-    ),
-    path(
-        "conditions/",
-        ItemConditionListView.as_view(),
-        name="item_condition_list",
-    ),
+    path("items/", ItemCreateView.as_view(), name="create_item"),
+    path("items/<int:pk>/", ItemDetailView.as_view(), name="item_detail"),
+    path("items/categories/", ItemCategoryListView.as_view(), name="item_category_list"),
+    path("items/conditions/", ItemConditionListView.as_view(), name="item_condition_list"),
+    path("members/me/items/", MemberItemListView.as_view(), name="member_item_list"),
 ]
