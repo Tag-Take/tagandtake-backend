@@ -1,11 +1,13 @@
 from django.db import models
 from decimal import Decimal
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.utils.translation import gettext_lazy as _
 
 from apps.members.models import MemberProfile as Member
 from apps.common.constants import ITEMS, ORDER, IMAGES
+
 
 User = get_user_model()
 
@@ -87,6 +89,12 @@ class Item(models.Model):
     @property
     def condition_details(self):
         return self.condition
+    
+    @property
+    def tag_id(self):
+        ItemListing = apps.get_model('marketplace', 'ItemListing')
+        item_listing = ItemListing.objects.filter(item=self).first()
+        return item_listing.tag.id if item_listing else None
 
 
 class ItemImages(models.Model):

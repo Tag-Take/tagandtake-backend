@@ -52,6 +52,7 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
     category_details = serializers.SerializerMethodField()
     condition_details = serializers.SerializerMethodField()
+    tag_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -65,6 +66,7 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
             CONDITION,
             CATEGORY,
             STATUS,
+            TAG_ID,
             IMAGE,
             IMAGES,
             MAIN_IMAGE,
@@ -97,6 +99,9 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
 
     def get_condition_details(self, item: Item):
         return ItemConditionSerializer(item.condition).data
+    
+    def get_tag_id(self, item: Item):
+        return item.tag_id
 
 
 class ItemCategorySerializer(serializers.ModelSerializer):
