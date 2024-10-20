@@ -24,7 +24,7 @@ urlpatterns = [
     ),
     # App Endpoints
     path(f"{API_VERSION}/", include(account_urls)),
-    path(f"{API_VERSION}/stores/", include(store_urls)),
+    path(f"{API_VERSION}/", include(store_urls)),
     path(f"{API_VERSION}/", include(member_urls)),
     path(f"{API_VERSION}/", include(item_urls)),
     path(f"{API_VERSION}/payments/", include(payment_urls)),

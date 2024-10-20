@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.request import Request
 
 from apps.common.responses import create_error_response, create_success_response
 from apps.stores.utils import generate_pin
@@ -49,14 +50,14 @@ class StoreProfileView(generics.RetrieveUpdateAPIView):
         kwargs["exclude"] = exclude
         return super().get_serializer(*args, **kwargs)
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request: Request, *args, **kwargs):
         profile = self.get_object()
         serializer = self.get_serializer(profile)
         return create_success_response(
             "Profile retrieved successfully.", serializer.data, status.HTTP_200_OK
         )
 
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args, **kwargs):
         profile = self.get_object()
         pin = request.data.get(PIN)
         if not pin or not profile.validate_pin(pin):
@@ -98,16 +99,11 @@ class GenerateNewPinView(APIView):
         )
 
 
-class StoreItemCategoriesView(generics.ListCreateAPIView):
+class PublicStoreItemCategoriesView(generics.ListAPIView):
     serializer_class = StoreItemCategorySerializer
 
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated(), IsStoreUser()]
-        return []
-
     def get_queryset(self):
-        store_id = self.kwargs[STORE_ID]
+        store_id = self.kwargs.get(STORE_ID)
         return StoreItemCategorie.objects.filter(store_id=store_id)
 
     def list(self, request, *args, **kwargs):
@@ -117,10 +113,44 @@ class StoreItemCategoriesView(generics.ListCreateAPIView):
             "Categories retrieved successfully.", serializer.data, status.HTTP_200_OK
         )
 
+
+class PublicStoreItemConditionsView(generics.ListAPIView):
+    serializer_class = StoreItemConditionSerializer
+
+    def get_queryset(self):
+        store_id = self.kwargs.get(STORE_ID)  
+        return StoreItemConditions.objects.filter(store_id=store_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return create_success_response(
+            "Conditions retrieved successfully.", serializer.data, status.HTTP_200_OK
+        )
+
+
+class StoreOwnerCategoriesView(generics.ListCreateAPIView):
+    serializer_class = StoreItemCategorySerializer
+    permission_classes = [permissions.IsAuthenticated, IsStoreUser] 
+
+    def get_queryset(self):
+
+        store = self.request.user.store  
+        return StoreItemCategorie.objects.filter(store=store)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return create_success_response(
+            "Categories retrieved successfully.", serializer.data, status.HTTP_200_OK
+        )
+
     def create(self, request, *args, **kwargs):
+
+        store = self.request.user.store 
         serializer = StoreItemCategoryUpdateSerializer(
             data=request.data,
-            context={STORE_ID: self.kwargs[STORE_ID], REQUEST: request},
+            context={STORE_ID: store.id, REQUEST: request},
         )
         if serializer.is_valid():
             serializer.update_categories()
@@ -132,17 +162,14 @@ class StoreItemCategoriesView(generics.ListCreateAPIView):
         )
 
 
-class StoreItemConditionsView(generics.ListCreateAPIView):
+class StoreOwnerConditionsView(generics.ListCreateAPIView):
     serializer_class = StoreItemConditionSerializer
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated(), IsStoreUser()]
-        return []
+    permission_classes = [permissions.IsAuthenticated, IsStoreUser]  
 
     def get_queryset(self):
-        store_id = self.kwargs[STORE_ID]
-        return StoreItemConditions.objects.filter(store_id=store_id)
+
+        store = self.request.user.store  
+        return StoreItemConditions.objects.filter(store=store)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -152,9 +179,11 @@ class StoreItemConditionsView(generics.ListCreateAPIView):
         )
 
     def create(self, request, *args, **kwargs):
+
+        store = self.request.user.store 
         serializer = StoreItemConditionUpdateSerializer(
             data=request.data,
-            context={STORE_ID: self.kwargs[STORE_ID], REQUEST: request},
+            context={STORE_ID: store.id, REQUEST: request},
         )
         if serializer.is_valid():
             serializer.update_conditions()
