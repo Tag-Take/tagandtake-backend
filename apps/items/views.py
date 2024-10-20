@@ -18,18 +18,34 @@ from apps.items.models import Item, ItemCategory, ItemCondition
 from apps.common.constants import REQUEST, ITEM, ITEMS, CATEGORIES, CONDITIONS
 
 
-class ItemCreateView(generics.CreateAPIView):
+class MemberItemListCreateView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, IsMemberUser]
-    serializer_class = ItemCreateSerializer
     parser_classes = (MultiPartParser, FormParser)
+    serializer_class = ItemRetrieveUpdateDeleteSerializer
 
-    def create(self, request: Request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={REQUEST: request})
+    def get_queryset(self):
+        return Item.objects.filter(owner=self.request.user.member)
+
+    def get(self, request: Request, *args, **kwargs):
+        items: list[Item] = self.get_queryset()
+        if not items.exists():
+            return create_error_response(
+                "No items found for this user.", {}, status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(items, many=True)
+        return create_success_response(
+            "Items retrieved successfully.",
+            {ITEMS: serializer.data},
+            status.HTTP_200_OK,
+        )
+
+    def post(self, request: Request, *args, **kwargs):
+        serializer = ItemCreateSerializer(data=request.data, context={REQUEST: request})
         if serializer.is_valid():
             item: Item = serializer.save()
             return create_success_response(
                 "Item created successfully.",
-                {ITEM: self.get_serializer(item).data},
+                {ITEM: ItemCreateSerializer(item).data},
                 status.HTTP_201_CREATED,
             )
         return create_error_response(
@@ -37,7 +53,7 @@ class ItemCreateView(generics.CreateAPIView):
         )
 
 
-class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
+class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ItemRetrieveUpdateDeleteSerializer
     queryset = Item.objects.all()
     parser_classes = (MultiPartParser, FormParser)
@@ -115,28 +131,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
                 {"exception": str(e)},
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
-class MemberItemListView(generics.ListAPIView):
-    serializer_class = ItemRetrieveUpdateDeleteSerializer
-    permission_classes = [permissions.IsAuthenticated, IsItemOwner, IsMemberUser]
-
-    def get_queryset(self):
-        return Item.objects.filter(owner=self.request.user.member)
-
-    def list(self, request: Request, *args, **kwargs):
-        items: list[Item] = self.get_queryset()
-        if not items.exists():
-            return create_error_response(
-                "No items found for this user.", {}, status.HTTP_404_NOT_FOUND
-            )
-        serializer = self.get_serializer(items, many=True)
-        return create_success_response(
-            "Items retrieved successfully.",
-            {ITEMS: serializer.data},
-            status.HTTP_200_OK,
-        )
-
+        
 
 class ItemCategoryListView(generics.ListAPIView):
     serializer_class = ItemCategorySerializer
