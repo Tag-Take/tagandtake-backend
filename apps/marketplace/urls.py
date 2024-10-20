@@ -16,7 +16,7 @@ from apps.marketplace.views import (
 urlpatterns = [
     path("members/me/listings/", ListingCreateView.as_view(), name="listing-create"),
     path(
-        "members/me/item-listings/",
+        "members/me/items-listings/",
         CreateItemAndListingView.as_view(),
         name="item-listing-create",
     ),

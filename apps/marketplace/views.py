@@ -152,10 +152,6 @@ class StoreRecalledListingListView(generics.ListAPIView):
     def list(self, request: Request, *args, **kwargs):
         try:
             recalled_listings: list[RecalledItemListing] = self.get_queryset()
-            if not recalled_listings.exists():
-                return create_error_response(
-                    "No RecalledListings found.", {}, status.HTTP_404_NOT_FOUND
-                )
             serializer = self.get_serializer(recalled_listings, many=True)
             return create_success_response(
                 "Recalled listings retrieved successfully",
