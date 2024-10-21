@@ -123,7 +123,7 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
                 {"exception": str(e)},
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        
+
 
 class ItemCategoryListView(generics.ListAPIView):
     serializer_class = ItemCategorySerializer

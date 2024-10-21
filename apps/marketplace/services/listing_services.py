@@ -65,9 +65,7 @@ class ItemListingService:
             raise serializers.ValidationError("Invalid reason provided.")
 
     @staticmethod
-    def get_listing_user_role_from_request(
-        request: Request, listing: ItemListing
-    ):
+    def get_listing_user_role_from_request(request: Request, listing: ItemListing):
         data = {}
         if request.user == listing.tag.tag_group.store.user:
             data[ROLE] = ListingRole.HOST_STORE

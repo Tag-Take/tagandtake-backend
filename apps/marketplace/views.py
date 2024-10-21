@@ -11,10 +11,7 @@ from apps.marketplace.models import ItemListing, RecalledItemListing
 from apps.marketplace.services.listing_services import (
     ItemListingService,
 )
-from apps.marketplace.permissions import (
-    IsTagOwner,
-    IsListingOwner
-)
+from apps.marketplace.permissions import IsTagOwner, IsListingOwner
 from apps.items.serializers import ItemCreateSerializer
 from apps.items.models import Item
 from apps.members.permissions import IsMemberUser
@@ -146,7 +143,7 @@ class StoreRecalledListingListView(generics.ListAPIView):
         return RecalledItemListing.objects.filter(
             tag__tag_group__store__user=self.request.user
         )
-    
+
 
 class ReplaceTagView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsTagOwner]
@@ -165,14 +162,14 @@ class ReplaceTagView(generics.UpdateAPIView):
 
     def update(self, request: Request, *args, **kwargs):
         try:
-            instance = self.get_object()  
+            instance = self.get_object()
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
         try:
             new_tag = TagService.get_tag(request.data.get(NEW_TAG_ID))
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        
+
         processor = ItemListingReplaceTagProcessor(instance, new_tag)
         listing = processor.process()
 
@@ -234,7 +231,7 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
             recalled_listing = self.get_object()
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-       
+
         try:
             processor = CollectionPinUpdateProcessor(recalled_listing)
             processor.process()
@@ -289,7 +286,7 @@ class CollectRecalledListingView(generics.UpdateAPIView):
     def get_object(self):
         item_id = self.kwargs.get(ID)
         try:
-            listing =  ItemListingService.get_item_listing_by_item_id(
+            listing = ItemListingService.get_item_listing_by_item_id(
                 item_id, RecalledItemListing
             )
             self.check_object_permissions(self.request, listing)

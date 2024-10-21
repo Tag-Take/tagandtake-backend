@@ -4,12 +4,15 @@ from apps.members.services import MemberService
 from apps.stores.services.store_services import StoreService
 from apps.accounts.models import User
 
+
 class PaymentAccountService:
     @staticmethod
     def get_or_create_payment_account(user):
         if user.role == User.Roles.MEMBER:
             member = MemberService.get_member_by_user(user)
-            return MemberPaymentAccountService.get_or_create_member_payment_account(member)
+            return MemberPaymentAccountService.get_or_create_member_payment_account(
+                member
+            )
         elif user.role == User.Roles.STORE:
             store = StoreService.get_store_by_user(user)
             return StorePaymentAccountService.get_or_create_store_payment_account(store)
@@ -32,7 +35,8 @@ class MemberPaymentAccountService:
                 member=member,
                 stripe_account_id=stripe_account.id,
             )
-    
+
+
 class StorePaymentAccountService:
     @staticmethod
     def get_store_payment_account(store):
@@ -48,4 +52,3 @@ class StorePaymentAccountService:
                 store=store,
                 stripe_account_id=stripe_account.id,
             )
-

@@ -142,8 +142,8 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    'AUTH_COOKIE_SAMESITE': 'None',  # SameSite None for cross-origin requests
-    'AUTH_COOKIE_SECURE': False,  # Only True in production (HTTPS)
+    "AUTH_COOKIE_SAMESITE": "None",  # SameSite None for cross-origin requests
+    "AUTH_COOKIE_SECURE": False,  # Only True in production (HTTPS)
 }
 
 MIDDLEWARE = [
@@ -205,7 +205,7 @@ STATIC_URL = "/static/"
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = ["./static/"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-TAG_FONT = STATICFILES_DIRS[0] + 'fonts/Nunito-Bold.ttf'
+TAG_FONT = STATICFILES_DIRS[0] + "fonts/Nunito-Bold.ttf"
 
 
 # APP URLS

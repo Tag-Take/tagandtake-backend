@@ -89,10 +89,10 @@ class Item(models.Model):
     @property
     def condition_details(self):
         return self.condition
-    
+
     @property
     def tag_id(self):
-        ItemListing = apps.get_model('marketplace', 'ItemListing')
+        ItemListing = apps.get_model("marketplace", "ItemListing")
         item_listing = ItemListing.objects.filter(item=self).first()
         return item_listing.tag.id if item_listing else None
 

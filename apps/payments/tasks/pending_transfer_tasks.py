@@ -1,5 +1,5 @@
 from celery import shared_task
-import stripe 
+import stripe
 import os
 
 

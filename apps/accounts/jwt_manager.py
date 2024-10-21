@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.common.constants import REFRESH_TOKEN, ACCESS_TOKEN
 
+
 class JWTManager:
     @staticmethod
     def set_refresh_token_cookie(response, refresh_token: RefreshToken):
@@ -35,5 +36,5 @@ class JWTManager:
     def generate_tokens(user):
         refresh_token = RefreshToken.for_user(user)
         access_token = refresh_token.access_token
-        
+
         return str(access_token), str(refresh_token)

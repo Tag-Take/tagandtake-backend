@@ -13,7 +13,7 @@ from rest_framework import serializers
 
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
-    TokenRefreshSerializer
+    TokenRefreshSerializer,
 )
 from rest_framework_simplejwt.exceptions import InvalidToken
 
@@ -100,13 +100,16 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
         return processor.process()
 
 
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        username_or_email = attrs.get('username') 
-        password = attrs.get('password')
+        username_or_email = attrs.get("username")
+        password = attrs.get("password")
 
-        user = authenticate(request=self.context.get('request'), username=username_or_email, password=password)
+        user = authenticate(
+            request=self.context.get("request"),
+            username=username_or_email,
+            password=password,
+        )
 
         if user is None:
             raise serializers.ValidationError("Invalid credentials or user not found.")
@@ -119,16 +122,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data[USER] = self.user
 
         return data
-    
+
 
 class CookieTokenRefreshSerializer(TokenRefreshSerializer):
     refresh = None
+
     def validate(self, attrs):
         attrs[REFRESH] = self.context[REQUEST].COOKIES.get(REFRESH_TOKEN)
         if attrs[REFRESH]:
             return super().validate(attrs)
         else:
-            raise InvalidToken('No valid token found in cookie\'refresh_token\'')
+            raise InvalidToken("No valid token found in cookie'refresh_token'")
 
 
 class PasswordResetSerializer(serializers.Serializer):

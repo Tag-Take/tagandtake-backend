@@ -24,7 +24,7 @@ from apps.accounts.serializers import (
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
-    CookieTokenRefreshSerializer
+    CookieTokenRefreshSerializer,
 )
 from apps.accounts.jwt_manager import JWTManager
 from apps.stores.models import StoreProfile as Store
@@ -238,7 +238,9 @@ class CustomTokenRefreshView(TokenRefreshView):
             new_access_token = response.data.get(ACCESS)
 
             response = create_success_response(
-                "Token refreshed successfully", { ACCESS_TOKEN: new_access_token }, status.HTTP_200_OK
+                "Token refreshed successfully",
+                {ACCESS_TOKEN: new_access_token},
+                status.HTTP_200_OK,
             )
 
         return JWTManager.set_refresh_token_cookie(response, new_refresh_token)
@@ -265,7 +267,7 @@ class PasswordResetView(generics.GenericAPIView):
 
 
 # TODO:handle auth on reset
-# 
+#
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
     throttle_scope = PASSWORD_RESET

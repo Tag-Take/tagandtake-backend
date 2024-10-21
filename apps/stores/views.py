@@ -118,7 +118,7 @@ class PublicStoreItemConditionsView(generics.ListAPIView):
     serializer_class = StoreItemConditionSerializer
 
     def get_queryset(self):
-        store_id = self.kwargs.get(STORE_ID)  
+        store_id = self.kwargs.get(STORE_ID)
         return StoreItemConditions.objects.filter(store_id=store_id)
 
     def list(self, request, *args, **kwargs):
@@ -131,11 +131,11 @@ class PublicStoreItemConditionsView(generics.ListAPIView):
 
 class StoreOwnerCategoriesView(generics.ListCreateAPIView):
     serializer_class = StoreItemCategorySerializer
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser] 
+    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
 
     def get_queryset(self):
 
-        store = self.request.user.store  
+        store = self.request.user.store
         return StoreItemCategorie.objects.filter(store=store)
 
     def list(self, request, *args, **kwargs):
@@ -147,7 +147,7 @@ class StoreOwnerCategoriesView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
 
-        store = self.request.user.store 
+        store = self.request.user.store
         serializer = StoreItemCategoryUpdateSerializer(
             data=request.data,
             context={STORE_ID: store.id, REQUEST: request},
@@ -164,11 +164,11 @@ class StoreOwnerCategoriesView(generics.ListCreateAPIView):
 
 class StoreOwnerConditionsView(generics.ListCreateAPIView):
     serializer_class = StoreItemConditionSerializer
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]  
+    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
 
     def get_queryset(self):
 
-        store = self.request.user.store  
+        store = self.request.user.store
         return StoreItemConditions.objects.filter(store=store)
 
     def list(self, request, *args, **kwargs):
@@ -180,7 +180,7 @@ class StoreOwnerConditionsView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
 
-        store = self.request.user.store 
+        store = self.request.user.store
         serializer = StoreItemConditionUpdateSerializer(
             data=request.data,
             context={STORE_ID: store.id, REQUEST: request},
