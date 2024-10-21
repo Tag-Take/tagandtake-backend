@@ -11,16 +11,14 @@ class IsTagOwner(permissions.BasePermission):
     def has_object_permission(self, request, view: APIView, listing: BaseItemListing):
         return listing.tag.tag_group.store.user == request.user
 
+class IsListingOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view: APIView, listing: BaseItemListing):
+        return listing.item.owner_user == request.user
 
-class PermissionCheckMixin:
-    def check_store_permissions(self, request, obj):
-        if not check_listing_store_permissions(request, self, obj):
-            raise PermissionDenied("You do not have permission to perform this action.")
-
-    def check_member_permissions(self, request, obj):
-        if not check_listing_member_permissions(request, self, obj):
-            raise PermissionDenied("You do not have permission to perform this action.")
-
+class IsHostStoreOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view: APIView, listing: BaseItemListing):
+        tag_id = view.kwargs.get("tag_id")
+        return listing.tag.tag_group.store.user == request.user
 
 def check_listing_store_permissions(request, view: APIView, listing: BaseItemListing):
     if not IsTagOwner().has_object_permission(request, view, listing):

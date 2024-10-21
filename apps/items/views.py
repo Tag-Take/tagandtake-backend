@@ -13,7 +13,7 @@ from apps.items.serializers import (
 )
 from apps.common.responses import create_error_response, create_success_response
 from apps.members.permissions import IsMemberUser
-from apps.items.permissions import check_item_permissions
+from apps.items.permissions import IsItemOwner
 from apps.items.models import Item, ItemCategory, ItemCondition
 from apps.common.constants import REQUEST, ITEM, ITEMS, CATEGORIES, CONDITIONS
 
@@ -54,7 +54,7 @@ class MemberItemListCreateView(generics.GenericAPIView):
 
 
 class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsMemberUser]
+    permission_classes = [permissions.IsAuthenticated, IsItemOwner]
     serializer_class = ItemRetrieveUpdateDeleteSerializer
     queryset = Item.objects.all()
     parser_classes = (MultiPartParser, FormParser)
@@ -83,11 +83,6 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         if isinstance(instance, Response):
             return instance
-        item: Item = instance
-        permission_error_response = check_item_permissions(request, self, item)
-        if permission_error_response:
-            return permission_error_response
-
         partial = kwargs.pop("partial", False)
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial, context={REQUEST: request}
@@ -115,10 +110,6 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         if isinstance(instance, Response):
             return instance
-        item: Item = instance
-        permission_response = check_item_permissions(request, self, item)
-        if permission_response:
-            return permission_response
 
         serializer = self.get_serializer(instance)
         try:

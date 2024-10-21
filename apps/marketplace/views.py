@@ -12,8 +12,8 @@ from apps.marketplace.services.listing_services import (
     ItemListingService,
 )
 from apps.marketplace.permissions import (
-    check_listing_store_permissions,
-    check_listing_member_permissions,
+    IsTagOwner,
+    IsListingOwner
 )
 from apps.items.serializers import ItemCreateSerializer
 from apps.items.models import Item
@@ -23,6 +23,7 @@ from apps.common.responses import (
     create_error_response,
     create_success_response,
 )
+from apps.marketplace.services.listing_services import ItemListingService
 from apps.stores.services.tags_services import TagService
 from apps.marketplace.processors import (
     ItemListingCreateProcessor,
@@ -105,7 +106,7 @@ class ListingRetrieveView(generics.RetrieveAPIView):
         try:
             serializer = self.get_serializer(listing)
             role = ItemListingService.get_listing_user_role_from_request(
-                request, listing, self
+                request, listing
             )
             data = serializer.data | role
             return create_success_response(
@@ -126,7 +127,7 @@ class ListingRoleCheckView(generics.RetrieveAPIView):
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
             data = ItemListingService.get_listing_user_role_from_request(
-                request, listing, self
+                request, listing
             )
             return create_success_response(
                 "ItemListing role check successful", data, status_code=200
@@ -142,83 +143,63 @@ class StoreRecalledListingListView(generics.ListAPIView):
     serializer_class = RecallItemListingSerializer
 
     def get_queryset(self):
-        try:
-            return RecalledItemListing.objects.filter(
-                tag__tag_group__store__user=self.request.user
-            )
-        except serializers.ValidationError as e:
-            raise e
-
-    def list(self, request: Request, *args, **kwargs):
-        try:
-            recalled_listings: list[RecalledItemListing] = self.get_queryset()
-            serializer = self.get_serializer(recalled_listings, many=True)
-            return create_success_response(
-                "Recalled listings retrieved successfully",
-                {"recalled_listings": serializer.data},
-                status_code=200,
-            )
-        except serializers.ValidationError as e:
-            return create_error_response(e.detail[0], {}, status_code=404)
-        except Exception as e:
-            return create_error_response(
-                "Error retrieving recalled listings", str(e), status_code=400
-            )
-
+        return RecalledItemListing.objects.filter(
+            tag__tag_group__store__user=self.request.user
+        )
+    
 
 class ReplaceTagView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsTagOwner]
     serializer_class = ItemListingSerializer
+
+    def get_object(self):
+        item_id = self.kwargs.get(ID)
+        try:
+            listing = ItemListingService.get_item_listing_by_item_id(item_id)
+            self.check_object_permissions(self.request, listing)
+            return listing
+        except ItemListing.DoesNotExist:
+            raise serializers.ValidationError(
+                f"ItemListing not found for the provided item ID: {item_id}"
+            )
 
     def update(self, request: Request, *args, **kwargs):
         try:
-            item_id = self.kwargs.get(ID)
-            listing = ItemListingService.get_item_listing_by_item_id(
-                item_id, ItemListing
-            )
+            instance = self.get_object()  
         except serializers.ValidationError as e:
-            return create_error_response(
-                "ItemListing not found", {str(e.detail[0])}, status.HTTP_404_NOT_FOUND
-            )
-
-        permission_error_response = check_listing_store_permissions(
-            request, self, listing
-        )
-        if permission_error_response:
-            return permission_error_response
+            return create_error_response(str(e.detail[0]), {}, status_code=404)
         try:
             new_tag = TagService.get_tag(request.data.get(NEW_TAG_ID))
-            processor = ItemListingReplaceTagProcessor(listing, new_tag)
-            listing = processor.process()
-            serializer = self.get_serializer(listing)
-            return create_success_response(
-                "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
-            )
         except serializers.ValidationError as e:
-            return create_error_response(
-                str(e.detail[0]), {}, status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return create_error_response(
-                "Error replacing tag", str(e), status.HTTP_400_BAD_REQUEST
-            )
+            return create_error_response(str(e.detail[0]), {}, status_code=404)
+        
+        processor = ItemListingReplaceTagProcessor(instance, new_tag)
+        listing = processor.process()
+
+        serializer = self.get_serializer(listing)
+        return create_success_response(
+            "Tag successfully replaced.", serializer.data, status.HTTP_200_OK
+        )
 
 
 class RecallListingView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsTagOwner]
     serializer_class = ItemListingSerializer
+
+    def get_object(self):
+        tag_id = self.kwargs.get(ID)
+        try:
+            listing = ItemListingService.get_item_listing_by_tag_id(tag_id, ItemListing)
+            self.check_object_permissions(self.request, listing)
+            return listing
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError(str(e.detail[0]))
 
     def update(self, request: Request, *args, **kwargs):
         try:
-            tag_id = self.kwargs.get(ID)
-            listing = ItemListingService.get_item_listing_by_tag_id(tag_id, ItemListing)
+            listing = self.get_object()
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_store_permissions(
-            request, self, listing
-        )
-        if permission_error_response:
-            return permission_error_response
 
         try:
             reason_id = request.data.get(REASON)
@@ -235,21 +216,25 @@ class RecallListingView(generics.UpdateAPIView):
 
 
 class GenerateNewCollectionPinView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsListingOwner]
 
-    def update(self, request: Request, *args, **kwargs):
+    def get_object(self):
+        item_id = self.kwargs.get(ID)
         try:
-            item_id = self.kwargs.get(ID)
             recalled_listing = ItemListingService.get_item_listing_by_item_id(
                 item_id, RecalledItemListing
             )
+            self.check_object_permissions(self.request, recalled_listing)
+            return recalled_listing
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError(str(e.detail[0]))
+
+    def update(self, request: Request, *args, **kwargs):
+        try:
+            recalled_listing = self.get_object()
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_member_permissions(
-            request, self, recalled_listing
-        )
-        if permission_error_response:
-            return permission_error_response
+       
         try:
             processor = CollectionPinUpdateProcessor(recalled_listing)
             processor.process()
@@ -263,20 +248,25 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
 
 
 class DelistListing(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [permissions.IsAuthenticated, IsTagOwner]
     serializer_class = ItemListingSerializer
+
+    def get_object(self):
+        item_id = self.kwargs.get(ID)
+        try:
+            listing = ItemListingService.get_item_listing_by_item_id(item_id)
+            self.check_object_permissions(self.request, listing)
+            return listing
+        except ItemListing.DoesNotExist:
+            raise serializers.ValidationError(
+                f"ItemListing not found for the provided item ID: {item_id}"
+            )
 
     def update(self, request: Request, *args, **kwargs):
         try:
-            tag_id = self.kwargs.get(ID)
-            listing = ItemListingService.get_item_listing_by_tag_id(tag_id, ItemListing)
+            listing = self.get_object()
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_store_permissions(
-            request, self, listing
-        )
-        if permission_error_response:
-            return permission_error_response
 
         try:
             reason_id = request.data.get(REASON)
@@ -293,22 +283,26 @@ class DelistListing(generics.UpdateAPIView):
 
 
 class CollectRecalledListingView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsTagOwner]
     serializer_class = ItemListingSerializer
+
+    def get_object(self):
+        item_id = self.kwargs.get(ID)
+        try:
+            listing =  ItemListingService.get_item_listing_by_item_id(
+                item_id, RecalledItemListing
+            )
+            self.check_object_permissions(self.request, listing)
+            return listing
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError(str(e.detail[0]))
 
     def update(self, request: Request, *args, **kwargs):
         try:
-            item_id = self.kwargs.get(ID)
-            recalled_listing = ItemListingService.get_item_listing_by_item_id(
-                item_id, RecalledItemListing
-            )
+            recalled_listing = self.get_object()
         except serializers.ValidationError as e:
             return create_error_response(str(e.detail[0]), {}, status_code=404)
-        permission_error_response = check_listing_store_permissions(
-            request, self, recalled_listing
-        )
-        if permission_error_response:
-            return permission_error_response
+
         pin = request.data.get(PIN)
         if not pin or not recalled_listing.validate_pin(pin):
             return create_error_response(

@@ -19,9 +19,6 @@ from apps.stores.models import (
     StoreProfile,
     StoreOpeningHours,
 )
-from apps.marketplace.permissions import IsTagOwner
-from apps.items.permissions import IsItemOwner
-from apps.stores.permissions import IsStoreUser
 from apps.common.constants import ROLE, CONDITION, CATEGORY, PRICE
 from apps.marketplace.constants import ListingRole
 from apps.payments.models.transactions import ItemPaymentTransaction
@@ -69,12 +66,12 @@ class ItemListingService:
 
     @staticmethod
     def get_listing_user_role_from_request(
-        request: Request, listing: ItemListing, view: object
+        request: Request, listing: ItemListing
     ):
         data = {}
-        if IsTagOwner().has_object_permission(request, view, listing):
+        if request.user == listing.tag.tag_group.store.user:
             data[ROLE] = ListingRole.HOST_STORE
-        elif IsItemOwner().has_object_permission(request, view, listing.item):
+        elif request.user == listing.item.owner_user:
             data[ROLE] = ListingRole.ITEM_OWNER
         else:
             data[ROLE] = ListingRole.GUEST
