@@ -13,7 +13,7 @@ from apps.items.serializers import (
 )
 from apps.common.responses import create_error_response, create_success_response
 from apps.members.permissions import IsMemberUser
-from apps.items.permissions import IsItemOwner, check_item_permissions
+from apps.items.permissions import check_item_permissions
 from apps.items.models import Item, ItemCategory, ItemCondition
 from apps.common.constants import REQUEST, ITEM, ITEMS, CATEGORIES, CONDITIONS
 
@@ -54,6 +54,7 @@ class MemberItemListCreateView(generics.GenericAPIView):
 
 
 class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsMemberUser]
     serializer_class = ItemRetrieveUpdateDeleteSerializer
     queryset = Item.objects.all()
     parser_classes = (MultiPartParser, FormParser)
