@@ -38,16 +38,6 @@ class MemberService:
             )
 
     @staticmethod
-    def update_member_profile(member: MemberProfile, validated_data: dict):
-        try:
-            for key, value in validated_data.items():
-                setattr(member, key, value)
-            member.save()
-            return member
-        except Exception as e:
-            raise serializers.ValidationError(f"Failed to update member profile: {e}")
-
-    @staticmethod
     def update_member_notifications(
         member_notifications: MemberNotificationPreferences, validated_data: dict
     ):

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
 from apps.members.services import MemberService
 from apps.common.constants import *
+from apps.common.constants import USERNAME, USER, PROFILE_PHOTO_URL, CREATED_AT, UPDATED_AT 
 
 
 class MemberProfileSerializer(serializers.ModelSerializer):
@@ -23,10 +24,6 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             UPDATED_AT,
         ]
 
-    def update(self, member: MemberProfile, validated_data: dict):
-        member = MemberService.update_member_profile(member, validated_data)
-        return member
-
 
 class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,40 +36,32 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [USER]
 
-    def update(
-        self, member_notifications: MemberNotificationPreferences, validated_data: dict
-    ):
-        member_notifications = MemberService.update_member_notifications(
-            member_notifications, validated_data
-        )
-        return member_notifications
 
 
-class MemberProfileImageUploadSerializer(serializers.Serializer):
-    profile_photo = serializers.ImageField()
+class MemberProfileImageSerializer(serializers.Serializer):
+    profile_photo = serializers.ImageField(required=False)
 
-    def validate(self, attrs: dict):
-        request = self.context.get(REQUEST)
-        attrs[PROFILE] = MemberService.get_member_by_user(request.user)
-        return attrs
+    class Meta:
+        fields = [PROFILE_PHOTO]
 
-    def save(self):
-        memeber: MemberProfile = self.validated_data[PROFILE]
-        file = self.validated_data[PROFILE_PHOTO]
-        member = MemberService.update_member_profile_photo(memeber, file)
-        return member
-
-
-class MemberProfileImageDeleteSerializer(serializers.Serializer):
     def validate(self, attrs: dict):
         request = self.context.get(REQUEST)
         member = MemberService.get_member_by_user(request.user)
-        if not member.profile_photo_url:
+        
+        if request.method == 'DELETE' and not member.profile_photo_url:
             raise serializers.ValidationError("No profile photo to delete.")
-        attrs[PROFILE] = member
+        
+        if request.method == 'POST' and not attrs.get(PROFILE_PHOTO):
+            raise serializers.ValidationError("No file found for filed profile_photo to upload.")
+        
+        attrs[MEMBER] = member
         return attrs
 
     def save(self):
-        member: MemberProfile = self.validated_data[PROFILE]
-        member = MemberService.delete_member_profile_photo(member)
-        return member
+        member = self.validated_data[MEMBER]
+        file = self.validated_data.get(PROFILE_PHOTO)
+
+        if file:
+            return MemberService.update_member_profile_photo(member, file)
+        else:
+            return MemberService.delete_member_profile_photo(member)
