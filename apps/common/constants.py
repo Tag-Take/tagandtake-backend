@@ -103,6 +103,7 @@ MEMBER_EARNINGS: str = "member_earnings"
 ITEM_DETAILS: str = "item_details"
 SELLER: str = "seller"
 COLLECTION_DEADLINE: str = "collection_deadline"
+LISTING_ROLE: str = "listing_role"
 
 # MEMBERS
 MEMBER: str = "member"

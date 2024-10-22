@@ -19,7 +19,7 @@ from apps.stores.models import (
     StoreProfile,
     StoreOpeningHours,
 )
-from apps.common.constants import ROLE, CONDITION, CATEGORY, PRICE
+from apps.common.constants import LISTING_ROLE, CONDITION, CATEGORY, PRICE
 from apps.marketplace.constants import ListingRole
 from apps.payments.models.transactions import ItemPaymentTransaction
 
@@ -65,14 +65,14 @@ class ItemListingService:
             raise serializers.ValidationError("Invalid reason provided.")
 
     @staticmethod
-    def get_listing_user_role_from_request(request: Request, listing: ItemListing):
+    def get_user_listing_relation(request: Request, listing: ItemListing):
         data = {}
         if request.user == listing.tag.tag_group.store.user:
-            data[ROLE] = ListingRole.HOST_STORE
+            data[LISTING_ROLE] = ListingRole.HOST_STORE
         elif request.user == listing.item.owner_user:
-            data[ROLE] = ListingRole.ITEM_OWNER
+            data[LISTING_ROLE] = ListingRole.ITEM_OWNER
         else:
-            data[ROLE] = ListingRole.GUEST
+            data[LISTING_ROLE] = ListingRole.GUEST
         return data
 
     @staticmethod

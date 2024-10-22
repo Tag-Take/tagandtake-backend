@@ -102,10 +102,10 @@ class ListingRetrieveView(generics.RetrieveAPIView):
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
             serializer = self.get_serializer(listing)
-            role = ItemListingService.get_listing_user_role_from_request(
+            listing_role = ItemListingService.get_user_listing_relation(
                 request, listing
             )
-            data = serializer.data | role
+            data = serializer.data | listing_role
             return create_success_response(
                 "ItemListing retrieved successfully", data, status_code=200
             )
@@ -123,11 +123,11 @@ class ListingRoleCheckView(generics.RetrieveAPIView):
         except serializers.ValidationError as e:
             return create_error_response(e.detail[0], {}, status_code=404)
         try:
-            data = ItemListingService.get_listing_user_role_from_request(
+            listing_role = ItemListingService.get_user_listing_relation(
                 request, listing
             )
             return create_success_response(
-                "ItemListing role check successful", data, status_code=200
+                "ItemListing role check successful", listing_role, status_code=200
             )
         except Exception as e:
             return create_error_response(
