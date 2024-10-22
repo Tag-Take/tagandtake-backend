@@ -3,7 +3,7 @@ from django.http import Http404
 from rest_framework import generics, permissions, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 
 from apps.items.serializers import (
     ItemCreateSerializer,
@@ -53,6 +53,10 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
+        if instance.status != Item.Statuses.AVAILABLE:
+            raise ValidationError(
+                "Item cannot be deleted because it's not currently available"
+            )
         instance = self.get_object()
         instance.delete()
 
