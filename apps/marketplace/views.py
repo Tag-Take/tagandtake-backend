@@ -153,7 +153,7 @@ class StoreItemListingListView(generics.ListAPIView):
         return RecalledItemListing.objects.filter(
             tag__tag_group__store__user=self.request.user
         )
-    
+
 
 class ReplaceTagView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsTagOwner]

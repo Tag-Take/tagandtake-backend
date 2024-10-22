@@ -10,7 +10,7 @@ from apps.members.models import MemberProfile, MemberNotificationPreferences
 from apps.members.serializers import (
     MemberProfileSerializer,
     MemberNotificationPreferencesSerializer,
-    MemberProfileImageSerializer
+    MemberProfileImageSerializer,
 )
 from apps.common.constants import PROFILE_PHOTO_URL
 
@@ -39,21 +39,24 @@ class MemberNotificationPreferencesView(generics.RetrieveUpdateAPIView):
             raise NotFound("Notification preferences not found.")
 
 
-
 class MemberProfileImageView(APIView):
     permission_classes = [IsAuthenticated, IsMemberUser]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        serializer = MemberProfileImageSerializer(data=request.data, context={"request": request})
+        serializer = MemberProfileImageSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             member = serializer.save()
-            return Response({PROFILE_PHOTO_URL: member.profile_photo_url}, status=status.HTTP_200_OK)
+            return Response(
+                {PROFILE_PHOTO_URL: member.profile_photo_url}, status=status.HTTP_200_OK
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         serializer = MemberProfileImageSerializer(data={}, context={"request": request})
         if serializer.is_valid():
             serializer.save()
-            return Response(status=status.HTTP_204_NO_CONTENT) 
+            return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

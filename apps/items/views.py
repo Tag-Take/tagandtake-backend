@@ -25,9 +25,9 @@ class MemberItemListCreateView(generics.ListCreateAPIView):
         return Item.objects.filter(owner=self.request.user.member)
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ItemCreateSerializer 
-        return ItemRetrieveUpdateDeleteSerializer 
+        if self.request.method == "POST":
+            return ItemCreateSerializer
+        return ItemRetrieveUpdateDeleteSerializer
 
 
 class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -44,7 +44,7 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         serializer.is_valid(raise_exception=True)
@@ -55,14 +55,24 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        if instance.status != Item.Statuses.AVAILABLE:
-            statuses = [status for status in Item.Statuses if status != Item.Statuses.AVAILABLE]
+        if instance.status != Item.Statuses.AVAILABLE or Item.Statuses.ABANDONED:
+            statuses = [
+                status
+                for status in Item.Statuses
+                if status != Item.Statuses.AVAILABLE
+                and status != Item.Statuses.ABANDONED
+            ]
             joined_statuses = f"{', '.join(statuses[:-1])} or {statuses[-1]}"
-            raise ValidationError({"detail": f"This item is currently {instance.status}. Items cannot be {joined_statuses} to be deleted."})
+            raise ValidationError(
+                {
+                    "detail": f"This item is currently {instance.status}. Items that are: {joined_statuses} cannot be deleted."
+                }
+            )
 
         self.get_serializer(instance).destroy(instance)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ItemCategoryListView(generics.ListAPIView):
     serializer_class = ItemCategorySerializer

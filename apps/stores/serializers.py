@@ -132,7 +132,6 @@ class StoreItemCategoryUpdateSerializer(serializers.Serializer):
         category_ids = data.get(CATEGORIES)
 
         store = StoreService.get_store_by_id_and_user(store_id, user)
-        StoreValidationService.validate_store_pin(store, pin)
         StoreItemCategoryValidationService.validate_category_ids(category_ids)
 
         data[STORE] = store

@@ -2,7 +2,13 @@ from rest_framework import serializers
 from apps.members.models import MemberProfile, MemberNotificationPreferences
 from apps.members.services import MemberService
 from apps.common.constants import *
-from apps.common.constants import USERNAME, USER, PROFILE_PHOTO_URL, CREATED_AT, UPDATED_AT 
+from apps.common.constants import (
+    USERNAME,
+    USER,
+    PROFILE_PHOTO_URL,
+    CREATED_AT,
+    UPDATED_AT,
+)
 
 
 class MemberProfileSerializer(serializers.ModelSerializer):
@@ -37,7 +43,6 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
         read_only_fields = [USER]
 
 
-
 class MemberProfileImageSerializer(serializers.Serializer):
     profile_photo = serializers.ImageField(required=False)
 
@@ -47,13 +52,15 @@ class MemberProfileImageSerializer(serializers.Serializer):
     def validate(self, attrs: dict):
         request = self.context.get(REQUEST)
         member = MemberService.get_member_by_user(request.user)
-        
-        if request.method == 'DELETE' and not member.profile_photo_url:
+
+        if request.method == "DELETE" and not member.profile_photo_url:
             raise serializers.ValidationError("No profile photo to delete.")
-        
-        if request.method == 'POST' and not attrs.get(PROFILE_PHOTO):
-            raise serializers.ValidationError("No file found for filed profile_photo to upload.")
-        
+
+        if request.method == "POST" and not attrs.get(PROFILE_PHOTO):
+            raise serializers.ValidationError(
+                "No file found for filed profile_photo to upload."
+            )
+
         attrs[MEMBER] = member
         return attrs
 

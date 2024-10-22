@@ -1,12 +1,12 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.request import Request
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from apps.common.responses import create_error_response, create_success_response
 from apps.stores.utils import generate_pin
-from apps.stores.permissions import IsStoreUser
+from apps.stores.permissions import IsStoreUser, IsStoreWithValidPIN
 from apps.stores.models import (
     StoreProfile,
     StoreItemCategorie,
@@ -24,11 +24,11 @@ from apps.stores.serializers import (
     StoreProfileImageUploadSerializer,
 )
 from apps.notifications.emails.services.email_senders import StoreEmailSender
-from apps.common.constants import ADDRESS, OPENING_HOURS, PIN, STORE_ID, REQUEST
+from apps.common.constants import PIN, STORE_ID, REQUEST
 
 
 class StoreProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreUser, IsStoreWithValidPIN]
     serializer_class = StoreProfileSerializer
 
     def get_object(self):
@@ -38,46 +38,9 @@ class StoreProfileView(generics.RetrieveUpdateAPIView):
         except StoreProfile.DoesNotExist:
             raise PermissionDenied("Profile not found.")
 
-    def get_serializer(self, *args, **kwargs):
-        include_related = self.request.query_params.get("include", "").split(",")
-
-        exclude = []
-        if ADDRESS not in include_related:
-            exclude.append(ADDRESS)
-        if OPENING_HOURS not in include_related:
-            exclude.append(OPENING_HOURS)
-
-        kwargs["exclude"] = exclude
-        return super().get_serializer(*args, **kwargs)
-
-    def retrieve(self, request: Request, *args, **kwargs):
-        profile = self.get_object()
-        serializer = self.get_serializer(profile)
-        return create_success_response(
-            "Profile retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
-
-    def update(self, request: Request, *args, **kwargs):
-        profile = self.get_object()
-        pin = request.data.get(PIN)
-        if not pin or not profile.validate_pin(pin):
-            return create_error_response(
-                "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = self.get_serializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return create_success_response(
-                "Profile updated successfully.", serializer.data, status.HTTP_200_OK
-            )
-        return create_error_response(
-            "Profile update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
-
 
 class GenerateNewPinView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreUser]
 
     def get_object(self):
         user = self.request.user
@@ -88,7 +51,6 @@ class GenerateNewPinView(APIView):
 
     def put(self, request, *args, **kwargs):
         profile = self.get_object()
-
         profile.pin = generate_pin()
         profile.save()
 
@@ -106,13 +68,6 @@ class PublicStoreItemCategoriesView(generics.ListAPIView):
         store_id = self.kwargs.get(STORE_ID)
         return StoreItemCategorie.objects.filter(store_id=store_id)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return create_success_response(
-            "Categories retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
-
 
 class PublicStoreItemConditionsView(generics.ListAPIView):
     serializer_class = StoreItemConditionSerializer
@@ -121,17 +76,10 @@ class PublicStoreItemConditionsView(generics.ListAPIView):
         store_id = self.kwargs.get(STORE_ID)
         return StoreItemConditions.objects.filter(store_id=store_id)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return create_success_response(
-            "Conditions retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
-
 
 class StoreOwnerCategoriesView(generics.ListCreateAPIView):
     serializer_class = StoreItemCategorySerializer
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreUser]
 
     def get_queryset(self):
 
@@ -164,10 +112,9 @@ class StoreOwnerCategoriesView(generics.ListCreateAPIView):
 
 class StoreOwnerConditionsView(generics.ListCreateAPIView):
     serializer_class = StoreItemConditionSerializer
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreWithValidPIN]
 
     def get_queryset(self):
-
         store = self.request.user.store
         return StoreItemConditions.objects.filter(store=store)
 
@@ -196,7 +143,7 @@ class StoreOwnerConditionsView(generics.ListCreateAPIView):
 
 
 class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreUser, IsStoreWithValidPIN]
     serializer_class = StoreNotificationPreferencesSerializer
 
     def get_object(self):
@@ -232,7 +179,7 @@ class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
 
 
 class StoreProfileImageView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreUser]
 
     def dispatch(self, request, *args, **kwargs):
         if request.method == "POST":
