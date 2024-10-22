@@ -54,11 +54,13 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+
         if instance.status != Item.Statuses.AVAILABLE:
-            raise ValidationError(
-                "Item cannot be deleted because it's not currently available"
-            )
-        instance.delete()
+            statuses = [status for status in Item.Statuses if status != Item.Statuses.AVAILABLE]
+            joined_statuses = f"{', '.join(statuses[:-1])} or {statuses[-1]}"
+            raise ValidationError({"detail": f"This item is currently {instance.status}. Items cannot be {joined_statuses} to be deleted."})
+
+        self.get_serializer(instance).destroy(instance)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
