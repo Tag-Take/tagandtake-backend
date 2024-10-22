@@ -4,6 +4,7 @@ from apps.marketplace.views import (
     ListingRetrieveView,
     ListingRoleCheckView,
     CreateItemAndListingView,
+    StoreItemListingListView,
     ReplaceTagView,
     RecallListingView,
     GenerateNewCollectionPinView,
@@ -24,6 +25,11 @@ urlpatterns = [
         "members/me/recalled-listings/<int:id>/generate-collection-pin/",
         GenerateNewCollectionPinView.as_view(),
         name="generate-collection-pin",
+    ),
+    path(
+        "stores/me/listings/",
+        StoreItemListingListView.as_view(),
+        name="store-listing-retrieve",
     ),
     path(
         "stores/me/recalled-listings/",
