@@ -49,9 +49,10 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "apps.accounts.auth.CustomJWTAuthentication",
-        # "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DEFAULT_PARSER_CLASSES": ("rest_framework.parsers.JSONParser",),
@@ -84,6 +85,10 @@ SPECTAUCLAR_SETTINGS = {
 
 AUTH_USER_MODEL = "accounts.User"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTHENTICATION_BACKENDS = [
+    "apps.accounts.auth.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -139,8 +144,8 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    'AUTH_COOKIE_SAMESITE': 'None',  # SameSite None for cross-origin requests
-    'AUTH_COOKIE_SECURE': False,  # Only True in production (HTTPS)
+    "AUTH_COOKIE_SAMESITE": "None",  # SameSite None for cross-origin requests
+    "AUTH_COOKIE_SECURE": False,  # Only True in production (HTTPS)
 }
 
 MIDDLEWARE = [
@@ -202,7 +207,7 @@ STATIC_URL = "/static/"
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = ["./static/"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-TAG_FONT = STATICFILES_DIRS[0] + 'fonts/Nunito-Bold.ttf'
+TAG_FONT = STATICFILES_DIRS[0] + "fonts/Nunito-Bold.ttf"
 
 
 # APP URLS

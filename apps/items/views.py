@@ -1,9 +1,9 @@
 from django.http import Http404
 
-from rest_framework import generics, permissions, status, serializers
+from rest_framework import generics, permissions, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from rest_framework.request import Request
+from rest_framework.exceptions import NotFound, ValidationError
 
 from apps.items.serializers import (
     ItemCreateSerializer,
@@ -11,14 +11,12 @@ from apps.items.serializers import (
     ItemCategorySerializer,
     ItemConditionSerializer,
 )
-from apps.common.responses import create_error_response, create_success_response
 from apps.members.permissions import IsMemberUser
-from apps.items.permissions import IsItemOwner, check_item_permissions
+from apps.items.permissions import IsItemOwner
 from apps.items.models import Item, ItemCategory, ItemCondition
-from apps.common.constants import REQUEST, ITEM, ITEMS, CATEGORIES, CONDITIONS
 
 
-class MemberItemListCreateView(generics.GenericAPIView):
+class MemberItemListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsMemberUser]
     parser_classes = (MultiPartParser, FormParser)
     serializer_class = ItemRetrieveUpdateDeleteSerializer
@@ -26,34 +24,14 @@ class MemberItemListCreateView(generics.GenericAPIView):
     def get_queryset(self):
         return Item.objects.filter(owner=self.request.user.member)
 
-    def get(self, request: Request, *args, **kwargs):
-        items: list[Item] = self.get_queryset()
-        if not items.exists():
-            return create_error_response(
-                "No items found for this user.", {}, status.HTTP_404_NOT_FOUND
-            )
-        serializer = self.get_serializer(items, many=True)
-        return create_success_response(
-            "Items retrieved successfully.",
-            {ITEMS: serializer.data},
-            status.HTTP_200_OK,
-        )
-
-    def post(self, request: Request, *args, **kwargs):
-        serializer = ItemCreateSerializer(data=request.data, context={REQUEST: request})
-        if serializer.is_valid():
-            item: Item = serializer.save()
-            return create_success_response(
-                "Item created successfully.",
-                {ITEM: ItemCreateSerializer(item).data},
-                status.HTTP_201_CREATED,
-            )
-        return create_error_response(
-            "Item creation failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return ItemCreateSerializer
+        return ItemRetrieveUpdateDeleteSerializer
 
 
 class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsItemOwner]
     serializer_class = ItemRetrieveUpdateDeleteSerializer
     queryset = Item.objects.all()
     parser_classes = (MultiPartParser, FormParser)
@@ -62,108 +40,45 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         try:
             return super().get_object()
         except Http404:
-            return create_error_response(
-                "Item not found.", {}, status.HTTP_404_NOT_FOUND
-            )
+            raise NotFound(detail="Item not found")
 
-    def retrieve(self, request: Request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if isinstance(instance, Response):
-            return instance
-        item: Item = instance
-        serializer = self.get_serializer(item)
-        return create_success_response(
-            "Item retrieved successfully.",
-            {ITEM: serializer.data},
-            status.HTTP_200_OK,
-        )
-
-    def update(self, request: Request, *args, **kwargs):
-        instance = self.get_object()
-        if isinstance(instance, Response):
-            return instance
-        item: Item = instance
-        permission_error_response = check_item_permissions(request, self, item)
-        if permission_error_response:
-            return permission_error_response
-
         partial = kwargs.pop("partial", False)
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial, context={REQUEST: request}
-        )
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
-        if serializer.is_valid():
-            try:
-                serializer.save()
-                return create_success_response(
-                    "Item updated successfully.",
-                    {ITEM: serializer.data},
-                    status.HTTP_200_OK,
-                )
-            except serializers.ValidationError as e:
-                return create_error_response(
-                    "Item update failed.",
-                    {"exception": e.detail},
-                    status.HTTP_400_BAD_REQUEST,
-                )
-        return create_error_response(
-            "Item update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-    def destroy(self, request: Request, *args, **kwargs):
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if isinstance(instance, Response):
-            return instance
-        item: Item = instance
-        permission_response = check_item_permissions(request, self, item)
-        if permission_response:
-            return permission_response
 
-        serializer = self.get_serializer(instance)
-        try:
-            serializer.destroy(instance)
-            return create_success_response(
-                "Item deleted successfully.", {}, status.HTTP_204_NO_CONTENT
+        if instance.status != Item.Statuses.AVAILABLE or Item.Statuses.ABANDONED:
+            statuses = [
+                status
+                for status in Item.Statuses
+                if status != Item.Statuses.AVAILABLE
+                and status != Item.Statuses.ABANDONED
+            ]
+            joined_statuses = f"{', '.join(statuses[:-1])} or {statuses[-1]}"
+            raise ValidationError(
+                {
+                    "detail": f"This item is currently {instance.status}. Items that are: {joined_statuses} cannot be deleted."
+                }
             )
-        except serializers.ValidationError as e:
-            return create_error_response(
-                "Failed to delete item.",
-                {"exception": str(e)},
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-        
+
+        self.get_serializer(instance).destroy(instance)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ItemCategoryListView(generics.ListAPIView):
     serializer_class = ItemCategorySerializer
     queryset = ItemCategory.objects.all()
 
-    def list(self, request: Request, *args, **kwargs):
-        item_categories: list[ItemCategory] = self.get_queryset()
-        if not item_categories.exists():
-            return create_error_response(
-                "No item categories found.", {}, status.HTTP_404_NOT_FOUND
-            )
-        serializer = self.get_serializer(item_categories, many=True)
-        return create_success_response(
-            "Item categories retrieved successfully.",
-            {CATEGORIES: serializer.data},
-            status.HTTP_200_OK,
-        )
-
 
 class ItemConditionListView(generics.ListAPIView):
     serializer_class = ItemConditionSerializer
     queryset = ItemCondition.objects.all()
-
-    def list(self, request: Request, *args, **kwargs):
-        item_conditions: list[ItemCondition] = self.get_queryset()
-        if not item_conditions.exists():
-            return create_error_response(
-                "No item conditions found.", {}, status.HTTP_404_NOT_FOUND
-            )
-        serializer = self.get_serializer(item_conditions, many=True)
-        return create_success_response(
-            "Item conditions retrieved successfully.",
-            {CONDITIONS: serializer.data},
-            status.HTTP_200_OK,
-        )

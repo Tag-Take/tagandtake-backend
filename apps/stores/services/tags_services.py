@@ -56,9 +56,9 @@ class TagService:
         qr = qrcode.QRCode(version=2, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
-        
+
         qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
-        
+
         img_width, img_height = qr_img.size
         total_height = img_height + 30  # Extra space below the QR code for the tag ID
 
@@ -66,13 +66,13 @@ class TagService:
         new_img.paste(qr_img, (0, 0))
 
         draw = ImageDraw.Draw(new_img)
-        tag_text = 'TAG: '+str(tag_id)
+        tag_text = "TAG: " + str(tag_id)
 
         font_size = 24
-        font = ImageFont.truetype(settings.TAG_FONT, font_size)  
+        font = ImageFont.truetype(settings.TAG_FONT, font_size)
 
         # Calculate text position
-        bbox = draw.textbbox((0, 0), tag_text, font=font) 
+        bbox = draw.textbbox((0, 0), tag_text, font=font)
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
@@ -80,7 +80,9 @@ class TagService:
         y_position = total_height - text_height - 32
 
         # Draw the text using the Nunito-Bold font
-        draw.text((x_position, y_position), tag_text, fill="black", align="center", font=font)    
+        draw.text(
+            (x_position, y_position), tag_text, fill="black", align="center", font=font
+        )
 
         # Save the image to a BytesIO object
         img_io = BytesIO()
@@ -88,7 +90,6 @@ class TagService:
         img_io.seek(0)
 
         return img_io
-
 
     @staticmethod
     def create_and_upload_tag_group_images(tag_group: TagGroup):

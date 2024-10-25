@@ -15,13 +15,6 @@ class MemberService:
             raise serializers.ValidationError("Member does not exist.")
 
     @staticmethod
-    def get_member_by_user(user):
-        try:
-            return MemberProfile.objects.get(user=user)
-        except MemberProfile.DoesNotExist:
-            raise serializers.ValidationError("Member does not exist.")
-
-    @staticmethod
     def create_member_profile(user):
         try:
             return MemberProfile.objects.create(user=user)
@@ -35,30 +28,6 @@ class MemberService:
         except Exception as e:
             raise serializers.ValidationError(
                 f"Failed to create member notifications: {e}"
-            )
-
-    @staticmethod
-    def update_member_profile(member: MemberProfile, validated_data: dict):
-        try:
-            for key, value in validated_data.items():
-                setattr(member, key, value)
-            member.save()
-            return member
-        except Exception as e:
-            raise serializers.ValidationError(f"Failed to update member profile: {e}")
-
-    @staticmethod
-    def update_member_notifications(
-        member_notifications: MemberNotificationPreferences, validated_data: dict
-    ):
-        try:
-            for attr, value in validated_data.items():
-                setattr(member_notifications, attr, value)
-            member_notifications.save()
-            return member_notifications
-        except Exception as e:
-            raise serializers.ValidationError(
-                f"Failed to update member notifications: {e}"
             )
 
     @staticmethod

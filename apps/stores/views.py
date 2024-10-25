@@ -1,101 +1,56 @@
-from rest_framework import generics, permissions, status
+from django.db import transaction
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.request import Request
 
-from apps.common.responses import create_error_response, create_success_response
 from apps.stores.utils import generate_pin
-from apps.stores.permissions import IsStoreUser
+from apps.stores.permissions import IsStoreUser, IsStoreWithValidPIN
 from apps.stores.models import (
     StoreProfile,
-    StoreItemCategorie,
-    StoreItemConditions,
+    StoreItemCategory,
+    StoreItemCondition,
     StoreNotificationPreferences,
 )
 from apps.stores.serializers import (
     StoreProfileSerializer,
-    StoreItemCategoryUpdateSerializer,
     StoreItemCategorySerializer,
     StoreItemConditionSerializer,
     StoreItemConditionUpdateSerializer,
     StoreNotificationPreferencesSerializer,
-    StoreProfileImageDeleteSerializer,
-    StoreProfileImageUploadSerializer,
+    StoreItemCategoryBulkSerializer,
+    StoreProfileImageSerializer
 )
 from apps.notifications.emails.services.email_senders import StoreEmailSender
-from apps.common.constants import ADDRESS, OPENING_HOURS, PIN, STORE_ID, REQUEST
+from apps.common.constants import STORE_ID, STORE, PROFILE_PHOTO_URL
 
 
 class StoreProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreUser, IsStoreWithValidPIN]
     serializer_class = StoreProfileSerializer
 
     def get_object(self):
-        user = self.request.user
-        try:
-            return StoreProfile.objects.get(user=user)
-        except StoreProfile.DoesNotExist:
-            raise PermissionDenied("Profile not found.")
-
-    def get_serializer(self, *args, **kwargs):
-        include_related = self.request.query_params.get("include", "").split(",")
-
-        exclude = []
-        if ADDRESS not in include_related:
-            exclude.append(ADDRESS)
-        if OPENING_HOURS not in include_related:
-            exclude.append(OPENING_HOURS)
-
-        kwargs["exclude"] = exclude
-        return super().get_serializer(*args, **kwargs)
-
-    def retrieve(self, request: Request, *args, **kwargs):
-        profile = self.get_object()
-        serializer = self.get_serializer(profile)
-        return create_success_response(
-            "Profile retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
-
-    def update(self, request: Request, *args, **kwargs):
-        profile = self.get_object()
-        pin = request.data.get(PIN)
-        if not pin or not profile.validate_pin(pin):
-            return create_error_response(
-                "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = self.get_serializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return create_success_response(
-                "Profile updated successfully.", serializer.data, status.HTTP_200_OK
-            )
-        return create_error_response(
-            "Profile update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
+        return self.request.user.store
 
 
-class GenerateNewPinView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+class GenerateNewPinView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsStoreUser]
+    queryset = StoreProfile.objects.all()
 
     def get_object(self):
-        user = self.request.user
-        try:
-            return StoreProfile.objects.get(user=user)
-        except StoreProfile.DoesNotExist:
-            raise PermissionDenied("Profile not found.")
+        return self.request.user.store
 
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         profile = self.get_object()
-
         profile.pin = generate_pin()
         profile.save()
 
         StoreEmailSender(profile).send_reset_pin_email()
 
-        return create_success_response(
-            "New PIN generated and sent to your email.", {}, status.HTTP_200_OK
+        return Response(
+            {"message": "New PIN generated and sent to your email."},
+            status=status.HTTP_200_OK
         )
 
 
@@ -104,169 +59,108 @@ class PublicStoreItemCategoriesView(generics.ListAPIView):
 
     def get_queryset(self):
         store_id = self.kwargs.get(STORE_ID)
-        return StoreItemCategorie.objects.filter(store_id=store_id)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return create_success_response(
-            "Categories retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
+        return StoreItemCategory.objects.filter(store_id=store_id)
 
 
 class PublicStoreItemConditionsView(generics.ListAPIView):
     serializer_class = StoreItemConditionSerializer
 
     def get_queryset(self):
-        store_id = self.kwargs.get(STORE_ID)  
-        return StoreItemConditions.objects.filter(store_id=store_id)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return create_success_response(
-            "Conditions retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
+        store_id = self.kwargs.get(STORE_ID)
+        return StoreItemCondition.objects.filter(store_id=store_id)
 
 
 class StoreOwnerCategoriesView(generics.ListCreateAPIView):
-    serializer_class = StoreItemCategorySerializer
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser] 
+    serializer_class = StoreItemCategoryBulkSerializer
+    permission_classes = [IsAuthenticated, IsStoreWithValidPIN]
 
     def get_queryset(self):
+        return StoreItemCategory.objects.filter(store=self.request.user.store)
 
-        store = self.request.user.store  
-        return StoreItemCategorie.objects.filter(store=store)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return create_success_response(
-            "Categories retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
+    def perform_create(self, serializer):
+        serializer.save(store=self.request.user.store)
 
     def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        store = self.request.user.store 
-        serializer = StoreItemCategoryUpdateSerializer(
-            data=request.data,
-            context={STORE_ID: store.id, REQUEST: request},
-        )
-        if serializer.is_valid():
-            serializer.update_categories()
-            return create_success_response(
-                "Categories updated successfully.", {}, status.HTTP_200_OK
-            )
-        return create_error_response(
-            "Categories update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
+        store = self.request.user.store
+
+        serializer.context[STORE] = store
+
+        with transaction.atomic():
+            StoreItemCategory.objects.filter(store=store).delete()
+            created_store_item_categories = serializer.save()
+
+        response_serializer = StoreItemCategorySerializer(created_store_item_categories, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def list(self, request, *args, **kwargs):
+            queryset = self.get_queryset()
+            page = self.paginate_queryset(queryset)
+            response_serializer = StoreItemCategorySerializer(page, many=True)
+            return self.get_paginated_response(response_serializer.data)
 
 
 class StoreOwnerConditionsView(generics.ListCreateAPIView):
-    serializer_class = StoreItemConditionSerializer
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]  
+    permission_classes = [IsAuthenticated, IsStoreWithValidPIN]
+    serializer_class = StoreItemConditionUpdateSerializer
 
     def get_queryset(self):
+        return StoreItemCondition.objects.filter(store=self.request.user.store)
 
-        store = self.request.user.store  
-        return StoreItemConditions.objects.filter(store=store)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return create_success_response(
-            "Conditions retrieved successfully.", serializer.data, status.HTTP_200_OK
-        )
+    def perform_create(self, serializer):
+        serializer.save(store=self.request.user.store)
 
     def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        store = self.request.user.store 
-        serializer = StoreItemConditionUpdateSerializer(
-            data=request.data,
-            context={STORE_ID: store.id, REQUEST: request},
-        )
-        if serializer.is_valid():
-            serializer.update_conditions()
-            return create_success_response(
-                "Conditions updated successfully.", {}, status.HTTP_200_OK
-            )
-        return create_error_response(
-            "Conditions update failed.", serializer.errors, status.HTTP_400_BAD_REQUEST
-        )
+        store = self.request.user.store
+
+        serializer.context[STORE] = store
+
+        with transaction.atomic():
+            StoreItemCondition.objects.filter(store=store).delete()
+            created_store_item_categories = serializer.save()
+
+        response_serializer = StoreItemConditionSerializer(created_store_item_categories, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def list(self, request, *args, **kwargs):
+            queryset = self.get_queryset()
+            page = self.paginate_queryset(queryset)
+            response_serializer = StoreItemConditionSerializer(page, many=True)
+            return self.get_paginated_response(response_serializer.data)
 
 
 class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
+    permission_classes = [IsAuthenticated, IsStoreWithValidPIN]
     serializer_class = StoreNotificationPreferencesSerializer
 
     def get_object(self):
-        user = self.request.user
-        try:
-            return StoreNotificationPreferences.objects.get(store__user=user)
-        except StoreNotificationPreferences.DoesNotExist:
-            raise PermissionDenied("Notification preferences not found.")
+        return StoreNotificationPreferences.objects.get(store__user=self.request.user)
 
-    def update(self, request, *args, **kwargs):
-        preferences = self.get_object()
-        pin = request.data.get(PIN)
-        if not pin or not preferences.store.validate_pin(pin):
-            return create_error_response(
-                "Invalid PIN.", {PIN: ["Invalid PIN"]}, status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = StoreNotificationPreferencesSerializer(
-            preferences, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return create_success_response(
-                "Notification preferences updated successfully.",
-                serializer.data,
-                status.HTTP_200_OK,
-            )
-        return create_error_response(
-            "Notification preferences update failed.",
-            serializer.errors,
-            status.HTTP_400_BAD_REQUEST,
-        )
 
 
 class StoreProfileImageView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsStoreUser]
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.method == "POST":
-            self.parser_classes = [MultiPartParser, FormParser]
-        return super().dispatch(request, *args, **kwargs)
+    permission_classes = [IsAuthenticated, IsStoreWithValidPIN]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request, *args, **kwargs):
-        serializer = StoreProfileImageUploadSerializer(
-            data=request.data, context={REQUEST: request}
+        serializer = StoreProfileImageSerializer(
+            data=request.data, context={"request": request}
         )
         if serializer.is_valid():
-            profile = serializer.save()
-            return create_success_response(
-                "Profile photo uploaded successfully.",
-                {"profile_photo_url": profile.profile_photo_url},
-                status.HTTP_200_OK,
+            store = serializer.save()
+            return Response(
+                {PROFILE_PHOTO_URL: store.profile_photo_url}, status=status.HTTP_200_OK
             )
-        return create_error_response(
-            "Profile photo upload failed.",
-            serializer.errors,
-            status.HTTP_400_BAD_REQUEST,
-        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        serializer = StoreProfileImageDeleteSerializer(
-            data=request.data, context={REQUEST: request}
-        )
+        serializer = StoreProfileImageSerializer(data={}, context={"request": request})
         if serializer.is_valid():
-            profile = serializer.save()
-            return create_success_response(
-                "Profile photo deleted successfully.", {}, status.HTTP_200_OK
-            )
-        return create_error_response(
-            "Profile photo delete failed.",
-            serializer.errors,
-            status.HTTP_400_BAD_REQUEST,
-        )
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

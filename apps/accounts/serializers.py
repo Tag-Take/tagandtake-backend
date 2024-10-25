@@ -1,24 +1,21 @@
 from typing import Dict, Any
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.models import update_last_login
 
 from rest_framework import serializers
 
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
 )
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 from apps.accounts.models import User
 from apps.common.constants import *
@@ -104,72 +101,38 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs: dict):
-        username_or_email = attrs.get(USERNAME)
-        password = attrs.get(PASSWORD)
+    def validate(self, attrs):
+        username_or_email = attrs.get("username")
+        password = attrs.get("password")
 
-        user = User.objects.filter(
-            Q(username__iexact=username_or_email)  # or
-            | Q(email__iexact=username_or_email)
-        ).first()
+        user = authenticate(
+            request=self.context.get("request"),
+            username=username_or_email,
+            password=password,
+        )
 
-        if not user:
-            raise serializers.ValidationError(
-                {
-                    "non_field_errors": [
-                        "No account found with the given email or username."
-                    ]
-                }
-            )
-
-        if not user.check_password(password):
-            raise serializers.ValidationError(
-                {"non_field_errors": ["Invalid credentials"]}
-            )
+        if user is None:
+            raise serializers.ValidationError("Invalid credentials or user not found.")
 
         if not user.is_active:
-            raise serializers.ValidationError(
-                {
-                    "non_field_errors": [
-                        "User account is not activated. Please check your email."
-                    ]
-                }
-            )
+            raise serializers.ValidationError("This user is inactive.")
 
-        self.user = user
+        data = super().validate(attrs)
 
-        refresh = self.get_token(self.user)
-
-        data = {
-            REFRESH: str(refresh),
-            ACCESS: str(refresh.access_token),
-        }
-
-        data[USER] = user
+        data[USER] = self.user
 
         return data
 
 
-class CustomTokenRefreshSerializer(TokenRefreshSerializer):
-    def validate(self, attrs: dict):
-        refresh = RefreshToken(attrs[REFRESH])
+class CookieTokenRefreshSerializer(TokenRefreshSerializer):
+    refresh = None
 
-        decoded_refresh_token = refresh.payload
-        user_id = decoded_refresh_token[USER_ID]
-        user = User.objects.get(id=user_id)
-
-        access_token = refresh.access_token
-        access_token[ROLE] = user.role
-
-        data = {
-            ACCESS: str(access_token),
-            REFRESH: str(refresh),
-        }
-
-        if api_settings.UPDATE_LAST_LOGIN:
-            update_last_login(None, user)
-
-        return data
+    def validate(self, attrs):
+        attrs[REFRESH] = self.context[REQUEST].COOKIES.get(REFRESH_TOKEN)
+        if attrs[REFRESH]:
+            return super().validate(attrs)
+        else:
+            raise InvalidToken("No valid token found in cookie'refresh_token'")
 
 
 class PasswordResetSerializer(serializers.Serializer):

@@ -59,7 +59,7 @@ class MemberProfile(models.Model):
         except StripeAccount.DoesNotExist:
             return None
 
-    @property 
+    @property
     def pending_balance(self):
         PendingMemberTransfer = apps.get_model("payments", "PendingMemberTransfer")
 
@@ -69,7 +69,6 @@ class MemberProfile(models.Model):
 
         total = sum([float(transfer.amount) for transfer in transfers])
         return total
-
 
 
 class MemberNotificationPreferences(models.Model):

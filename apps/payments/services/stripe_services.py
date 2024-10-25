@@ -57,43 +57,43 @@ class StripeService:
                 "account_onboarding": {"enabled": True},
             },
         )
-    
+
     @staticmethod
     def create_stripe_account_management_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
             components={
                 "account_management": {
-                "enabled": True,
-                "features": {"external_account_collection": True},
+                    "enabled": True,
+                    "features": {"external_account_collection": True},
                 },
             },
         )
-    
+
     @staticmethod
     def create_stripe_account_balances_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
             components={
                 "balances": {
-                "enabled": True,
-                "features": {
-                    "instant_payouts": True,
-                    "standard_payouts": True,
-                    "edit_payout_schedule": True,
-                },
+                    "enabled": True,
+                    "features": {
+                        "instant_payouts": True,
+                        "standard_payouts": True,
+                        "edit_payout_schedule": True,
+                    },
                 },
             },
         )
-    
+
     @staticmethod
     def create_stripe_account_notifications_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,
             components={
                 "notification_banner": {
-                "enabled": True,
-                "features": {"external_account_collection": True},
+                    "enabled": True,
+                    "features": {"external_account_collection": True},
                 },
             },
         )
@@ -112,7 +112,7 @@ class StripeService:
                 },
             },
         )
-    
+
     def create_stripe_account_payments_session(connected_account_id: str):
         return stripe.AccountSession.create(
             account=connected_account_id,

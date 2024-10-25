@@ -1,13 +1,15 @@
-import stripe 
-import os 
+import stripe
+import os
 
 from celery import shared_task
 
 from apps.payments.models.transactions import (
-    ItemCheckoutSession, 
-    ItemPaymentTransaction
+    ItemCheckoutSession,
+    ItemPaymentTransaction,
 )
-from apps.payments.stripe_events.platform_events.payment_intent_handlers import PaymentIntentSucceededHandler
+from apps.payments.stripe_events.platform_events.payment_intent_handlers import (
+    PaymentIntentSucceededHandler,
+)
 
 
 @shared_task
@@ -26,18 +28,22 @@ def run_item_transaction_cleanup():
                 checkout.payment_intent_id = checkout_session.payment_intent
                 checkout.save()
 
-            if not ItemPaymentTransaction.objects.filter(checkout_session=checkout).exists():
-                payment_intent = stripe.PaymentIntent.retrieve(checkout.payment_intent_id)
+            if not ItemPaymentTransaction.objects.filter(
+                checkout_session=checkout
+            ).exists():
+                payment_intent = stripe.PaymentIntent.retrieve(
+                    checkout.payment_intent_id
+                )
                 handler = PaymentIntentSucceededHandler(payment_intent)
                 handler.handle()
 
         checkout.checkout_status_checked = True
-        checkout.save()                
+        checkout.save()
 
 
 @shared_task
 def run_transaction_update():
-    """ 
+    """
     This tasks ensures that all transactions are up to date
     """
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")

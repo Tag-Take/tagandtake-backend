@@ -24,15 +24,15 @@ from apps.accounts.serializers import (
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
-    CustomTokenRefreshSerializer,
+    CookieTokenRefreshSerializer,
 )
+from apps.accounts.jwt_manager import JWTManager
 from apps.stores.models import StoreProfile as Store
 from apps.accounts.signals import user_activated
 from apps.notifications.emails.services.email_senders import AccountEmailSender
 from apps.common.responses import (
     create_success_response,
     create_error_response,
-    JWTCookieHandler,
 )
 
 
@@ -105,17 +105,17 @@ class ActivateUserView(APIView):
                 user.is_active = True
                 user.save()
                 user_activated.send(sender=user.__class__, instance=user)
+                access_token, refresh_token = JWTManager.generate_tokens(user)
                 response = create_success_response(
                     "Account activated successfully",
-                    {ROLE: user.role},
+                    {
+                        ACCESS_TOKEN: access_token,
+                        ROLE: user.role,
+                        ISLOGGEDIN: True,
+                    },
                     status.HTTP_200_OK,
                 )
-                access_token, refresh_token = JWTCookieHandler(
-                    response
-                )._generate_tokens(user)
-                return JWTCookieHandler(response).set_jwt_cookies(
-                    access_token, refresh_token
-                )
+                return JWTManager(response).set_refresh_token_cookie(refresh_token)
 
             return create_error_response(
                 "Account is already active", {}, status.HTTP_400_BAD_REQUEST
@@ -161,7 +161,8 @@ class LogoutView(APIView):
             response = create_success_response(
                 "Successfully logged out", {}, status.HTTP_204_NO_CONTENT
             )
-            return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
+            JWTManager.blacklist_refresh_token(refresh_token)
+            return JWTManager.clear_refresh_token_cookie(response)
 
         except TokenError as e:
             return create_error_response(
@@ -171,24 +172,21 @@ class LogoutView(APIView):
             return create_error_response(
                 "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
             )
-        
-@api_view(['GET'])
+
+
+@api_view(["GET"])
 def get_auth_status(request: Request):
     user = request.user
     if user.is_authenticated:
         return create_success_response(
-            "User is authenticated", {
-                USER: user.username,
-                ISLOGGEDIN: True,
-                ROLE: user.role
-            }, status.HTTP_200_OK
+            "User is authenticated",
+            {USER: user.username, ISLOGGEDIN: True, ROLE: user.role},
+            status.HTTP_200_OK,
         )
     return create_success_response(
-        "User is not authenticated", {
-            ISLOGGEDIN: False,
-            ROLE: None
-            }, status.HTTP_200_OK
+        "User is not authenticated", {ISLOGGEDIN: False, ROLE: None}, status.HTTP_200_OK
     )
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -209,53 +207,45 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         refresh_token = serializer.validated_data[REFRESH]
 
         response = create_success_response(
-            "Authentication successful.", {
+            "Authentication successful.",
+            {
                 USERNAME: user.username,
+                ACCESS_TOKEN: access_token,
                 ISLOGGEDIN: True,
-                ROLE: user.role
-            }, status.HTTP_200_OK
+                ROLE: user.role,
+            },
+            status.HTTP_200_OK,
         )
 
-        return JWTCookieHandler(response).set_jwt_cookies(access_token, refresh_token)
+        return JWTManager.set_refresh_token_cookie(response, refresh_token)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
-    serializer_class = CustomTokenRefreshSerializer
+    serializer_class = CookieTokenRefreshSerializer
 
-    def post(self, request: Request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get(REFRESH_TOKEN)
+
         if not refresh_token:
             return create_error_response(
-                "Refresh token is required", {}, status.HTTP_400_BAD_REQUEST
+                "Refresh token is missing from cookies", {}, status.HTTP_400_BAD_REQUEST
             )
 
-        mutable_data = QueryDict("", mutable=True)
-        mutable_data.update(request.data)
-        mutable_data[REFRESH] = refresh_token
+        response = super().post(request, *args, **kwargs)
 
-        request._full_data = mutable_data
+        if response.status_code == 200:
+            new_refresh_token = response.data.get(REFRESH)
+            new_access_token = response.data.get(ACCESS)
 
-        try:
-            response = super().post(request, *args, **kwargs)
-            if response.status_code == 200:
-                access_token = response.data[ACCESS]
-
-                response = create_success_response(
-                    "Access token refreshed successfully", {}, status.HTTP_200_OK
-                )
-                return JWTCookieHandler(response).set_jwt_cookies(access_token)
-
-        except TokenError as e:
-            return create_error_response(
-                "Token error occurred", {TOKEN: str(e)}, status.HTTP_401_UNAUTHORIZED
-            )
-        except Exception as e:
-            return create_error_response(
-                "An error occurred", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST
+            response = create_success_response(
+                "Token refreshed successfully",
+                {ACCESS_TOKEN: new_access_token},
+                status.HTTP_200_OK,
             )
 
+        return JWTManager.set_refresh_token_cookie(response, new_refresh_token)
 
-# TODO: don't log out user until password reset is confirmed
+
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
     throttle_scope = PASSWORD_RESET
@@ -265,18 +255,19 @@ class PasswordResetView(generics.GenericAPIView):
         if serializer.is_valid():
             serializer.save()
 
-            response = create_success_response(
+            return create_success_response(
                 "Password has been reset and user has been logged out from all sessions.",
                 {},
                 status.HTTP_200_OK,
             )
-            return JWTCookieHandler(response).delete_jwt_cookies()
 
         return create_error_response(
             "Invalid email", serializer.errors, status.HTTP_400_BAD_REQUEST
         )
 
 
+# TODO:handle auth on reset
+#
 class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
     throttle_scope = PASSWORD_RESET
@@ -288,12 +279,11 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
             refresh_token = request.COOKIES.get(REFRESH_TOKEN)
 
-            response = create_success_response(
+            return create_success_response(
                 "Password has been reset and user has been logged out from all sessions.",
                 {},
                 status.HTTP_200_OK,
             )
-            return JWTCookieHandler(response).delete_jwt_cookies(refresh_token)
 
         return create_error_response(
             "Error setting new password", serializer.errors, status.HTTP_400_BAD_REQUEST

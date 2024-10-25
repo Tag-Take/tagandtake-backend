@@ -14,11 +14,11 @@ API_VERSION = "v1"
 
 urlpatterns = [
     # Django Admin
-    path(f"/admin/", admin.site.urls),
+    path(f"admin/", admin.site.urls),
     # API Documentation
-    path(f"/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(f"schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        f"/schema/docs/",
+        f"schema/docs/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),

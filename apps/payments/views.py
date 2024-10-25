@@ -23,8 +23,9 @@ from apps.common.constants import (
     SESSION_ID,
 )
 
+
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])  
+@permission_classes([IsAuthenticated])
 def account_status_view(request: Request):
     try:
         user = request.user
@@ -38,15 +39,16 @@ def account_status_view(request: Request):
         return create_success_response(
             "Account status retrieved successfully.",
             {"onboarded": onboarded},
-            status.HTTP_200_OK
+            status.HTTP_200_OK,
         )
 
     except Exception as e:
         return create_error_response(
             "Error retrieving account status",
             {"error": str(e)},
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])  # Ensure user is authenticated
@@ -60,19 +62,21 @@ def create_onboarding_session_view(request: Request):
         connected_account_id = payment_account.stripe_account_id
 
         # Create onboarding session
-        session = StripeService.create_stripe_account_onboarding_session(connected_account_id)
+        session = StripeService.create_stripe_account_onboarding_session(
+            connected_account_id
+        )
 
         return create_success_response(
             "Onboarding session created successfully.",
             {"client_secret": session.client_secret},
-            status.HTTP_200_OK
+            status.HTTP_200_OK,
         )
 
     except Exception as e:
         return create_error_response(
             "Error creating onboarding session",
             {"error": str(e)},
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
@@ -86,19 +90,21 @@ def create_management_session_view(request: Request):
         connected_account_id = payment_account.stripe_account_id
 
         # Create account management session
-        session = StripeService.create_stripe_account_management_session(connected_account_id)
+        session = StripeService.create_stripe_account_management_session(
+            connected_account_id
+        )
 
         return create_success_response(
             "Management session created successfully.",
             {"client_secret": session.client_secret},
-            status.HTTP_200_OK
+            status.HTTP_200_OK,
         )
 
     except Exception as e:
         return create_error_response(
             "Error creating management session",
             {"error": str(e)},
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
@@ -113,19 +119,21 @@ def create_payouts_session_view(request: Request):
         connected_account_id = payment_account.stripe_account_id
 
         # Create a session for managing payouts
-        session = StripeService.create_stripe_account_balances_session(connected_account_id)
+        session = StripeService.create_stripe_account_balances_session(
+            connected_account_id
+        )
 
         return create_success_response(
             "Payout session created successfully.",
             {"client_secret": session.client_secret},
-            status.HTTP_200_OK
+            status.HTTP_200_OK,
         )
 
     except Exception as e:
         return create_error_response(
             "Error creating payout session.",
             {"error": str(e)},
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
@@ -140,19 +148,21 @@ def create_payments_session_view(request: Request):
         connected_account_id = payment_account.stripe_account_id
 
         # Create a session for managing payments
-        session = StripeService.create_stripe_account_payments_session(connected_account_id)
+        session = StripeService.create_stripe_account_payments_session(
+            connected_account_id
+        )
 
         return create_success_response(
             "Payments session created successfully.",
             {"client_secret": session.client_secret},
-            status.HTTP_200_OK
+            status.HTTP_200_OK,
         )
 
     except Exception as e:
         return create_error_response(
             "Error creating payments session.",
             {"error": str(e)},
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
@@ -167,21 +177,22 @@ def fetch_notifications_view(request: Request):
         connected_account_id = payment_account.stripe_account_id
 
         # Create a session for fetching notifications
-        session = StripeService.create_stripe_account_notifications_session(connected_account_id)
+        session = StripeService.create_stripe_account_notifications_session(
+            connected_account_id
+        )
 
         return create_success_response(
             "Notifications session created successfully.",
             {"client_secret": session.client_secret},
-            status.HTTP_200_OK
+            status.HTTP_200_OK,
         )
 
     except Exception as e:
         return create_error_response(
             "Error fetching notifications.",
             {"error": str(e)},
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-
 
 
 @api_view(["POST"])

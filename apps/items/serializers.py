@@ -99,7 +99,7 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
 
     def get_condition_details(self, item: Item):
         return ItemConditionSerializer(item.condition).data
-    
+
     def get_tag_id(self, item: Item):
         return item.tag_id
 

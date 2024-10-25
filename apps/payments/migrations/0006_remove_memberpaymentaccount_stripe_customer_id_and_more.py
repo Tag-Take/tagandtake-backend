@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('payments', '0005_faileditempaymenttransaction_payment_intent_id_and_more'),
+        ("payments", "0005_faileditempaymenttransaction_payment_intent_id_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='memberpaymentaccount',
-            name='stripe_customer_id',
+            model_name="memberpaymentaccount",
+            name="stripe_customer_id",
         ),
         migrations.RemoveField(
-            model_name='storepaymentaccount',
-            name='stripe_customer_id',
+            model_name="storepaymentaccount",
+            name="stripe_customer_id",
         ),
     ]
