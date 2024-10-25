@@ -138,32 +138,25 @@ class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
         fields = [NEW_LISTING_NOTIFICATIONS, SALE_NOTIFICATIONS]
         
 
-class StoreProfileImageSerializer(serializers.Serializer):
-    profile_photo = serializers.ImageField(required=False)
+class StoreProfileImageSerializer(serializers.ModelSerializer):
+    profile_photo = serializers.ImageField(write_only=True)
+    profile_photo_url = serializers.URLField(read_only=True)
 
     class Meta:
-        fields = [PROFILE_PHOTO]
+        model = StoreProfile
+        fields = [PROFILE_PHOTO, PROFILE_PHOTO_URL]
 
-    def validate(self, attrs: dict):
-        request = self.context.get(REQUEST)
-        store: StoreProfile = request.user.store
-
-        if request.method == "DELETE" and not store.profile_photo_url:
-            raise serializers.ValidationError("No profile photo to delete.")
-
-        if request.method == "POST" and not attrs.get(PROFILE_PHOTO):
-            raise serializers.ValidationError(
-                "No file found for filed profile_photo to upload."
-            )
-
-        attrs[STORE] = store
-        return attrs
-
-    def save(self):
-        store = self.validated_data[STORE]
-        file = self.validated_data.get(PROFILE_PHOTO)
-
-        if file:
-            return StoreService.update_store_profile_photo(store, file)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.context['request'].method == 'POST':
+            self.fields[PROFILE_PHOTO].required = True
         else:
-            return StoreService.delete_store_profile_photo(store)
+            self.fields[PROFILE_PHOTO].required = False
+
+    def update(self, instance, validated_data):
+        profile_photo = validated_data.get(PROFILE_PHOTO)
+        if profile_photo:
+            instance = StoreService.update_store_profile_photo(instance, profile_photo)
+        elif self.context['request'].method == 'DELETE':
+            instance = StoreService.delete_store_profile_photo(instance)
+        return instance

@@ -43,32 +43,43 @@ class MemberNotificationPreferencesSerializer(serializers.ModelSerializer):
         read_only_fields = [USER]
 
 
-class MemberProfileImageSerializer(serializers.Serializer):
-    profile_photo = serializers.ImageField(required=False)
+class MemberProfileImageSerializer(serializers.ModelSerializer):
+    profile_photo = serializers.ImageField(write_only=True, required=False)
+    profile_photo_url = serializers.URLField(read_only=True)
 
     class Meta:
-        fields = [PROFILE_PHOTO]
+        model = MemberProfile
+        fields = [PROFILE_PHOTO, PROFILE_PHOTO_URL]
 
-    def validate(self, attrs: dict):
-        request = self.context.get(REQUEST)
-        member = request.user.member
+    def update(self, instance, validated_data):
+        profile_photo = validated_data.get(PROFILE_PHOTO)
+        if profile_photo:
+            instance = MemberService.update_member_profile_photo(instance, profile_photo)
+        elif self.context['request'].method == 'DELETE':
+            instance = MemberService.delete_member_profile_photo(instance)
+        return instance
+    
 
-        if request.method == "DELETE" and not member.profile_photo_url:
-            raise serializers.ValidationError("No profile photo to delete.")
+class MemberProfileImageSerializer(serializers.ModelSerializer):
+    profile_photo = serializers.ImageField(write_only=True)
+    profile_photo_url = serializers.URLField(read_only=True)
 
-        if request.method == "POST" and not attrs.get(PROFILE_PHOTO):
-            raise serializers.ValidationError(
-                "No file found for filed profile_photo to upload."
-            )
+    class Meta:
+        model = MemberProfile
+        fields = [PROFILE_PHOTO, PROFILE_PHOTO_URL]
+        read_only_fields = [PROFILE_PHOTO_URL]
 
-        attrs[MEMBER] = member
-        return attrs
-
-    def save(self):
-        member = self.validated_data[MEMBER]
-        file = self.validated_data.get(PROFILE_PHOTO)
-
-        if file:
-            return MemberService.update_member_profile_photo(member, file)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.context['request'].method == 'POST':
+            self.fields[PROFILE_PHOTO].required = True
         else:
-            return MemberService.delete_member_profile_photo(member)
+            self.fields[PROFILE_PHOTO].required = False
+
+    def update(self, instance, validated_data):
+        profile_photo = validated_data.get(PROFILE_PHOTO)
+        if profile_photo:
+            instance = MemberService.update_member_profile_photo(instance, profile_photo)
+        elif self.context['request'].method == 'DELETE':
+            instance = MemberService.delete_member_profile_photo(instance)
+        return instance
