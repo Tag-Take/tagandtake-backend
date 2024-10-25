@@ -171,7 +171,7 @@ class StoreNotificationPreferences(models.Model):
         return f"{self.store.store_name} notification preferences"
 
 
-class StoreItemCategorie(models.Model):
+class StoreItemCategory(models.Model):
     store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="preferred_categories"
     )
@@ -188,7 +188,7 @@ class StoreItemCategorie(models.Model):
         return f"{self.store.store_name} - {self.category.name}"
 
 
-class StoreItemConditions(models.Model):
+class StoreItemCondition(models.Model):
     store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="preferred_conditions"
     )

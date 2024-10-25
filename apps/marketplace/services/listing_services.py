@@ -14,8 +14,8 @@ from apps.marketplace.models import (
 )
 from apps.items.models import Item
 from apps.stores.models import (
-    StoreItemCategorie,
-    StoreItemConditions,
+    StoreItemCategory,
+    StoreItemCondition,
     StoreProfile,
     StoreOpeningHours,
 )
@@ -186,7 +186,7 @@ class ItemListingValidationService:
 
     @staticmethod
     def _validate_condition(item: Item, tag: Tag):
-        store_conditions = StoreItemConditions.objects.filter(store=tag.store)
+        store_conditions = StoreItemCondition.objects.filter(store=tag.store)
         if item.condition not in [
             condition.condition for condition in store_conditions
         ]:
@@ -197,7 +197,7 @@ class ItemListingValidationService:
 
     @staticmethod
     def _validate_category(item: Item, tag: Tag):
-        categories = StoreItemCategorie.objects.filter(store=tag.store)
+        categories = StoreItemCategory.objects.filter(store=tag.store)
         if item.category not in [category.category for category in categories]:
             return {
                 CATEGORY: f"{tag.store.store_name} does not accept '{item.category}' items."

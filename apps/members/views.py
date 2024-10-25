@@ -3,10 +3,9 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 
 from apps.members.permissions import IsMemberUser
-from apps.members.models import MemberProfile, MemberNotificationPreferences
+from apps.members.models import MemberNotificationPreferences
 from apps.members.serializers import (
     MemberProfileSerializer,
     MemberNotificationPreferencesSerializer,
@@ -20,11 +19,7 @@ class MemberProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = MemberProfileSerializer
 
     def get_object(self):
-        user = self.request.user
-        try:
-            return MemberProfile.objects.get(user=user)
-        except MemberProfile.DoesNotExist:
-            raise NotFound("Profile not found.")
+        return self.request.user.member
 
 
 class MemberNotificationPreferencesView(generics.RetrieveUpdateAPIView):
@@ -32,11 +27,7 @@ class MemberNotificationPreferencesView(generics.RetrieveUpdateAPIView):
     serializer_class = MemberNotificationPreferencesSerializer
 
     def get_object(self):
-        user = self.request.user
-        try:
-            return MemberNotificationPreferences.objects.get(member__user=user)
-        except MemberNotificationPreferences.DoesNotExist:
-            raise NotFound("Notification preferences not found.")
+        return MemberNotificationPreferences.objects.get(member=self.request.user.member)
 
 
 class MemberProfileImageView(APIView):

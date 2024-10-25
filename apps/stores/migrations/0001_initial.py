@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name="StoreItemConditions",
+            name="StoreItemCondition",
             fields=[
                 (
                     "id",
@@ -165,7 +165,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name="StoreItemCategorie",
+            name="StoreItemCategory",
             fields=[
                 (
                     "id",

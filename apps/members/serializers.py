@@ -51,7 +51,7 @@ class MemberProfileImageSerializer(serializers.Serializer):
 
     def validate(self, attrs: dict):
         request = self.context.get(REQUEST)
-        member = MemberService.get_member_by_user(request.user)
+        member = request.user.member
 
         if request.method == "DELETE" and not member.profile_photo_url:
             raise serializers.ValidationError("No profile photo to delete.")

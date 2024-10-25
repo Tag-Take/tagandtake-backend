@@ -14,11 +14,11 @@ class IsStoreUser(BasePermission):
 
 class IsStoreWithValidPIN(BasePermission):
     def has_permission(self, request: Request, view: APIView):
-        if request.method not in ["PUT", "PATCH", "DELETE"]:
+        if request.method not in ["POST", "PUT", "PATCH", "DELETE"]:
             return True
 
-        store = Store.objects.get(user=request.user)
         pin = request.data.get(PIN)
+        store: Store = request.user.store
 
         if not pin:
             raise ValidationError({"detail": "PIN is required."})
