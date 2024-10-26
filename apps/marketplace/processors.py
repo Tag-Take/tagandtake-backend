@@ -17,20 +17,10 @@ class ItemListingCreateProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        listing = self._create_item_listing()
-        self._list_item()
-        self._send_notifications(listing)
-        return listing
-
-    def _create_item_listing(self):
-        return ItemListingService.create_listing(self.item, self.tag)
-
-    def _list_item(self):
+        listing = ItemListingService.create_listing(self.item, self.tag)
         ItemService.list_item(self.item)
-
-    @staticmethod
-    def _send_notifications(listing):
         ListingEmailSender.send_listing_created_email(listing)
+        return listing
 
 
 class ItemListingRecallProcessor(AbstractProcessor):
@@ -40,24 +30,11 @@ class ItemListingRecallProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        recalled_listing = self._create_recalled_listing()
-        self._recall_item(recalled_listing.item)
-        self._delete_listing()
-        self._send_notifications(recalled_listing)
-        return recalled_listing
-
-    def _create_recalled_listing(self):
-        return ItemListingService.create_recalled_listing(self.listing, self.reason)
-
-    @staticmethod
-    def _recall_item(item):
-        ItemService.recall_item(item)
-
-    def _delete_listing(self):
+        recalled_listing = ItemListingService.create_recalled_listing(self.listing, self.reason)
+        ItemService.recall_item(recalled_listing.item)
         ItemListingService.delete_listing(self.listing)
-
-    def _send_notifications(self, recalled_listing):
         ListingEmailSender.send_listing_recalled_email(recalled_listing, self.reason)
+        return recalled_listing
 
 
 class ItemListingDelistProcessor(AbstractProcessor):
@@ -67,25 +44,11 @@ class ItemListingDelistProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        delisted_listing = self._create_delisted_listing()
-        self._delist_item(delisted_listing.item)
-        self._delete_listing()
-        self._send_notifications(delisted_listing)
-        return delisted_listing
-
-    def _create_delisted_listing(self):
-        return ItemListingService.create_delisted_listing(self.listing, self.reason)
-
-    @staticmethod
-    def _delist_item(item):
-        ItemService.delist_item(item)
-
-    def _delete_listing(self):
+        delisted_listing = ItemListingService.create_delisted_listing(self.listing, self.reason)
+        ItemService.delist_item(delisted_listing.item)
         ItemListingService.delete_listing(self.listing)
-
-    @staticmethod
-    def _send_notifications(delisted_listing):
         ListingEmailSender.send_listing_delisted_email(delisted_listing)
+        return delisted_listing
 
 
 class ItemListingCollectProcessor(AbstractProcessor):
@@ -94,27 +57,13 @@ class ItemListingCollectProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        delisted_listing = self._create_delisted_listing()
-        self._collect_item(delisted_listing.item)
-        self._delete_recalled_listing()
-        self._send_notifications(delisted_listing)
-        return delisted_listing
-
-    def _create_delisted_listing(self):
-        return ItemListingService.create_delisted_listing(
+        delisted_listing = ItemListingService.create_delisted_listing(
             self.recalled_listing, self.recalled_listing.reason
         )
-
-    @staticmethod
-    def _collect_item(item):
-        ItemService.collect_item(item)
-
-    def _delete_recalled_listing(self):
+        ItemService.collect_item(delisted_listing.item)
         ItemListingService.delete_recalled_listing(self.recalled_listing)
-
-    @staticmethod
-    def _send_notifications(delisted_listing):
         ListingEmailSender.send_recalled_listing_collected_email(delisted_listing)
+        return delisted_listing
 
 
 class ItemListingReplaceTagProcessor(AbstractProcessor):
@@ -123,12 +72,7 @@ class ItemListingReplaceTagProcessor(AbstractProcessor):
         self.tag = tag
 
     def process(self):
-        self._replace_tag(self.listing, self.tag)
-        return self.listing
-
-    @staticmethod
-    def _replace_tag(listing, tag):
-        return ItemListingService.replace_listing_tag(listing, tag)
+        return ItemListingService.replace_listing_tag(self.listing, self.tag)
 
 
 class CollectionPinUpdateProcessor(AbstractProcessor):
@@ -136,17 +80,9 @@ class CollectionPinUpdateProcessor(AbstractProcessor):
         self.recalled_listing = listing
 
     def process(self):
-        self._update_collection_pin()
-        self._send_notifications()
-        return self.recalled_listing
-
-    def _update_collection_pin(self):
-        return ItemListingService.update_recalled_listing_collection_pin(
-            self.recalled_listing
-        )
-
-    def _send_notifications(self):
+        ItemListingService.update_recalled_listing_collection_pin(self.recalled_listing)
         ListingEmailSender.send_new_collection_pin_email(self.recalled_listing)
+        return self.recalled_listing
 
 
 class ItemListingAbandonedProcessor(AbstractProcessor):
@@ -155,26 +91,13 @@ class ItemListingAbandonedProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        delisted_listing = self._create_delisted_listing()
-        self._abandon_item(delisted_listing.item)
-        self._delete_recalled_listing()
-        self._send_notifications()
-        return self.recalled_listing
-
-    def _create_delisted_listing(self):
-        return ItemListingService.create_delisted_listing(
+        delisted_listing = ItemListingService.create_delisted_listing(
             self.recalled_listing, self.recalled_listing.reason
         )
-
-    @staticmethod
-    def _abandon_item(item):
-        ItemService.abandon_item(item)
-
-    def _delete_recalled_listing(self):
+        ItemService.abandon_item(delisted_listing.item)
         ItemListingService.delete_recalled_listing(self.recalled_listing)
-
-    def _send_notifications(self):
         ListingEmailSender.send_item_abandonded_email(self.recalled_listing)
+        return self.recalled_listing
 
 
 class ItemListingPurchaseProcessor(AbstractProcessor):
@@ -186,18 +109,7 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        sold_listing = self._create_sold_listing()
-        self._delete_listing()
-        self._purchase_item(sold_listing.item)
-
-        return sold_listing
-
-    def _create_sold_listing(self):
-        return ItemListingService.create_sold_listing(self.listing, self.transaction)
-
-    def _delete_listing(self):
+        sold_listing = ItemListingService.create_sold_listing(self.listing, self.transaction)
         ItemListingService.delete_listing(self.listing)
-
-    @staticmethod
-    def _purchase_item(item):
-        ItemService.purchase_item(item)
+        ItemService.purchase_item(sold_listing.item)
+        return sold_listing
