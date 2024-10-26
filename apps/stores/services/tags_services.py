@@ -7,14 +7,18 @@ from django.conf import settings
 from django.db import transaction
 
 from rest_framework import serializers
+from rest_framework.request import Request
 
+from apps.accounts.models import User
 from apps.stores.models import Tag, TagGroup, StoreProfile
 from apps.common.constants import LISTING
 from apps.common.s3.s3_utils import S3Service
 from apps.common.s3.s3_config import get_tag_image_key
 from apps.common.constants import LISTING
 from apps.notifications.emails.services.email_senders import OperationsEmailSender
-
+from apps.marketplace.services.listing_services import ItemListingService
+from apps.common.constants import LISTING_ROLE
+from apps.marketplace.constants import ListingRole
 
 class TagService:
     @staticmethod
@@ -23,6 +27,15 @@ class TagService:
             return Tag.objects.get(id=tag_id)
         except Tag.DoesNotExist:
             raise serializers.ValidationError("Tag does not exist.")
+
+    @staticmethod
+    def get_user_tag_relation(request: Request, tag: Tag):
+        if request.user == tag.tag_group.store.user:
+            return ListingRole.HOST_STORE
+        elif request.user.role == User.Roles.STORE:
+            return ListingRole.ITEM_OWNER
+        else:
+            return ListingRole.GUEST
 
     @staticmethod
     def create_tag(tag_group: TagGroup):

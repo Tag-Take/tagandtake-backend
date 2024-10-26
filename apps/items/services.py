@@ -47,7 +47,7 @@ class ItemService:
             )
             raise ValidationError(
                 {
-                    "detail": f"This item is currently {item.status}. Only items that are: {joined_statuses} can be deleted."
+                    DETAIL: f"This item is currently {item.status}. Only items that are: {joined_statuses} can be deleted."
                 }
             )
         item.delete()

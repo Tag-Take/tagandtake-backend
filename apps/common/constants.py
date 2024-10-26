@@ -40,6 +40,7 @@ INTERNAL: str = "internal"
 TOTAL_PRICE: str = "total_price"
 ORDER_TOTAL: str = "order_total"
 ISLOGGEDIN: str = "isLoggedIn"
+DETAIL: str = "detail"
 
 # ACCOUNTS
 USER: str = "user"
@@ -104,7 +105,8 @@ ITEM_DETAILS: str = "item_details"
 SELLER: str = "seller"
 COLLECTION_DEADLINE: str = "collection_deadline"
 LISTING_ROLE: str = "listing_role"
-
+USER_LISTING_RELATION: str = "user_listing_relation"
+LISTING_EXISTS: str = "listing_exists"
 # MEMBERS
 MEMBER: str = "member"
 MEMBERS: str = "members"

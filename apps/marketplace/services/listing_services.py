@@ -19,7 +19,7 @@ from apps.stores.models import (
     StoreProfile,
     StoreOpeningHours,
 )
-from apps.common.constants import LISTING_ROLE, CONDITION, CATEGORY, PRICE
+from apps.common.constants import CONDITION, CATEGORY, PRICE
 from apps.marketplace.constants import ListingRole
 from apps.payments.models.transactions import ItemPaymentTransaction
 
@@ -66,14 +66,12 @@ class ItemListingService:
 
     @staticmethod
     def get_user_listing_relation(request: Request, listing: ItemListing):
-        data = {}
         if request.user == listing.tag.tag_group.store.user:
-            data[LISTING_ROLE] = ListingRole.HOST_STORE
+            return ListingRole.HOST_STORE
         elif request.user == listing.item.owner_user:
-            data[LISTING_ROLE] = ListingRole.ITEM_OWNER
+            return ListingRole.ITEM_OWNER
         else:
-            data[LISTING_ROLE] = ListingRole.GUEST
-        return data
+            return ListingRole.GUEST
 
     @staticmethod
     def create_listing(item: Item, tag: Tag):
@@ -216,3 +214,9 @@ class ItemListingValidationService:
         if not store.accepting_listings:
             return {"store": "Store is not currently accepting listings."}
         return {}
+    
+    @staticmethod
+    def validate_tag_availability(tag, instance=None):
+        active_tag_listings = ItemListing.objects.filter(tag=tag)
+        if active_tag_listings.exists():
+            raise serializers.ValidationError("There is already an active listing with this tag.")

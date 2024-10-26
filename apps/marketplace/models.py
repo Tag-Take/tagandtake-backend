@@ -77,23 +77,6 @@ class ItemListing(BaseItemListing):
     class Meta:
         db_table = "item_listings"
 
-    def clean(self):
-        active_tag_listings = ItemListing.objects.filter(tag=self.tag)
-        if self.pk:
-            active_tag_listings = active_tag_listings.exclude(pk=self.pk)
-        if active_tag_listings.exists():
-            raise ValidationError("There is already an active listing with this tag.")
-
-        active_item_listings = ItemListing.objects.filter(item=self.item)
-        if self.pk:
-            active_item_listings = active_item_listings.exclude(pk=self.pk)
-        if active_item_listings.exists():
-            raise ValidationError("There is already an active listing with this item.")
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
 
 class RecallReason(models.Model):
 

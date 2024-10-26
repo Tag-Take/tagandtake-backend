@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 from apps.accounts.models import User
 from apps.stores.models import StoreProfile as Store
-from apps.common.constants import PIN
+from apps.common.constants import PIN, DETAIL
 
 
 class IsStoreUser(BasePermission):
@@ -21,9 +21,9 @@ class IsStoreWithValidPIN(BasePermission):
         store: Store = request.user.store
 
         if not pin:
-            raise ValidationError({"detail": "PIN is required."})
+            raise ValidationError({DETAIL: "PIN is required."})
 
         if not store.validate_pin(pin):
-            raise ValidationError({"detail": "Invalid PIN."})
+            raise ValidationError({DETAIL: "Invalid PIN."})
 
         return True
