@@ -41,12 +41,13 @@ class ItemCreateSerializer(serializers.ModelSerializer):
         except Exception as e:
             raise serializers.ValidationError(f"Failed to create item: {e}")
 
+
 class FlatItemSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(write_only=True)
     images = ItemImagesSerializer(many=True, read_only=True)
     category = serializers.IntegerField(write_only=True)
     condition = serializers.IntegerField(write_only=True)
-    
+
     class Meta:
         model = Item
         fields = [
@@ -61,8 +62,6 @@ class FlatItemSerializer(serializers.ModelSerializer):
             IMAGE,
             IMAGES,
         ]
-
-
 
 
 class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):

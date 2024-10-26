@@ -42,7 +42,10 @@ class ListingCreateView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         listing = serializer.save()
         listing_data = ItemListingSerializer(listing, context={REQUEST: request}).data
-        return Response({MESSAGE: "Listing successfully created.", DATA: listing_data}, status=status.HTTP_201_CREATED)
+        return Response(
+            {MESSAGE: "Listing successfully created.", DATA: listing_data},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class CreateItemAndListingView(generics.CreateAPIView):
@@ -52,16 +55,22 @@ class CreateItemAndListingView(generics.CreateAPIView):
 
     def create(self, request: Request, *args, **kwargs):
         item_fields = FlatItemSerializer.Meta.fields
-        item_data = {field: request.data.get(field) for field in request.data if field in item_fields}
-        preprocessed_data = {
-            TAG_ID: request.data.get(TAG_ID),
-            ITEM: item_data 
+        item_data = {
+            field: request.data.get(field)
+            for field in request.data
+            if field in item_fields
         }
-        serializer = self.get_serializer(data=preprocessed_data, context={REQUEST: request})
+        preprocessed_data = {TAG_ID: request.data.get(TAG_ID), ITEM: item_data}
+        serializer = self.get_serializer(
+            data=preprocessed_data, context={REQUEST: request}
+        )
         serializer.is_valid(raise_exception=True)
         listing = serializer.save()
-        listing_data = ItemListingSerializer(listing, context={REQUEST: request}).data 
-        return Response({MESSAGE: "Listing successfully created.", DATA: listing_data}, status=status.HTTP_201_CREATED)
+        listing_data = ItemListingSerializer(listing, context={REQUEST: request}).data
+        return Response(
+            {MESSAGE: "Listing successfully created.", DATA: listing_data},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ListingRetrieveView(generics.RetrieveAPIView):
@@ -72,11 +81,12 @@ class ListingRetrieveView(generics.RetrieveAPIView):
         listing = ItemListing.objects.filter(tag__id=tag_id).first()
         if listing:
             return listing
-        else: 
+        else:
             try:
                 return Tag.objects.get(id=tag_id)
             except Tag.DoesNotExist:
                 raise NotFound({DETAIL: "Tag does not exist."})
+
 
 class ListingRoleCheckView(APIView):
     def get(self, request, *args, **kwargs):
@@ -84,22 +94,25 @@ class ListingRoleCheckView(APIView):
         try:
             tag = TagService.get_tag(tag_id)
             listing = ItemListing.objects.filter(tag__id=tag_id).first()
-            
+
             if listing:
-                user_relation = ItemListingService.get_user_listing_relation(request, listing)
+                user_relation = ItemListingService.get_user_listing_relation(
+                    request, listing
+                )
                 listing_exists = True
             else:
                 user_relation = TagService.get_user_tag_relation(request, tag)
                 listing_exists = False
-            
+
             response_data = {
                 USER_LISTING_RELATION: user_relation,
-                LISTING_EXISTS: listing_exists
+                LISTING_EXISTS: listing_exists,
             }
-            
+
             return Response(response_data, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:
             raise NotFound(detail=str(e.detail[0]))
+
 
 class StoreRecalledListingListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsStoreUser]
@@ -132,7 +145,9 @@ class ReplaceTagView(generics.UpdateAPIView):
             self.check_object_permissions(self.request, listing)
             return listing
         except ItemListing.DoesNotExist:
-            raise NotFound(detail=f"ItemListing not found for the provided item ID: {item_id}")
+            raise NotFound(
+                detail=f"ItemListing not found for the provided item ID: {item_id}"
+            )
 
     def update(self, request: Request, *args, **kwargs):
         instance = self.get_object()
@@ -146,7 +161,10 @@ class ReplaceTagView(generics.UpdateAPIView):
         listing = processor.process()
 
         serializer = self.get_serializer(listing, context={REQUEST: request})
-        return Response({MESSAGE: "Tag successfully replaced.", DATA: serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {MESSAGE: "Tag successfully replaced.", DATA: serializer.data},
+            status=status.HTTP_200_OK,
+        )
 
 
 class RecallListingView(generics.UpdateAPIView):
@@ -160,7 +178,9 @@ class RecallListingView(generics.UpdateAPIView):
             self.check_object_permissions(self.request, listing)
             return listing
         except ItemListing.DoesNotExist:
-            raise NotFound(detail=f"ItemListing not found for the provided tag ID: {tag_id}")
+            raise NotFound(
+                detail=f"ItemListing not found for the provided tag ID: {tag_id}"
+            )
 
     def update(self, request: Request, *args, **kwargs):
         listing = self.get_object()
@@ -175,10 +195,10 @@ class RecallListingView(generics.UpdateAPIView):
         recalled_listing = processor.process()
 
         serializer = self.get_serializer(recalled_listing, context={REQUEST: request})
-        return Response({
-            MESSAGE: "ItemListing successfully recalled",
-            DATA: serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {MESSAGE: "ItemListing successfully recalled", DATA: serializer.data},
+            status=status.HTTP_200_OK,
+        )
 
 
 class GenerateNewCollectionPinView(generics.UpdateAPIView):
@@ -196,15 +216,18 @@ class GenerateNewCollectionPinView(generics.UpdateAPIView):
 
     def update(self, request: Request, *args, **kwargs):
         recalled_listing = self.get_object()
-        
+
         processor = CollectionPinUpdateProcessor(recalled_listing)
         updated_listing = processor.process()
-        
+
         serializer = self.get_serializer(updated_listing, context={REQUEST: request})
-        return Response({
-            MESSAGE: "New collection PIN successfully generated",
-            DATA: serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                MESSAGE: "New collection PIN successfully generated",
+                DATA: serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class DelistListing(generics.UpdateAPIView):
@@ -218,7 +241,9 @@ class DelistListing(generics.UpdateAPIView):
             self.check_object_permissions(self.request, listing)
             return listing
         except ItemListing.DoesNotExist:
-            raise NotFound(detail=f"ItemListing not found for the provided item ID: {item_id}")
+            raise NotFound(
+                detail=f"ItemListing not found for the provided item ID: {item_id}"
+            )
 
     def update(self, request: Request, *args, **kwargs):
         listing = self.get_object()
@@ -233,10 +258,10 @@ class DelistListing(generics.UpdateAPIView):
         recalled_listing = processor.process()
 
         serializer = self.get_serializer(recalled_listing, context={REQUEST: request})
-        return Response({
-            MESSAGE: "ItemListing successfully delisted",
-            DATA: serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {MESSAGE: "ItemListing successfully delisted", DATA: serializer.data},
+            status=status.HTTP_200_OK,
+        )
 
 
 class CollectRecalledListingView(generics.UpdateAPIView):
@@ -257,13 +282,15 @@ class CollectRecalledListingView(generics.UpdateAPIView):
         pin = request.data.get(PIN)
 
         if not pin or not recalled_listing.validate_pin(pin):
-            return Response({DETAIL: "Invalid PIN."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {DETAIL: "Invalid PIN."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         processor = ItemListingCollectProcessor(recalled_listing)
         collected_listing = processor.process()
 
         serializer = self.get_serializer(collected_listing, context={REQUEST: request})
-        return Response({
-            MESSAGE: "Recalled listing successfully collected",
-            DATA: serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {MESSAGE: "Recalled listing successfully collected", DATA: serializer.data},
+            status=status.HTTP_200_OK,
+        )

@@ -214,9 +214,11 @@ class ItemListingValidationService:
         if not store.accepting_listings:
             return {"store": "Store is not currently accepting listings."}
         return {}
-    
+
     @staticmethod
     def validate_tag_availability(tag, instance=None):
         active_tag_listings = ItemListing.objects.filter(tag=tag)
         if active_tag_listings.exists():
-            raise serializers.ValidationError("There is already an active listing with this tag.")
+            raise serializers.ValidationError(
+                "There is already an active listing with this tag."
+            )

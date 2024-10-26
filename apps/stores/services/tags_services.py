@@ -20,6 +20,7 @@ from apps.marketplace.services.listing_services import ItemListingService
 from apps.common.constants import LISTING_ROLE
 from apps.marketplace.constants import ListingRole
 
+
 class TagService:
     @staticmethod
     def get_tag(tag_id: int):

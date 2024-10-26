@@ -10,6 +10,7 @@ from apps.marketplace.processors import ItemListingCreateProcessor
 from apps.marketplace.services.listing_services import ItemListingService
 from apps.items.serializers import ItemCreateSerializer, FlatItemSerializer
 
+
 class CreateListingSerializer(serializers.ModelSerializer):
     item_id = serializers.IntegerField(write_only=True)
     tag_id = serializers.IntegerField(write_only=True)
@@ -29,13 +30,12 @@ class CreateListingSerializer(serializers.ModelSerializer):
         data[TAG] = tag
         return data
 
-
     def create(self, validated_data):
         item = validated_data.get(ITEM)
         tag = validated_data.get(TAG)
         processor = ItemListingCreateProcessor(item, tag)
         return processor.process()
-    
+
 
 class CreateItemAndListingSerializer(serializers.Serializer):
     item = FlatItemSerializer()
@@ -50,9 +50,11 @@ class CreateItemAndListingSerializer(serializers.Serializer):
             ITEM_ID: item.id,
             TAG_ID: validated_data[TAG_ID],
         }
-        listing_serializer = CreateListingSerializer(data=listing_data, context=self.context)
+        listing_serializer = CreateListingSerializer(
+            data=listing_data, context=self.context
+        )
         listing_serializer.is_valid(raise_exception=True)
-        listing = listing_serializer.save() 
+        listing = listing_serializer.save()
 
         return listing
 
@@ -94,13 +96,13 @@ class ItemListingSerializer(serializers.ModelSerializer):
             UPDATED_AT,
             USER_LISTING_RELATION,
         ]
-    
+
     def get_user_listing_relation(self, obj):
         request = self.context.get(REQUEST)
-        
+
         if isinstance(obj, ItemListing):
             return ItemListingService.get_user_listing_relation(request, obj)
-        
+
         return TagService.get_user_tag_relation(request, obj)
 
     def to_representation(self, instance):
@@ -109,11 +111,12 @@ class ItemListingSerializer(serializers.ModelSerializer):
             data[USER_LISTING_RELATION] = self.get_user_listing_relation(instance)
             data[LISTING_EXISTS] = True
             return data
-        
+
         return {
             USER_LISTING_RELATION: self.get_user_listing_relation(instance),
-            LISTING_EXISTS: False
-            }
+            LISTING_EXISTS: False,
+        }
+
 
 class RecallReasonSerializer(serializers.ModelSerializer):
     class Meta:
