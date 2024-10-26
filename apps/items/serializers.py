@@ -1,9 +1,7 @@
-from django.db import transaction
-
 from rest_framework import serializers
 
 from apps.items.models import Item, ItemCategory, ItemCondition, ItemImages
-from apps.items.services import ItemService, ItemValidationService, ItemImageService
+from apps.items.services import ItemService, ItemImageService
 from apps.common.constants import *
 
 
@@ -38,10 +36,8 @@ class ItemCreateSerializer(serializers.ModelSerializer):
         member = request.user.member
 
         try:
-            with transaction.atomic():
-                item = ItemService.create_item(validated_data, member)
-                ItemImageService.create_and_upload_item_image(item, image)
-                return item
+            item = ItemImageService.create_item_and_image(validated_data, member, image)
+            return item
         except Exception as e:
             raise serializers.ValidationError(f"Failed to create item: {e}")
 
@@ -77,19 +73,15 @@ class ItemRetrieveUpdateDeleteSerializer(serializers.ModelSerializer):
 
     def update(self, item: Item, validated_data: dict):
         image = validated_data.pop(IMAGE, None)
-
-        with transaction.atomic():
-            if validated_data:
-                item = ItemService.update_item(item, validated_data)
-            if image:
-                ItemImageService.update_and_replace_item_image(item, image)
+        if validated_data:
+            item = ItemService.update_item(item, validated_data)
+        if image:
+            ItemImageService.update_and_replace_item_image(item, image)
 
         return item
 
     def destroy(self, item: Item):
-        with transaction.atomic():
-            ItemImageService.delete_item_images(item)
-            ItemService.delete_item(item)
+        ItemImageService.delete_item_and_images(item)
 
     def get_main_image(self, item: Item):
         return item.main_image

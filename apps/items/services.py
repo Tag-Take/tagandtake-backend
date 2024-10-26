@@ -1,5 +1,6 @@
+from django.db import transaction
 from rest_framework import serializers
-from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from apps.items.models import Item, ItemImages
 from apps.common.s3.s3_utils import S3Service
@@ -33,11 +34,17 @@ class ItemService:
         except Exception as e:
             raise serializers.ValidationError(f"Failed to update item attributes: {e}")
 
-    def delete_item(item: Item):
-        try:
-            item.delete()
-        except Exception as e:
-            raise serializers.ValidationError(f"Failed to delete item: {e}")
+    @staticmethod
+    def delete_item_if_allowed(item):
+        if item.status not in [Item.Statuses.AVAILABLE, Item.Statuses.ABANDONED]:
+            disallowed_statuses = [
+                status for status in Item.Statuses if status not in (Item.Statuses.AVAILABLE, Item.Statuses.ABANDONED)
+            ]
+            joined_statuses = ", ".join(disallowed_statuses[:-1]) + " or " + disallowed_statuses[-1]
+            raise ValidationError({
+                "detail": f"This item is currently {item.status}. Only items that are: {joined_statuses} can be deleted."
+            })
+        item.delete()
 
     @staticmethod
     def list_item(item: Item):
@@ -107,6 +114,17 @@ class ItemImageService:
             return image_url
         except Exception as e:
             raise serializers.ValidationError(f"Failed to upload image: {e}")
+        
+    @staticmethod
+    @transaction.atomic
+    def create_item_and_image(item_data: dict, member, image):
+        try:
+            item = ItemService.create_item(item_data, member)
+            ItemImageService.create_and_upload_item_image(item, image)
+            return item
+        except Exception as e:
+            raise serializers.ValidationError(f"Failed to create item and images: {e}")
+
 
     @staticmethod
     def update_and_replace_item_image(item: Item, image, order=0):
@@ -119,6 +137,7 @@ class ItemImageService:
             raise serializers.ValidationError(f"Failed to update image: {e}")
 
     @staticmethod
+    @transaction.atomic
     def delete_item_images(item: Item):
         try:
             for image in item.images.all():
@@ -128,3 +147,11 @@ class ItemImageService:
             ItemImages.objects.filter(item=item).delete()
         except Exception as e:
             raise serializers.ValidationError(f"Failed to delete item images: {e}")
+        
+    @staticmethod
+    @transaction.atomic
+    def delete_item_and_images(item: Item):
+        ItemService.delete_item_if_allowed(item)
+        ItemImageService.delete_item_images(item)
+        
+    
