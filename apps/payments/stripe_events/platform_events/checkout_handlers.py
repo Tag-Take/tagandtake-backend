@@ -1,6 +1,6 @@
 from typing import Any, Dict
 from apps.payments.services.checkout_services import CheckoutSessionService
-from apps.common.constants import METADATA, PURCHASE, ITEM, SUPPLIES, ID
+from apps.common.constants import METADATA, PURCHASE, ITEM, SUPPLIES
 
 
 class CheckoutSessionCompletedHandler:

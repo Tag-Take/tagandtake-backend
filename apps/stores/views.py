@@ -20,7 +20,7 @@ from apps.stores.serializers import (
     StoreItemConditionUpdateSerializer,
     StoreNotificationPreferencesSerializer,
     StoreItemCategoryBulkSerializer,
-    StoreProfileImageSerializer
+    StoreProfileImageSerializer,
 )
 from apps.notifications.emails.services.email_senders import StoreEmailSender
 from apps.common.constants import STORE_ID, STORE, PROFILE_PHOTO_URL
@@ -50,7 +50,7 @@ class GenerateNewPinView(generics.UpdateAPIView):
 
         return Response(
             {"message": "New PIN generated and sent to your email."},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -92,14 +92,16 @@ class StoreOwnerCategoriesView(generics.ListCreateAPIView):
             StoreItemCategory.objects.filter(store=store).delete()
             created_store_item_categories = serializer.save()
 
-        response_serializer = StoreItemCategorySerializer(created_store_item_categories, many=True)
+        response_serializer = StoreItemCategorySerializer(
+            created_store_item_categories, many=True
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
-            queryset = self.get_queryset()
-            page = self.paginate_queryset(queryset)
-            response_serializer = StoreItemCategorySerializer(page, many=True)
-            return self.get_paginated_response(response_serializer.data)
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        response_serializer = StoreItemCategorySerializer(page, many=True)
+        return self.get_paginated_response(response_serializer.data)
 
 
 class StoreOwnerConditionsView(generics.ListCreateAPIView):
@@ -124,14 +126,16 @@ class StoreOwnerConditionsView(generics.ListCreateAPIView):
             StoreItemCondition.objects.filter(store=store).delete()
             created_store_item_categories = serializer.save()
 
-        response_serializer = StoreItemConditionSerializer(created_store_item_categories, many=True)
+        response_serializer = StoreItemConditionSerializer(
+            created_store_item_categories, many=True
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
-            queryset = self.get_queryset()
-            page = self.paginate_queryset(queryset)
-            response_serializer = StoreItemConditionSerializer(page, many=True)
-            return self.get_paginated_response(response_serializer.data)
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        response_serializer = StoreItemConditionSerializer(page, many=True)
+        return self.get_paginated_response(response_serializer.data)
 
 
 class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
@@ -141,7 +145,6 @@ class StoreNotificationPreferencesView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return StoreNotificationPreferences.objects.get(store__user=self.request.user)
 
-    
 
 class StoreProfileImageView(generics.CreateAPIView, generics.DestroyAPIView):
     permission_classes = [IsAuthenticated, IsStoreWithValidPIN]

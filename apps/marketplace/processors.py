@@ -30,7 +30,9 @@ class ItemListingRecallProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        recalled_listing = ItemListingService.create_recalled_listing(self.listing, self.reason)
+        recalled_listing = ItemListingService.create_recalled_listing(
+            self.listing, self.reason
+        )
         ItemService.recall_item(recalled_listing.item)
         ItemListingService.delete_listing(self.listing)
         ListingEmailSender.send_listing_recalled_email(recalled_listing, self.reason)
@@ -44,7 +46,9 @@ class ItemListingDelistProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        delisted_listing = ItemListingService.create_delisted_listing(self.listing, self.reason)
+        delisted_listing = ItemListingService.create_delisted_listing(
+            self.listing, self.reason
+        )
         ItemService.delist_item(delisted_listing.item)
         ItemListingService.delete_listing(self.listing)
         ListingEmailSender.send_listing_delisted_email(delisted_listing)
@@ -109,7 +113,9 @@ class ItemListingPurchaseProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        sold_listing = ItemListingService.create_sold_listing(self.listing, self.transaction)
+        sold_listing = ItemListingService.create_sold_listing(
+            self.listing, self.transaction
+        )
         ItemListingService.delete_listing(self.listing)
         ItemService.purchase_item(sold_listing.item)
         return sold_listing

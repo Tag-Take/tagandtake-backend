@@ -136,7 +136,7 @@ class StoreNotificationPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreNotificationPreferences
         fields = [NEW_LISTING_NOTIFICATIONS, SALE_NOTIFICATIONS]
-        
+
 
 class StoreProfileImageSerializer(serializers.ModelSerializer):
     profile_photo = serializers.ImageField(write_only=True)
@@ -148,7 +148,7 @@ class StoreProfileImageSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.context['request'].method == 'POST':
+        if self.context["request"].method == "POST":
             self.fields[PROFILE_PHOTO].required = True
         else:
             self.fields[PROFILE_PHOTO].required = False
@@ -157,6 +157,6 @@ class StoreProfileImageSerializer(serializers.ModelSerializer):
         profile_photo = validated_data.get(PROFILE_PHOTO)
         if profile_photo:
             instance = StoreService.update_store_profile_photo(instance, profile_photo)
-        elif self.context['request'].method == 'DELETE':
+        elif self.context["request"].method == "DELETE":
             instance = StoreService.delete_store_profile_photo(instance)
         return instance

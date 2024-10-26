@@ -21,8 +21,11 @@ class MemberItemListCreateView(generics.ListCreateAPIView):
         return Item.objects.filter(owner=self.request.user.member)
 
     def get_serializer_class(self):
-        return ItemCreateSerializer if self.request.method == "POST" else ItemRetrieveUpdateDeleteSerializer
-
+        return (
+            ItemCreateSerializer
+            if self.request.method == "POST"
+            else ItemRetrieveUpdateDeleteSerializer
+        )
 
 
 class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -33,7 +36,7 @@ class MemberItemRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.get_serializer(instance).destroy(instance) 
+        self.get_serializer(instance).destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

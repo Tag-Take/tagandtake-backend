@@ -27,17 +27,19 @@ class MemberNotificationPreferencesView(generics.RetrieveUpdateAPIView):
     serializer_class = MemberNotificationPreferencesSerializer
 
     def get_object(self):
-        return MemberNotificationPreferences.objects.get(member=self.request.user.member)
+        return MemberNotificationPreferences.objects.get(
+            member=self.request.user.member
+        )
 
 
 class MemberProfileImageView(generics.CreateAPIView, generics.DestroyAPIView):
     permission_classes = [IsAuthenticated, IsMemberUser]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]  
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     serializer_class = MemberProfileImageSerializer
 
     def get_object(self):
         return self.request.user.member
-    
+
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)

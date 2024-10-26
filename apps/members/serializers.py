@@ -54,11 +54,13 @@ class MemberProfileImageSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         profile_photo = validated_data.get(PROFILE_PHOTO)
         if profile_photo:
-            instance = MemberService.update_member_profile_photo(instance, profile_photo)
-        elif self.context['request'].method == 'DELETE':
+            instance = MemberService.update_member_profile_photo(
+                instance, profile_photo
+            )
+        elif self.context["request"].method == "DELETE":
             instance = MemberService.delete_member_profile_photo(instance)
         return instance
-    
+
 
 class MemberProfileImageSerializer(serializers.ModelSerializer):
     profile_photo = serializers.ImageField(write_only=True)
@@ -71,7 +73,7 @@ class MemberProfileImageSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.context['request'].method == 'POST':
+        if self.context["request"].method == "POST":
             self.fields[PROFILE_PHOTO].required = True
         else:
             self.fields[PROFILE_PHOTO].required = False
@@ -79,7 +81,9 @@ class MemberProfileImageSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         profile_photo = validated_data.get(PROFILE_PHOTO)
         if profile_photo:
-            instance = MemberService.update_member_profile_photo(instance, profile_photo)
-        elif self.context['request'].method == 'DELETE':
+            instance = MemberService.update_member_profile_photo(
+                instance, profile_photo
+            )
+        elif self.context["request"].method == "DELETE":
             instance = MemberService.delete_member_profile_photo(instance)
         return instance
