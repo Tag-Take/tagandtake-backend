@@ -66,9 +66,9 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(
         write_only=True, required=True, label="Confirm Password"
     )
-    store = StoreProfileSerializer(required=True)
-    address = StoreAddressSerializer(required=True)
-    opening_hours = StoreOpeningHoursSerializer(many=True, required=True)
+    store = StoreProfileSerializer(required=True, write_only=True)
+    store_address = StoreAddressSerializer(required=True, write_only=True)
+    opening_hours = StoreOpeningHoursSerializer(many=True, required=True, write_only=True)
 
     class Meta:
         model = User
@@ -78,7 +78,7 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
             PASSWORD,
             PASSWORD2,
             STORE,
-            ADDRESS,
+            STORE_ADDRESS,
             OPENING_HOURS,
         ]
         extra_kwargs = {PASSWORD: {"write_only": True}}
@@ -98,6 +98,13 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
         validated_data[ROLE] = User.Roles.STORE
         processor = StoreSignupProcessor(validated_data)
         return processor.process()
+
+    def to_representation(self, instance):
+        return {
+            'username': instance.username,
+            'email': instance.email,
+            'role': instance.role,
+        }
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

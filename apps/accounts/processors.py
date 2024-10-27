@@ -15,7 +15,7 @@ from apps.common.constants import (
     PASSWORD,
     ROLE,
     STORE,
-    ADDRESS,
+    STORE_ADDRESS,
     OPENING_HOURS,
 )
 from apps.common.abstract_classes import AbstractProcessor
@@ -26,19 +26,20 @@ class StoreSignupProcessor(AbstractProcessor):
     def __init__(self, validated_data: dict):
         self.validated_data = validated_data
         self.store_profile_data = validated_data.pop(STORE)
-        self.address_data = validated_data.pop(ADDRESS)
+        self.address_data = validated_data.pop(STORE_ADDRESS)
         self.opening_hours_data = validated_data.pop(OPENING_HOURS)
 
     @transaction.atomic
     def process(self):
-        # 1. Create store user and related models
+
         user = self._create_store_user()
+
         store_profile = self._create_store_profile(user)
+
         self._create_store_address(store_profile)
         self._create_store_opening_hours(store_profile)
         self._initialize_store_defaults(store_profile)
 
-        # 2. Send activation email
         self._send_activation_email(user)
 
         return user
@@ -74,12 +75,10 @@ class MemberSignupProcessor(AbstractProcessor):
 
     @transaction.atomic
     def process(self):
-        # 1. Create member user and related models
         user = self._create_store_user()
         member_profile = self.create_member_profile(user)
         self.initialize_store_notifications(member_profile)
 
-        # 2. Send activation email
         self.send_activation_email(user)
 
         return user
