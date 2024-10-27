@@ -9,6 +9,7 @@ from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import check_password
 
+from rest_framework.serializers import ValidationError
 from rest_framework import serializers
 
 from rest_framework_simplejwt.serializers import (
@@ -16,6 +17,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import User
 from apps.common.constants import *
@@ -101,9 +103,9 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {
-            'username': instance.username,
-            'email': instance.email,
-            'role': instance.role,
+            USERNAME: instance.username,
+            EMAIL: instance.email,
+            ROLE: instance.role,
         }
 
 
@@ -112,22 +114,24 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         username_or_email = attrs.get("username")
         password = attrs.get("password")
 
-        user = authenticate(
-            request=self.context.get("request"),
-            username=username_or_email,
-            password=password,
-        )
+        try:
+            user = authenticate(
+                request=self.context.get("request"),
+                username=username_or_email,
+                password=password,
+            )
+        except ValidationError as e:
+            raise serializers.ValidationError(str(e))
 
         if user is None:
-            raise serializers.ValidationError("Invalid credentials or user not found.")
-
-        if not user.is_active:
-            raise serializers.ValidationError("This user is inactive.")
+            raise serializers.ValidationError("Unable to authenticate with the provided credentials.")
 
         data = super().validate(attrs)
-
-        data[USER] = self.user
-
+        data[USER] = {
+            USERNAME: self.user.username,
+            EMAIL: self.user.email,
+            ROLE: self.user.role
+        }
         return data
 
 
@@ -135,11 +139,16 @@ class CookieTokenRefreshSerializer(TokenRefreshSerializer):
     refresh = None
 
     def validate(self, attrs):
-        attrs[REFRESH] = self.context[REQUEST].COOKIES.get(REFRESH_TOKEN)
-        if attrs[REFRESH]:
-            return super().validate(attrs)
-        else:
-            raise InvalidToken("No valid token found in cookie'refresh_token'")
+        attrs[REFRESH] = self.context[REQUEST].COOKIES.get(REFRESH)
+        if not attrs[REFRESH]:
+            raise InvalidToken("No valid token found in cookie 'refresh_token'")
+        
+        data = super().validate(attrs)
+        
+        refresh = RefreshToken(attrs[REFRESH])
+        data['refresh'] = str(refresh) 
+        
+        return data
 
 
 class PasswordResetSerializer(serializers.Serializer):

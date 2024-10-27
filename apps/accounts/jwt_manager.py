@@ -1,14 +1,14 @@
 from datetime import datetime
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
-from apps.common.constants import REFRESH_TOKEN, ACCESS_TOKEN
+from apps.common.constants import REFRESH
 
 
 class JWTManager:
     @staticmethod
     def set_refresh_token_cookie(response, refresh_token: RefreshToken):
         response.set_cookie(
-            REFRESH_TOKEN,
+            REFRESH,
             refresh_token,
             expires=datetime.utcnow() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
             httponly=True,
@@ -21,7 +21,7 @@ class JWTManager:
     @staticmethod
     def clear_refresh_token_cookie(response):
         response.delete_cookie(
-            REFRESH_TOKEN,
+            REFRESH,
             domain=settings.DOMAIN,
             samesite=settings.SAME_SITE_COOKIE,
         )

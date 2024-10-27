@@ -25,6 +25,8 @@ from apps.accounts.jwt_manager import JWTManager
 from apps.stores.models import StoreProfile as Store
 from apps.accounts.signals import user_activated
 from apps.notifications.emails.services.email_senders import AccountEmailSender
+from apps.stores.permissions import IsStoreWithValidPIN
+from apps.members.permissions import IsMemberUser
 
 User = get_user_model()
 
@@ -79,7 +81,7 @@ class ActivateUserView(APIView):
                     },
                     status=status.HTTP_200_OK,
                 )
-                return JWTManager(response).set_refresh_token_cookie(refresh_token)
+                return JWTManager.set_refresh_token_cookie(response, refresh_token)
 
             return Response(
                 {"error": "Account is already active"},
@@ -117,8 +119,9 @@ class ResendActivationEmailView(APIView):
 
 
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
-        refresh_token = request.COOKIES.get(REFRESH_TOKEN)
+        refresh_token = request.COOKIES.get(REFRESH)
         if not refresh_token:
             return Response(
                 {"error": "Refresh token is required"},
@@ -170,14 +173,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
-            user = User.objects.get(username=response.data[USERNAME])
-            response.data.update(
-                {
-                    ISLOGGEDIN: True,
-                    ROLE: user.role,
-                }
-            )
-            return JWTManager.set_refresh_token_cookie(response, response.data[REFRESH])
+            response.data.update({
+                'isLoggedIn': True,
+                'role': response.data['user']['role'],
+            })
+            return JWTManager.set_refresh_token_cookie(response, response.data['refresh'])
         return response
 
 
@@ -185,17 +185,11 @@ class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CookieTokenRefreshSerializer
 
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get(REFRESH_TOKEN)
-        if not refresh_token:
-            return Response(
-                {"error": "Refresh token is missing from cookies"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        request.data[REFRESH] = refresh_token
         response = super().post(request, *args, **kwargs)
+        
         if response.status_code == status.HTTP_200_OK:
             return JWTManager.set_refresh_token_cookie(response, response.data[REFRESH])
+        
         return response
 
 
@@ -254,3 +248,19 @@ class DeleteAccountView(APIView):
             {"message": "Account deleted successfully"},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class MemberDeleteAccountView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated, IsMemberUser]
+
+    def get_object(self):
+        return self.request.user
+
+
+class StoreDeleteAccountView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated, IsStoreWithValidPIN]
+
+    def get_object(self):
+        return self.request.user

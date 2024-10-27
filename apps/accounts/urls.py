@@ -10,7 +10,8 @@ from apps.accounts.views import (
     CustomTokenRefreshView,
     PasswordResetView,
     PasswordResetConfirmView,
-    DeleteAccountView,
+    MemberDeleteAccountView,
+    StoreDeleteAccountView,
     get_auth_status,
 )
 
@@ -37,5 +38,6 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
-    path("account/delete/", DeleteAccountView.as_view(), name="delete_account"),
+    path("member/account/delete/", MemberDeleteAccountView.as_view(), name="member_delete_account"),
+    path("store/account/delete/", StoreDeleteAccountView.as_view(), name="store_delete_account"),
 ]
