@@ -21,66 +21,92 @@ from .serializers import (
 from apps.marketplace.models import ItemListing
 from apps.stores.permissions import IsStoreUser
 
+
 class PaymentAccountViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
-    
-    @action(detail=False, methods=['get'])
+
+    @action(detail=False, methods=["get"])
     def status(self, request):
-        payment_account = PaymentAccountService.get_or_create_payment_account(request.user)
-        onboarded = StripeService.is_account_fully_onboarded(payment_account.stripe_account_id)
-        serializer = AccountStatusSerializer(data={'onboarded': onboarded})
+        payment_account = PaymentAccountService.get_or_create_payment_account(
+            request.user
+        )
+        onboarded = StripeService.is_account_fully_onboarded(
+            payment_account.stripe_account_id
+        )
+        serializer = AccountStatusSerializer(data={"onboarded": onboarded})
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def onboarding(self, request):
-        payment_account = PaymentAccountService.get_or_create_payment_account(request.user)
+        payment_account = PaymentAccountService.get_or_create_payment_account(
+            request.user
+        )
         session = StripeService.create_stripe_account_onboarding_session(
             payment_account.stripe_account_id
         )
-        serializer = SessionResponseSerializer(data={CLIENT_SECRET: session.client_secret})
+        serializer = SessionResponseSerializer(
+            data={CLIENT_SECRET: session.client_secret}
+        )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def management(self, request):
-        payment_account = PaymentAccountService.get_or_create_payment_account(request.user)
+        payment_account = PaymentAccountService.get_or_create_payment_account(
+            request.user
+        )
         session = StripeService.create_stripe_account_management_session(
             payment_account.stripe_account_id
         )
-        serializer = SessionResponseSerializer(data={CLIENT_SECRET: session.client_secret})
+        serializer = SessionResponseSerializer(
+            data={CLIENT_SECRET: session.client_secret}
+        )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def payouts(self, request):
-        payment_account = PaymentAccountService.get_or_create_payment_account(request.user)
+        payment_account = PaymentAccountService.get_or_create_payment_account(
+            request.user
+        )
         session = StripeService.create_stripe_account_balances_session(
             payment_account.stripe_account_id
         )
-        serializer = SessionResponseSerializer(data={CLIENT_SECRET: session.client_secret})
+        serializer = SessionResponseSerializer(
+            data={CLIENT_SECRET: session.client_secret}
+        )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def payments(self, request):
-        payment_account = PaymentAccountService.get_or_create_payment_account(request.user)
+        payment_account = PaymentAccountService.get_or_create_payment_account(
+            request.user
+        )
         session = StripeService.create_stripe_account_payments_session(
             payment_account.stripe_account_id
         )
-        serializer = SessionResponseSerializer(data={CLIENT_SECRET: session.client_secret})
+        serializer = SessionResponseSerializer(
+            data={CLIENT_SECRET: session.client_secret}
+        )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def notifications(self, request):
-        payment_account = PaymentAccountService.get_or_create_payment_account(request.user)
+        payment_account = PaymentAccountService.get_or_create_payment_account(
+            request.user
+        )
         session = StripeService.create_stripe_account_notifications_session(
             payment_account.stripe_account_id
         )
-        serializer = SessionResponseSerializer(data={CLIENT_SECRET: session.client_secret})
+        serializer = SessionResponseSerializer(
+            data={CLIENT_SECRET: session.client_secret}
+        )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
 
 class CheckoutViewSet(viewsets.ViewSet):
     def get_item_listing(self, tag_id):
@@ -95,18 +121,22 @@ class CheckoutViewSet(viewsets.ViewSet):
         except Store.DoesNotExist:
             raise NotFound(detail=f"No store found for user: {user.id}")
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def item(self, request):
         tag_id = request.data.get(TAG_ID)
         item_listing = self.get_item_listing(tag_id)
-        session = StripeService.create_stripe_item_checkout_session(item_listing, tag_id)
+        session = StripeService.create_stripe_item_checkout_session(
+            item_listing, tag_id
+        )
         CheckoutSessionService.create_item_checkout_session(session, item_listing)
-        
-        serializer = SessionResponseSerializer(data={CLIENT_SECRET: session.client_secret})
+
+        serializer = SessionResponseSerializer(
+            data={CLIENT_SECRET: session.client_secret}
+        )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     @permission_classes([IsStoreUser])
     def supplies(self, request):
         store = self.get_store(request.user)
@@ -127,13 +157,12 @@ class CheckoutViewSet(viewsets.ViewSet):
         response_serializer.is_valid(raise_exception=True)
         return Response(response_serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='session-status')
+    @action(detail=False, methods=["get"], url_path="session-status")
     def session_status(self, request):
         session_id = request.query_params.get(SESSION_ID)
         if not session_id:
             return Response(
-                {ERROR: 'No session ID provided.'}, 
-                status=status.HTTP_400_BAD_REQUEST
+                {ERROR: "No session ID provided."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         session = stripe.checkout.Session.retrieve(session_id)

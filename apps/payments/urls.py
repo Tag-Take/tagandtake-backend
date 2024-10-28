@@ -5,11 +5,11 @@ from .webhooks import stripe_connect_event_webhook, stripe_platform_event_webhoo
 
 router = DefaultRouter()
 
-router.register(r'payment-accounts', PaymentAccountViewSet, basename='payment-account')
-router.register(r'checkout', CheckoutViewSet, basename='checkout')
+router.register(r"payment-accounts", PaymentAccountViewSet, basename="payment-account")
+router.register(r"checkout", CheckoutViewSet, basename="checkout")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
     path(
         "stripe/platform-webhook/",
         stripe_platform_event_webhook,

@@ -29,10 +29,10 @@ class StoreSignupProcessor(AbstractProcessor):
         user = self._create_store_user()
         store_profile = StoreService.create_store_profile(user, self.store_profile_data)
         StoreService.create_store_address(store_profile, self.address_data)
-        
+
         for opening_hours in self.opening_hours_data:
             StoreService.create_store_opening_hours(store_profile, opening_hours)
-        
+
         StoreService.initialize_store_defaults(store_profile)
         AccountEmailSender(user).send_activation_email()
         return user

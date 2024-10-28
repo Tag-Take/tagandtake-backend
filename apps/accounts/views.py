@@ -46,9 +46,11 @@ class StoreSignUpView(generics.CreateAPIView):
         try:
             user = self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, serializer):
         return serializer.save()
@@ -119,6 +121,7 @@ class ResendActivationEmailView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
         refresh_token = request.COOKIES.get(REFRESH)
         if not refresh_token:
@@ -172,11 +175,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
-            response.data.update({
-                'isLoggedIn': True,
-                'role': response.data['user']['role'],
-            })
-            return JWTManager.set_refresh_token_cookie(response, response.data['refresh'])
+            response.data.update(
+                {
+                    "isLoggedIn": True,
+                    "role": response.data["user"]["role"],
+                }
+            )
+            return JWTManager.set_refresh_token_cookie(
+                response, response.data["refresh"]
+            )
         return response
 
 
@@ -185,10 +192,10 @@ class CustomTokenRefreshView(TokenRefreshView):
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        
+
         if response.status_code == status.HTTP_200_OK:
             return JWTManager.set_refresh_token_cookie(response, response.data[REFRESH])
-        
+
         return response
 
 

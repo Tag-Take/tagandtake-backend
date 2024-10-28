@@ -70,7 +70,9 @@ class StoreSignUpSerializer(serializers.ModelSerializer):
     )
     store = StoreProfileSerializer(required=True, write_only=True)
     store_address = StoreAddressSerializer(required=True, write_only=True)
-    opening_hours = StoreOpeningHoursSerializer(many=True, required=True, write_only=True)
+    opening_hours = StoreOpeningHoursSerializer(
+        many=True, required=True, write_only=True
+    )
 
     class Meta:
         model = User
@@ -124,13 +126,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError(str(e))
 
         if user is None:
-            raise serializers.ValidationError("Unable to authenticate with the provided credentials.")
+            raise serializers.ValidationError(
+                "Unable to authenticate with the provided credentials."
+            )
 
         data = super().validate(attrs)
         data[USER] = {
             USERNAME: self.user.username,
             EMAIL: self.user.email,
-            ROLE: self.user.role
+            ROLE: self.user.role,
         }
         return data
 
@@ -142,12 +146,12 @@ class CookieTokenRefreshSerializer(TokenRefreshSerializer):
         attrs[REFRESH] = self.context[REQUEST].COOKIES.get(REFRESH)
         if not attrs[REFRESH]:
             raise InvalidToken("No valid token found in cookie 'refresh_token'")
-        
+
         data = super().validate(attrs)
-        
+
         refresh = RefreshToken(attrs[REFRESH])
-        data['refresh'] = str(refresh) 
-        
+        data["refresh"] = str(refresh)
+
         return data
 
 

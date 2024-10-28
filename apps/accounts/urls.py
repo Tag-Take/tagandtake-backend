@@ -38,6 +38,14 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
-    path("member/account/delete/", MemberDeleteAccountView.as_view(), name="member_delete_account"),
-    path("store/account/delete/", StoreDeleteAccountView.as_view(), name="store_delete_account"),
+    path(
+        "member/account/delete/",
+        MemberDeleteAccountView.as_view(),
+        name="member_delete_account",
+    ),
+    path(
+        "store/account/delete/",
+        StoreDeleteAccountView.as_view(),
+        name="store_delete_account",
+    ),
 ]
