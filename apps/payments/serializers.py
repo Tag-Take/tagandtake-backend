@@ -5,6 +5,18 @@ from apps.supplies.serializers import SupplyOrderItemSerializer
 from apps.common.constants import SUPPLIES, SUPPLY, QUANTITY, PRICE
 
 
+class SessionResponseSerializer(serializers.Serializer):
+    client_secret = serializers.CharField()
+
+
+class AccountStatusSerializer(serializers.Serializer):
+    onboarded = serializers.BooleanField()
+
+
+class SessionStatusSerializer(serializers.Serializer):
+    status = serializers.CharField()
+
+
 class SuppliesCheckoutSessionSerializer(serializers.Serializer):
     supplies = SupplyOrderItemSerializer(many=True)
 

@@ -9,6 +9,8 @@ from apps.stores.services.tags_services import TagService
 from apps.marketplace.processors import ItemListingCreateProcessor
 from apps.marketplace.services.listing_services import ItemListingService
 from apps.items.serializers import ItemCreateSerializer, FlatItemSerializer
+from apps.items.models import Item
+from apps.stores.models import Tag
 
 
 class CreateListingSerializer(serializers.ModelSerializer):
@@ -20,8 +22,8 @@ class CreateListingSerializer(serializers.ModelSerializer):
         fields = [ID, ITEM_ID, TAG_ID]
 
     def validate(self, data):
-        item = ItemService.get_item(data.get(ITEM_ID))
-        tag = TagService.get_tag(data.get(TAG_ID))
+        item = Item.objects.get(id=data.get(ITEM_ID))
+        tag = Tag.objects.get(id=data.get(TAG_ID))
         ItemValidationService.validate_item_availability(item)
         ItemListingValidationService.validate_tag_availability(tag)
         ItemListingValidationService.meets_store_requirements(item, tag)

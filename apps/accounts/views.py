@@ -12,7 +12,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
 
 from apps.common.constants import *
-from apps.accounts.models import User as UserModel
 from apps.accounts.serializers import (
     MemberSignUpSerializer,
     StoreSignUpSerializer,
