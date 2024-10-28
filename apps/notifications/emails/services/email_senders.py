@@ -102,7 +102,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Item Listed - {item}",
             to=listing.item.owner.email,
-            template_name=f"{ACTION_TRIGGERED}/item_listed.html",
+            template_name=f"{ACTION_TRIGGERED}/member_item_listed.html",
             context=context,
         )
 
@@ -113,7 +113,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Congratulations! Your Item Sold - {item}",
             to=listing.item.owner.email,
-            template_name=f"{ACTION_TRIGGERED}/item_sold.html",
+            template_name=f"{ACTION_TRIGGERED}/member_item_sold.html",
             context=context,
         )
 
@@ -124,7 +124,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Purchase Confirmation - {item}",
             to=listing.transaction.buyer_email,
-            template_name=f"{ACTION_TRIGGERED}/item_purchased.html",
+            template_name=f"{ACTION_TRIGGERED}/member_item_purchased.html",
             context=context,
         )
 
@@ -137,7 +137,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Item Recalled - {item}",
             to=listing.item.owner.email,
-            template_name=f"{ACTION_TRIGGERED}/item_recalled.html",
+            template_name=f"{ACTION_TRIGGERED}/member_item_recalled.html",
             context=context,
         )
 
@@ -148,7 +148,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Item Delisted - {item}",
             to=listing.item.owner.email,
-            template_name=f"{ACTION_TRIGGERED}/item_delisted.html",
+            template_name=f"{ACTION_TRIGGERED}/member_item_delisted.html",
             context=context,
         )
 
@@ -159,7 +159,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Collection Confirmation - {item}",
             to=recalled_listing.item.owner.email,
-            template_name=f"{ACTION_TRIGGERED}/item_collected.html",
+            template_name=f"{ACTION_TRIGGERED}/member_item_collected.html",
             context=context,
         )
 
@@ -170,7 +170,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Notice: Item Was Not Collected - {item}",
             to=recalled_listing.item.owner.email,
-            template_name=f"{NOTIFICATIONS}/item_abandoned_notification.html",
+            template_name=f"{NOTIFICATIONS}/member_item_abandoned_notification.html",
             context=context,
         )
 
@@ -183,7 +183,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"Collection Reminder - {item}",
             to=recalled_listing.item.owner.email,
-            template_name=f"{REMINDERS}/collect_item_reminder.html",
+            template_name=f"{REMINDERS}/member_collect_item_reminder.html",
             context=context,
         )
 
@@ -196,7 +196,7 @@ class ListingEmailSender(ListingEmailContextGenerator):
         send_email(
             subject=f"New Collection PIN - {item}",
             to=recalled_listing.item.owner.email,
-            template_name=f"{ACTION_TRIGGERED}/new_collection_pin.html",
+            template_name=f"{ACTION_TRIGGERED}/member_new_collection_pin.html",
             context=context,
         )
 

@@ -30,6 +30,7 @@ django-extensions = "^3.2.3"
 pydotplus = "^2.0.2"
 pytz = "^2024.1"
 stripe = "^10.12.0"
+pytest = "^8.3.3"
 
 
 [build-system]
