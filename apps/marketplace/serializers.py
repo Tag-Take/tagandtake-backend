@@ -4,7 +4,7 @@ from apps.marketplace.models import ItemListing, RecallReason, RecalledItemListi
 from apps.items.serializers import ItemRetrieveUpdateDeleteSerializer
 from apps.marketplace.services.listing_services import ItemListingValidationService
 from apps.common.constants import *
-from apps.items.services import ItemService, ItemValidationService
+from apps.items.services import ItemValidationService
 from apps.stores.services.tags_services import TagService
 from apps.marketplace.processors import ItemListingCreateProcessor
 from apps.marketplace.services.listing_services import ItemListingService

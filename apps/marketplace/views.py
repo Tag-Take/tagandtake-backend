@@ -129,9 +129,19 @@ class StoreItemListingListView(generics.ListAPIView):
     serializer_class = ItemListingSerializer
 
     def get_queryset(self):
-        return RecalledItemListing.objects.filter(
+        return ItemListing.objects.filter(
             tag__tag_group__store__user=self.request.user
         )
+    
+
+class PublicStoreItemListingView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ItemListingSerializer
+
+    def get_queryset(self):
+        store_id = self.kwargs.get(ID)
+        return ItemListing.objects.filter(tag__tag_group__store__id=store_id)
+        
 
 
 class ReplaceTagView(generics.UpdateAPIView):

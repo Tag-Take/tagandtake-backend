@@ -11,6 +11,7 @@ from apps.marketplace.views import (
     DelistListing,
     CollectRecalledListingView,
     StoreRecalledListingListView,
+    PublicStoreItemListingView
 )
 
 
@@ -61,5 +62,10 @@ urlpatterns = [
         "listings/<int:id>/check-role/",
         ListingRoleCheckView.as_view(),
         name="listing-role-check",
+    ),
+    path(
+        "stores/<int:store_id>/listings/",
+        PublicStoreItemListingView.as_view(),
+        name="public-store-listing-retrieve",
     ),
 ]
