@@ -1,5 +1,6 @@
 import json
 from typing import Dict, Any
+from abc import ABC, abstractmethod
 
 from rest_framework import serializers
 
@@ -17,16 +18,17 @@ from apps.marketplace.models import ItemListing
 from apps.common.constants import METADATA, ITEM_ID, STORE_ID, LINE_ITEMS
 
 
-class BasePaymentProcessor:
+class BasePaymentProcessor(ABC):
     def __init__(self, payment_intent: Dict[str, Any]):
         self.payment_intent = payment_intent
 
+    @abstractmethod
     def process_payment_succeeded(self):
-        raise NotImplementedError("Subclasses must implement process_purchase")
+        pass
 
+    @abstractmethod
     def process_payment_failed(self):
-        raise NotImplementedError("Subclasses must implement process_failed_payment")
-
+        pass
 
 class ItemPurchaseProcessor(BasePaymentProcessor):
     def get_listing(self, item_id: int):
