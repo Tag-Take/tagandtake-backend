@@ -23,26 +23,26 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully synced recall reasons"))
 
     def sync_recall_reasons(self, recall_reasons_data: dict):
-        existing_conditions = RecallReason.objects.values_list(REASON, flat=True)
-        new_conditions = [
-            condition[FIELDS][REASON] for condition in recall_reasons_data
+        existing_reasons = RecallReason.objects.values_list(REASON, flat=True)
+        new_reasons = [
+            reason[FIELDS][REASON] for reason in recall_reasons_data
         ]
 
         # Add new reason
-        for condition in new_conditions:
-            if condition not in existing_conditions:
-                condition_data = next(
-                    c[FIELDS]
-                    for c in recall_reasons_data
-                    if c[FIELDS][REASON] == condition
+        for reason in new_reasons:
+            if reason not in existing_reasons:
+                reason_data = next(
+                    r[FIELDS]
+                    for r in recall_reasons_data
+                    if r[FIELDS][REASON] == reason
                 )
                 RecallReason.objects.create(
-                    reason=condition_data[REASON],
-                    type=condition_data[TYPE],
-                    description=condition_data[DESCRIPTION],
+                    reason=reason_data[REASON],
+                    type=reason_data[TYPE],
+                    description=reason_data[DESCRIPTION],
                 )
 
         # Remove old reasons
-        for condition in existing_conditions:
-            if condition not in new_conditions:
-                RecallReason.objects.filter(condition=condition).delete()
+        for reason in existing_reasons:
+            if reason not in new_reasons:
+                RecallReason.objects.filter(reason=reason).delete()

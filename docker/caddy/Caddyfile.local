@@ -1,0 +1,16 @@
+{
+    log {
+        output stdout
+        format json
+        level INFO
+    }
+}
+
+localhost {
+    reverse_proxy web:8000
+
+    log {
+        output stdout
+        format json
+    }
+}

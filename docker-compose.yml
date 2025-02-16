@@ -2,28 +2,10 @@ version: '3.8'
 
 services:
   web:
-    build:
-      context: .
-      target: development
     ports:
       - "8000:8000"
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
-      - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - REDIS_URL=redis://redis:6379/0
-      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_PLATFORM_WEBHOOK_SECRET=${STRIPE_PLATFORM_WEBHOOK_SECRET}
-      - STRIPE_CONNECT_WEBHOOK_SECRET=${STRIPE_CONNECT_WEBHOOK_SECRET}
+    env_file:
+      - docker/envs/.env.local 
     volumes:
       - .:/app
     depends_on:
@@ -47,11 +29,7 @@ services:
       "
   
   db:
-    image: postgres:alpine
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    image: postgres:16-alpine
     ports:
       - "5432:5432"
     volumes:
@@ -64,46 +42,33 @@ services:
       - "6379:6379"
 
   celery_worker:
-    build:
-      context: .
-      target: development
     command: celery -A async_tasks.celery worker --loglevel=info
     volumes:
       - .:/app
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=db
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
-      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}         
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
     depends_on:
       - db
       - redis
       - web
 
   celery_beat:
-    build:
-      context: .
-      target: development
     command: celery -A async_tasks.celery beat --loglevel=info
     volumes:
       - .:/app
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=db
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
-      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}         
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
     depends_on:
       - db
       - redis
       - web
 
+  caddy:
+    image: caddy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

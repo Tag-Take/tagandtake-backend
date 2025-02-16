@@ -15,6 +15,3 @@ ENV = os.environ.get("ENV", "dev")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"config.settings.{ENV}")
 
 application = get_asgi_application()
-
-
-SECRET_KEY = "django-insecure-rkrbnj8+qgz(y%5l(9rrs%pnyfun^3gd9cg4b9#vy=xm+vmwn0"

@@ -3,7 +3,7 @@
         "model": "marketplace.RecallReasons",
         "pk": 1,
         "fields": {
-            "reason": "Item Condition",
+            "reason": "IncorrectItem Condition",
             "type": "issue",
             "description": "Item does not meet store's condition standards"
         }
@@ -12,7 +12,7 @@
         "model": "marketplace.RecallReasons",
         "pk": 2,
         "fields": {
-            "reason": "Item Category",
+            "reason": "Incorrect Item Category",
             "type": "issue",
             "description": "Item category is not one of the store's approved categories"
         }
@@ -42,6 +42,15 @@
             "reason": "Owner Request",
             "type": "owner request",
             "description": "Owner has requested to recall their item"
+        }
+    },
+    {
+        "model": "marketplace.RecallReasons",
+        "pk": 6,
+        "fields": {
+            "reason": "No Item Attached",
+            "type": "issue",
+            "description": "No item is attached to the tag"
         }
     }
 ]

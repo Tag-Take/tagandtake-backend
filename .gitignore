@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# envs
+docker/envs/
+
 # API Documentation
 schema.yml
 schema.yaml
