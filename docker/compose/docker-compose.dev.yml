@@ -7,11 +7,11 @@ services:
       dockerfile: docker/Dockerfile
       target: development  # DEVELOPMENT TARGET
     env_file:
-      - docker/envs/.env.local  # LOCAL ENV
+      - docker/envs/.env.dev  # LOCAL ENV
 
   db:
     env_file:
-      - docker/envs/.env.local # LOCAL ENV
+      - docker/envs/.env.dev # LOCAL ENV
 
   celery_worker:
     build:
@@ -19,7 +19,7 @@ services:
       dockerfile: docker/Dockerfile
       target: development  # DEVELOPMENT TARGET
     env_file:
-      - docker/envs/.env.local  # LOCAL ENV
+      - docker/envs/.env.dev  # LOCAL ENV
 
   celery_beat:
     build:
@@ -27,13 +27,13 @@ services:
       dockerfile: docker/Dockerfile
       target: development  # DEVELOPMENT TARGET
     env_file:
-      - docker/envs/.env.local  # LOCAL ENV
+      - docker/envs/.env.dev  # LOCAL ENV
 
   caddy:
     env_file:
-      - docker/envs/.env.local  # LOCAL ENV
+      - docker/envs/.env.dev  # LOCAL ENV
     volumes:
-      - ./docker/caddy/Caddyfile.local:/etc/caddy/Caddyfile
+      - ./docker/caddy/Caddyfile.dev:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
 

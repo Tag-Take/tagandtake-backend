@@ -9,9 +9,6 @@ __pycache__/
 # envs
 docker/envs/
 
-# API Documentation
-schema.yml
-schema.yaml
 
 # Jupyter Notebook for Stripe Testing
 .ipynb_checkpoints/
