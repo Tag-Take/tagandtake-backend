@@ -4,8 +4,6 @@ services:
   web:
     ports:
       - "8000:8000"
-    env_file:
-      - docker/envs/.env.local 
     volumes:
       - .:/app
     depends_on:
