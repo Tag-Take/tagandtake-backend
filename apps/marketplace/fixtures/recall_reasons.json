@@ -1,6 +1,6 @@
 [
     {
-        "model": "marketplace.RecallReasons",
+        "model": "marketplace.RecallReason",
         "pk": 1,
         "fields": {
             "reason": "IncorrectItem Condition",
@@ -9,7 +9,7 @@
         }
     },
     {
-        "model": "marketplace.RecallReasons",
+        "model": "marketplace.RecallReason",
         "pk": 2,
         "fields": {
             "reason": "Incorrect Item Category",
@@ -18,7 +18,7 @@
         }
     },
     {
-        "model": "marketplace.RecallReasons",
+        "model": "marketplace.RecallReason",
         "pk": 3,    
         "fields": {
             "reason": "Unclean Item",
@@ -27,7 +27,7 @@
         }
     },
     {
-        "model": "marketplace.RecallReasons",
+        "model": "marketplace.RecallReason",
         "pk": 4,
         "fields": {
             "reason": "Store Discretion",
@@ -36,7 +36,7 @@
         }
     },
     {
-        "model": "marketplace.RecallReasons",
+        "model": "marketplace.RecallReason",
         "pk": 5,
         "fields": {
             "reason": "Owner Request",
@@ -45,7 +45,7 @@
         }
     },
     {
-        "model": "marketplace.RecallReasons",
+        "model": "marketplace.RecallReason",
         "pk": 6,
         "fields": {
             "reason": "No Item Attached",

@@ -36,7 +36,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_spectacular",
     "django_extensions",
+    "dbbackup",
     # internal apps
+    "apps.common",
     "apps.accounts",
     "apps.notifications",
     "apps.items",
@@ -170,6 +172,14 @@ CORS_ALLOW_HEADERS = [
     "content-type",
     "withcredentials",
 ]
+
+DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+DBBACKUP_STORAGE_OPTIONS = {
+    "access_key": os.environ.get("AWS_ACCESS_KEY_ID"),
+    "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+    "bucket_name": os.environ.get("AWS_DB_BACKUP_BUCKET_NAME"),
+    "default_acl": "private",
+}
 
 TEMPLATES = [
     {
