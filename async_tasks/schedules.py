@@ -23,6 +23,6 @@ CELERY_SCHEDULES = {
     },
     "run-database-backup-every-day": {
         "task": "apps.common.tasks.db.backup_db",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute=0, hour=0),
     },
 }
