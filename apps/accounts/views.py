@@ -156,8 +156,6 @@ def get_auth_status(request):
         return Response(
             {
                 "message": "User is authenticated",
-                USER: user.username,
-                ISLOGGEDIN: True,
                 ROLE: user.role,
             },
             status=status.HTTP_200_OK,
@@ -175,12 +173,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
-            response.data.update(
-                {
-                    "isLoggedIn": True,
-                    "role": response.data["user"]["role"],
-                }
-            )
             return JWTManager.set_refresh_token_cookie(
                 response, response.data["refresh"]
             )

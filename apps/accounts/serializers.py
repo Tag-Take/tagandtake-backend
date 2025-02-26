@@ -132,8 +132,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         data = super().validate(attrs)
         data[USER] = {
-            USERNAME: self.user.username,
-            EMAIL: self.user.email,
             ROLE: self.user.role,
         }
         return data
