@@ -147,8 +147,7 @@ class CookieTokenRefreshSerializer(TokenRefreshSerializer):
 
         data = super().validate(attrs)
 
-        refresh = RefreshToken(attrs[REFRESH])
-        data["refresh"] = str(refresh)
+        data[REFRESH] = str(RefreshToken(attrs[REFRESH]))
 
         return data
 

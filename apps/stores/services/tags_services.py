@@ -32,11 +32,11 @@ class TagService:
     @staticmethod
     def get_user_tag_relation(request: Request, tag: Tag):
         if request.user == tag.tag_group.store.user:
-            return ListingRole.HOST_STORE
+            return ListingRole.HOST
         elif request.user.role == User.Roles.STORE:
-            return ListingRole.ITEM_OWNER
+            return ListingRole.OWNER
         else:
-            return ListingRole.GUEST
+            return ListingRole.VIEWER
 
     @staticmethod
     def create_tag(tag_group: TagGroup):

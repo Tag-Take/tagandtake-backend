@@ -80,7 +80,7 @@ CELERY_TIMEZONE = "UTC"
 
 CELERY_BEAT_SCHEDULE = CELERY_SCHEDULES
 
-SPECTAUCLAR_SETTINGS = {
+SPECTACULAR_SETTINGS = {
     "TITLE": "Tag & Take API",
 }
 
@@ -171,6 +171,13 @@ CORS_ALLOW_HEADERS = [
     "authorization",
     "content-type",
     "withcredentials",
+    "accept",
+    "accept-encoding",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
@@ -215,7 +222,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STATIC_URL = "/static/"
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = ["./static/"]
+STATICFILES_DIRS = [os.getenv("STATICFILES_DIRS", "./static/")]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 TAG_FONT = STATICFILES_DIRS[0] + "fonts/Nunito-Bold.ttf"
 
@@ -225,3 +232,12 @@ OPERATIONS_EMAIL = "info@tagandtake.com"
 LOGO_URL = "https://your-logo-url.com/logo.png"
 LOGIN_ROUTE = "/login"
 HOW_IT_WORKS_ROUTE = "/how-it-works"
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

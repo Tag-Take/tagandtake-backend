@@ -11,7 +11,18 @@ import os
 DEBUG = False
 
 # Only requests to your production domain are allowed.
-ALLOWED_HOSTS = ["your-production-domain.com"]
+ALLOWED_HOSTS = ["tagandtake.com", "www.tagandtake.com"]
+AUTH_COOKIE_SECURE = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://tagandtake.com",
+    "https://www.tagandtake.com",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://tagandtake.com",
+    "https://www.tagandtake.com",
+]   
 
 # Database configuration uses environment variables for security.
 DATABASES = {
@@ -27,16 +38,6 @@ DATABASES = {
 
 
 FRONTEND_URL = "https://tagandtake.com"
-
-SITE_ID = 1
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.your_email_service.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "info@tagandtake.com"
-EMAIL_HOST_PASSWORD = "password"
-DEFAULT_FROM_EMAIL = "info@tagandtake.com"
-
 
 # Email backend configuration for sending emails.
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

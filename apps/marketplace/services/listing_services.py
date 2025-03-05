@@ -67,11 +67,11 @@ class ItemListingService:
     @staticmethod
     def get_user_listing_relation(request: Request, listing: ItemListing):
         if request.user == listing.tag.tag_group.store.user:
-            return ListingRole.HOST_STORE
+            return ListingRole.HOST
         elif request.user == listing.item.owner_user:
-            return ListingRole.ITEM_OWNER
+            return ListingRole.OWNER
         else:
-            return ListingRole.GUEST
+            return ListingRole.VIEWER
 
     @staticmethod
     def create_listing(item: Item, tag: Tag):

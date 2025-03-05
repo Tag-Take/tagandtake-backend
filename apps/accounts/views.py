@@ -58,7 +58,6 @@ class StoreSignUpView(generics.CreateAPIView):
 
 class ActivateUserView(APIView):
     authentication_classes = []
-    throttle_scope = RESEND_ACTIVATION
 
     def get(self, request, uidb64, token):
         try:
@@ -76,13 +75,11 @@ class ActivateUserView(APIView):
                 response = Response(
                     {
                         "message": "Account activated successfully",
-                        ACCESS_TOKEN: access_token,
                         ROLE: user.role,
-                        ISLOGGEDIN: True,
                     },
                     status=status.HTTP_200_OK,
                 )
-                return JWTManager.set_refresh_token_cookie(response, refresh_token)
+                return response
 
             return Response(
                 {"error": "Account is already active"},
@@ -186,7 +183,11 @@ class CustomTokenRefreshView(TokenRefreshView):
         response = super().post(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
-            return JWTManager.set_refresh_token_cookie(response, response.data[REFRESH])
+            response = JWTManager.set_refresh_token_cookie(
+                response, response.data[REFRESH]
+            )
+            del response.data[REFRESH]
+            return response
 
         return response
 

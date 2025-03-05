@@ -16,6 +16,7 @@ DEBUG = True
 
 # Allow Django to serve requests from any host.
 ALLOWED_HOSTS = ["*"]
+FRONTEND_URL = "http://localhost:3000"
 
 # DATABASES['default'].update(dj_database_url.parse(os.environ.get('DATABASE_URL')))
 DATABASES = {
@@ -29,16 +30,7 @@ DATABASES = {
     }
 }
 
-# Testing email
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-FRONTEND_URL = "http://localhost:3000"
 
 # Basic logging configuration that logs errors to the console.
 LOGGING = {
@@ -97,6 +89,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://0.0.0.0:3000",
 ]
+
+AUTH_COOKIE_SECURE = False
 
 # AWS S3 settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
