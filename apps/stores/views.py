@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.decorators import api_view, permission_classes
 
 from apps.stores.utils import generate_pin
 from apps.stores.permissions import IsStoreUser, IsStoreWithValidPIN
@@ -23,7 +24,8 @@ from apps.stores.serializers import (
     StoreProfileImageSerializer,
 )
 from apps.notifications.emails.services.email_senders import StoreEmailSender
-from apps.common.constants import STORE_ID, STORE, PROFILE_PHOTO_URL
+from apps.common.constants import STORE_ID, STORE, PROFILE_PHOTO_URL 
+from apps.supplies.processors import TagsPurchaseProcessor
 
 
 class StoreProfileView(generics.RetrieveUpdateAPIView):
@@ -173,3 +175,11 @@ class StoreProfileImageView(generics.CreateAPIView, generics.DestroyAPIView):
 
     def perform_destroy(self, serializer):
         serializer.save()
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsStoreWithValidPIN])
+def tags_purchase(request):
+    tags_purchase_processor = TagsPurchaseProcessor(request.user.store)
+    tags_purchase_processor.process()
+    return Response(status=status.HTTP_200_OK)  

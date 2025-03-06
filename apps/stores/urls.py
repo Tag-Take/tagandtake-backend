@@ -8,6 +8,7 @@ from apps.stores.views import (
     PublicStoreItemConditionsView,
     StoreNotificationPreferencesView,
     StoreProfileImageView,
+    tags_purchase,
 )
 
 urlpatterns = [
@@ -48,5 +49,10 @@ urlpatterns = [
         "stores/me/profile-photo/",
         StoreProfileImageView.as_view(),
         name="store_profile_photo",
+    ),
+    path(
+        "stores/me/purchase-tags/",
+        tags_purchase,
+        name="purchase_tags",
     ),
 ]
